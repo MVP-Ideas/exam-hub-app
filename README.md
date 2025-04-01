@@ -1,20 +1,81 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Quiz Application
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+## Overview
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+This is a **React-based quiz application** built with **Next.js**. The app supports both **single-choice and multiple-choice** questions and allows users to review their answers before submitting.
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## Features
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+- 📝 **Single and multiple-choice questions**
+- 🎯 **Answer validation** (multiple-answer questions require all correct answers selected)
+- 📊 **Progress tracking**
+- 🏆 **Score calculation**
+- 🔄 **Navigation between questions**
+- 📱 **PWA support** (for Android compatibility)
+
+## Setup Instructions
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- **Node.js** (v18 or later recommended)
+- **pnpm** (or npm/yarn)
+
+### Installation
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo/quiz-app.git
+   cd quiz-app
+   ```
+2. Install dependencies:
+   ```sh
+   pnpm install  # or `npm install` / `yarn install`
+   ```
+
+## Running the Application
+
+### Development Mode
+
+```sh
+pnpm dev  # or `npm run dev` / `yarn dev`
+```
+
+This starts the app in development mode, accessible at `http://localhost:3000`.
+
+### Production Mode
+
+1. Build the application:
+   ```sh
+   pnpm build  # or `npm run build` / `yarn build`
+   ```
+2. Start the production server:
+   ```sh
+   pnpm start  # or `npm run start` / `yarn start`
+   ```
+
+## PWA Support
+
+To enable **PWA functionality**:
+
+1. Ensure you have added the `next-pwa` plugin in `next.config.js`.
+2. The service worker will be generated during the build process.
+
+## Dependencies
+
+### Main Dependencies:
+
+- **Next.js** - React framework for server-side rendering.
+- **TypeScript** - Type safety for improved development experience.
+- **ShadCN** - UI components for accessibility and customization.
+- **Zustand** - State management for React applications.
+
+### Dev Dependencies:
+
+- **ESLint** - Linting for code quality.
+- **Prettier** - Code formatting.
+
+## Contribution
+
+Feel free to **fork** the repository and submit a pull request for improvements or bug fixes. 🚀
