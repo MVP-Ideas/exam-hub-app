@@ -6,11 +6,11 @@ import { ThemeProvider } from './theme-provider';
 export function Providers({ children }: { children: React.ReactNode }) {
 	return (
 		<MsalProviderApp>
-			<AuthenticationProvider>
-				<ThemeProvider>
-					<QueryProvider>{children}</QueryProvider>
-				</ThemeProvider>
-			</AuthenticationProvider>
+			<ThemeProvider>
+				<QueryProvider>
+					<AuthenticationProvider>{children}</AuthenticationProvider>
+				</QueryProvider>
+			</ThemeProvider>
 		</MsalProviderApp>
 	);
 }

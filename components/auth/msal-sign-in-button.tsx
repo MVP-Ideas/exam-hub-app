@@ -1,9 +1,6 @@
-import { useMsal } from '@azure/msal-react';
-import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import { loginScopes } from '@/config/auth-config';
-import { UserB2CLoginRegister } from '@/types/auth';
-import useSignUpOrLoginUserB2C from '../../hooks/auth/useSignUpOrLoginUserB2C';
+import useAuth from '@/hooks/auth/useAuth';
 
 type Props = {
 	isLoading: boolean;
@@ -11,39 +8,14 @@ type Props = {
 };
 
 export const MsalSignInButton = ({ isLoading, setIsLoading }: Props) => {
-	const { instance } = useMsal();
-	const router = useRouter();
-	const { signUpOrLoginB2C } = useSignUpOrLoginUserB2C();
+	const { handleLoginB2C } = useAuth();
 
 	const handleLogin = async () => {
 		setIsLoading(true);
-
 		try {
-			const loginResult = await instance.loginPopup({ scopes: loginScopes });
-
-			if (!loginResult.account)
-				throw new Error('Login failed: No account found');
-
-			const account = loginResult.account;
-			const tokenResponse = await instance.acquireTokenSilent({
-				scopes: loginScopes,
-				account,
-			});
-
-			const b2cRequest: UserB2CLoginRegister = {
-				email: tokenResponse.account.username,
-				name: tokenResponse.account.name ?? 'unknown',
-				b2cUserId: tokenResponse.uniqueId,
-				accountType: account.idTokenClaims?.idp ?? 'B2C',
-			};
-
-			await signUpOrLoginB2C(b2cRequest);
-
-			router.push('/');
-		} catch (error) {
-			console.error('Login failed:', error);
-			instance.logout();
-			router.push('/login');
+			await handleLoginB2C();
+		} catch {
+			toast.error('Login failed. Please try again.');
 		} finally {
 			setIsLoading(false);
 		}

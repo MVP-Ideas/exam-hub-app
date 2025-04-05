@@ -10,17 +10,17 @@ export default function Page() {
 	return (
 		<div className="min-h-svh flex flex-col w-full items-center justify-center p-6 md:p-10">
 			<div className="flex flex-col gap-3 w-full max-w-sm">
-				<SignUpForm 
-					isLoading={isLoading}
-					setIsLoading={setIsLoading}
-				/>
+				<SignUpForm isLoading={isLoading} setIsLoading={setIsLoading} />
 				<div className="flex flex-row items-center justify-center gap-2">
 					<div className="h-px bg-muted w-full border" />
 					<p className="text-muted-foreground text-center text-xs">or</p>
 					<div className="h-px bg-muted w-full border" />
 				</div>
 				<div className="flex flex-col gap-6">
-					<MsalSignInButton isLoading={isLoading} setIsLoading={setIsLoading} />
+					<MsalSignInButton
+						isDisabled={isLoading}
+						setIsLoading={setIsLoading}
+					/>
 					<div className="flex items-center justify-center">
 						<p className="text-muted-foreground text-center text-xs">
 							Already have an account?{' '}

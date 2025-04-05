@@ -1,6 +1,8 @@
 'use client';
 
 import useAuth from '@/hooks/auth/useAuth';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { BeatLoader } from 'react-spinners';
 
 export default function AuthenticationProvider({
@@ -8,7 +10,15 @@ export default function AuthenticationProvider({
 }: {
 	children: React.ReactNode;
 }) {
-	const { isLoading } = useAuth();
+	const router = useRouter();
+	const pathName = usePathname();
+	const { isLoading, isAuthenticated } = useAuth();
+
+	useEffect(() => {
+		if (!isAuthenticated && !isLoading && pathName !== '/login') {
+			router.replace('/login');
+		}
+	}, [isAuthenticated, isLoading, router, pathName]);
 
 	if (isLoading) {
 		return (
