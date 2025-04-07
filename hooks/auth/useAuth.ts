@@ -34,11 +34,14 @@ const useAuth = () => {
 		router.push('/login');
 	};
 
-	const handleLoginB2C = async () => {
+	const handleLoginB2C = async (provider: string | null) => {
 		setIsLoading(true);
 
 		try {
-			const loginResult = await instance.loginPopup({ scopes: loginScopes });
+			const loginResult = await instance.loginPopup({
+				scopes: loginScopes,
+				domainHint: `${provider}.com`,
+			});
 
 			if (!loginResult.account)
 				throw new Error('Login failed: No account found');
@@ -62,7 +65,7 @@ const useAuth = () => {
 				setAccessToken(tokenResponse.accessToken);
 				toast.success('Login successful');
 			} else {
-				throw new Error('Login failed: No response from server');
+				throw new Error();
 			}
 		} catch {
 			setAccessToken(null);

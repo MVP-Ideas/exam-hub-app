@@ -3,11 +3,16 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Form, FormControl, FormField, FormItem } from '@/components/ui/form';
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+} from '@/components/ui/form';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LockIcon, MailIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import Link from 'next/link';
@@ -55,10 +60,9 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 
 	return (
 		<div className="flex flex-col gap-4">
-			<h1 className="text-center text-2xl font-bold">Welcome Back</h1>
-			<p className="text-muted-foreground text-center text-sm">
-				Sign in to your Exam Hub account to continue
-			</p>
+			<h1 className="text-center text-2xl md:text-3xl lg:text-4xl font-bold">
+				Login to your account
+			</h1>
 
 			<Form {...form}>
 				<form
@@ -71,13 +75,9 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 						name="email"
 						render={({ field }) => (
 							<FormItem>
+								<FormLabel className="flex items-center gap-2">Email</FormLabel>
 								<FormControl>
-									<Input
-										icon={<MailIcon size={16} />}
-										placeholder="Email"
-										type="email"
-										{...field}
-									/>
+									<Input placeholder="Email" type="email" {...field} />
 								</FormControl>
 							</FormItem>
 						)}
@@ -89,10 +89,12 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 						name="password"
 						render={({ field }) => (
 							<FormItem>
+								<FormLabel className="flex items-center gap-2">
+									Password
+								</FormLabel>
 								<div className="flex flex-col gap-2 w-full items-center justify-between">
 									<FormControl>
 										<Input
-											icon={<LockIcon size={16} />}
 											type="password"
 											placeholder="Password"
 											{...field}
@@ -101,14 +103,14 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 									</FormControl>
 
 									{/* Forgot Password Link */}
-									<div className="text-end w-full text-xs">
+									{/* <div className="text-end w-full text-xs">
 										<Link
 											href="forgot-password"
 											className="text-primary hover:underline hover:text-primary/80"
 										>
 											Forgot Password?
 										</Link>
-									</div>
+									</div> */}
 								</div>
 							</FormItem>
 						)}
@@ -119,6 +121,17 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 						{!isLoading && <p>Login</p>}
 						{isLoading && <BeatLoader size={8} color="white" />}
 					</Button>
+					<div className="flex items-center justify-center">
+						<p className="text-muted-foreground text-center text-xs under">
+							Don&apos;t have an account?{' '}
+							<Link
+								href="/sign-up"
+								className="text-primary hover:text-primary/80 underline"
+							>
+								Sign up
+							</Link>
+						</p>
+					</div>
 				</form>
 			</Form>
 		</div>

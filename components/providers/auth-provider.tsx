@@ -1,6 +1,6 @@
 'use client';
 
-import useAuth from '@/hooks/auth/useAuth';
+import { useAuth } from '@/hooks';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { BeatLoader } from 'react-spinners';
