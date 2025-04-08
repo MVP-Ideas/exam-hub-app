@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { useAuthStore } from '@/stores/auth-store';
 import { loginScopes } from '@/config/auth-config';
@@ -14,24 +13,22 @@ const useAuth = () => {
 	const { inProgress, instance } = useMsal();
 	const { accessToken, setAccessToken } = useAuthStore();
 
-	const router = useRouter();
-
 	const [isLoading, setIsLoading] = useState(false);
 	const { signUpOrLoginB2C } = useSignUpOrLoginUserB2C();
 
 	const isInProgress = inProgress !== 'none';
 
 	const isAuthenticatedLocal = !!accessToken;
-	const isAuthenticated = isAuthenticatedB2C || isAuthenticatedLocal;
+	const isAuthenticated =
+		(isAuthenticatedB2C && accessToken) || isAuthenticatedLocal;
 
 	const handleLogout = () => {
 		setIsLoading(true);
-		setAccessToken(null);
 		if (isAuthenticatedB2C) {
 			instance.logoutPopup();
 		}
+		setAccessToken(null);
 		setIsLoading(false);
-		router.push('/login');
 	};
 
 	const handleLoginB2C = async (provider: string | null) => {
@@ -59,7 +56,10 @@ const useAuth = () => {
 				accountType: account.idTokenClaims?.idp ?? 'B2C',
 			};
 
-			const response = await signUpOrLoginB2C(b2cRequest);
+			const response = await signUpOrLoginB2C({
+				request: b2cRequest,
+				accessToken: tokenResponse.accessToken,
+			});
 
 			if (response) {
 				setAccessToken(tokenResponse.accessToken);

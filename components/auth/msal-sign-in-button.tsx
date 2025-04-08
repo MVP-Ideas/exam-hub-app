@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 type Props = {
 	providerUrl: string | null;
-	providerName: string;
+	text: string;
 	image: string;
 	isLoading: boolean;
 	setIsLoading: (isLoading: boolean) => void;
@@ -13,7 +13,7 @@ type Props = {
 
 export const MsalSignInButton = ({
 	providerUrl,
-	providerName,
+	text,
 	image,
 	isLoading,
 	setIsLoading,
@@ -40,7 +40,7 @@ export const MsalSignInButton = ({
 		>
 			<div className="flex flex-row w-full gap-2">
 				<Image src={image} alt="Google" width={20} height={20} />
-				Login using {providerName}
+				{text}
 			</div>
 		</Button>
 	);

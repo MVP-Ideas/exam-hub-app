@@ -15,10 +15,14 @@ export default function AuthenticationProvider({
 	const { isLoading, isAuthenticated } = useAuth();
 
 	useEffect(() => {
-		if (!isAuthenticated && !isLoading && pathName !== '/login') {
+		if (!isAuthenticated && !['/login', '/signup'].includes(pathName)) {
 			router.replace('/login');
 		}
-	}, [isAuthenticated, isLoading, router, pathName]);
+		if (isAuthenticated && ['/login', '/signup'].includes(pathName)) {
+			// If the user is authenticated and tries to access the login or sign-up page, redirect them to the home page
+			router.replace('/');
+		}
+	}, [isAuthenticated, pathName, router]);
 
 	if (isLoading) {
 		return (

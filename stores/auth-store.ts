@@ -30,7 +30,12 @@ const loadLocalState = <T>(key: string, defaultValue: T): T => {
 
 const saveToLocalStorage = (key: string, value: unknown) => {
 	if (typeof window !== 'undefined') {
-		localStorage.setItem(key, JSON.stringify(value));
+		// if value is string, do not stringify
+		if (value && typeof value === 'string') {
+			localStorage.setItem(key, value);
+		} else if (value) {
+			localStorage.setItem(key, JSON.stringify(value));
+		}
 	}
 };
 

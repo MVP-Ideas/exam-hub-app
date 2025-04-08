@@ -15,7 +15,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
 import useLoginUser from '@/hooks/auth/useLoginUser';
@@ -44,7 +43,6 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 	const { loginUser } = useLoginUser();
 
 	const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-		console.log('Login data', data);
 		setIsLoading(true);
 
 		try {
@@ -121,17 +119,6 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 						{!isLoading && <p>Login</p>}
 						{isLoading && <BeatLoader size={8} color="white" />}
 					</Button>
-					<div className="flex items-center justify-center">
-						<p className="text-muted-foreground text-center text-xs under">
-							Don&apos;t have an account?{' '}
-							<Link
-								href="/sign-up"
-								className="text-primary hover:text-primary/80 underline"
-							>
-								Sign up
-							</Link>
-						</p>
-					</div>
 				</form>
 			</Form>
 		</div>
