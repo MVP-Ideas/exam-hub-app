@@ -1,26 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
-import { getAuthToken } from '../auth/getAuthToken';
 
 const api = axios.create({
 	baseURL: process.env.NEXT_PUBLIC_API_URL,
-});
-
-api.interceptors.request.use(
-	async (config) => {
-		const token = await getAuthToken();
-		if (token) {
-			config.headers.Authorization = `Bearer ${token}`;
-		}
-		return config;
+	withCredentials: true,
+	headers: {
+		'Content-Type': 'application/json',
 	},
-	(error) => Promise.reject(error)
-);
+});
 
 api.interceptors.response.use(
 	(response) => response,
-	(error) => {
-		if (error.response?.status === 401) {
-			// Optional: logout, refresh, or redirect
+	async (error) => {
+		const originalRequest = error.config;
+		if (originalRequest?.url?.includes('/auth/acquire')) {
+			return Promise.reject(error);
+		}
+		if (error.response.status === 401 && !originalRequest._retry) {
+			originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
+			try {
+				await api.post('/auth/acquire');
+
+				return api(originalRequest); // Retry the original request with the new access token.
+			} catch {
+				return Promise.reject(error);
+			}
 		}
 		return Promise.reject(error);
 	}

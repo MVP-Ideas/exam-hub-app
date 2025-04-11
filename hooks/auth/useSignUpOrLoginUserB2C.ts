@@ -1,21 +1,22 @@
-import { extractAxiosErrorMessage } from '@/lib/utils';
 import AuthService from '@/services/auth-service';
 import { UserB2CLoginRegister } from '@/types/auth';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const useSignUpOrLoginUserB2C = () => {
+	const queryClient = useQueryClient();
 	const { mutateAsync: signUpOrLoginB2C } = useMutation({
-		mutationFn: async (request: UserB2CLoginRegister) => {
-			try {
-				const response = await AuthService.b2cLoginRegister(request);
-				toast.success('Login successful');
-				return response;
-			} catch (error) {
-				const message = extractAxiosErrorMessage(error as Error);
-				toast.error(message);
-				throw new Error(message);
-			}
+		mutationFn: async ({
+			request,
+			accessToken,
+		}: {
+			request: UserB2CLoginRegister;
+			accessToken: string;
+		}) => {
+			const response = await AuthService.b2cLoginRegister(request, accessToken);
+			return response;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['currentUser'] });
 		},
 	});
 
