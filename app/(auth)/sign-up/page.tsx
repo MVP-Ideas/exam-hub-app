@@ -2,11 +2,15 @@
 
 import { MsalSignInButton } from '@/components/auth/msal-sign-in-button';
 import { SignUpForm } from '@/components/auth/sign-up-form';
+import { useCheckAuthenticated } from '@/hooks';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export default function SignUp() {
+export default function Page() {
+	useCheckAuthenticated();
+
 	const [isLoading, setIsLoading] = useState(false);
 	return (
 		<div className="min-h-svh flex flex-row gap-10 w-full items-center justify-center p-6 md:p-10 lg:p-14">

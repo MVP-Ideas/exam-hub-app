@@ -1,12 +1,15 @@
 export type User = {
-    role: string;
-    email: string;
-    name: string;
-    accountType: string;
-    preferences: UserPreference[];
-}
+	id: string;
+	lastLoginAt: Date | null;
+	role: string;
+	email: string;
+	name: string;
+	accountType: string;
+	preferences: UserPreference[];
+};
 
 export type UserPreference = {
-    key: string;
-    value: string;
-}
+	id: string;
+	key: string;
+	value: string;
+};

@@ -1,32 +1,32 @@
 'use client';
 
-import { useAuth } from '@/hooks';
-import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
+import { useAuth } from '@/hooks';
+
+const PUBLIC_ROUTES = ['/login', '/signup'];
 
 export default function AuthenticationProvider({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const router = useRouter();
 	const pathName = usePathname();
-	const { isLoading, isAuthenticated } = useAuth();
+	const router = useRouter();
+	const { isAuthenticated, isFetched } = useAuth();
 
 	useEffect(() => {
-		if (!isAuthenticated && !['/login', '/signup'].includes(pathName)) {
+		if (!isFetched) return; // wait until query is resolved
+
+		if (!isAuthenticated && !PUBLIC_ROUTES.includes(pathName)) {
 			router.replace('/login');
 		}
-		if (isAuthenticated && ['/login', '/signup'].includes(pathName)) {
-			// If the user is authenticated and tries to access the login or sign-up page, redirect them to the home page
-			router.replace('/');
-		}
-	}, [isAuthenticated, pathName, router]);
+	}, [isAuthenticated, isFetched, pathName, router]);
 
-	if (isLoading) {
+	if (!isFetched) {
 		return (
-			<div className="flex h-screen w-screen flex-col items-center justify-center">
+			<div className="flex h-screen w-screen items-center justify-center">
 				<BeatLoader />
 			</div>
 		);

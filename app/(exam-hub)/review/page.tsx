@@ -10,7 +10,7 @@ import { Label } from "@radix-ui/react-label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
 
-export default function ReviewPage() {
+export default function Page() {
   const router = useRouter();
   const { questions, resetQuestions } = useQuestionStore();
 

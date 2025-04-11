@@ -10,15 +10,8 @@ import {
 const BASE_URL = 'auth';
 
 const AuthService = {
-	localLogin: async (request: UserLocalLogin) => {
-		const response = await api.post<TokenResponse>(
-			`${BASE_URL}/login`,
-			request
-		);
-		if (isProblemDetails(response.data)) throw response.data;
-		return response.data;
-	},
-
+	localLogin: async (request: UserLocalLogin) =>
+		api.post<TokenResponse>(`${BASE_URL}/login`, request),
 	localRegister: async (request: UserLocalRegister) => {
 		const response = await api.post<TokenResponse>(
 			`${BASE_URL}/register`,
@@ -39,6 +32,16 @@ const AuthService = {
 		});
 		if (isProblemDetails(response.data)) throw response.data;
 		return response.data;
+	},
+
+	verifyToken: async () => {
+		const response = await api.post<boolean>(`${BASE_URL}/verify`);
+		if (isProblemDetails(response.data)) throw response.data;
+		return response.data;
+	},
+
+	logout: async () => {
+		await api.post(`${BASE_URL}/logout`);
 	},
 };
 

@@ -88,7 +88,9 @@ export function SignUpForm({ isLoading, setIsLoading }: Props) {
 			toast.success('Account created successfully!');
 
 			router.push('/');
-		} catch {}
+		} catch {
+			toast.error('Account creation failed. Try again.');
+		}
 		setIsLoading(false);
 	};
 
@@ -150,7 +152,7 @@ export function SignUpForm({ isLoading, setIsLoading }: Props) {
 												<Button
 													type="button"
 													size="icon"
-													className="pointer-events-auto h-6 w-6 hover:bg-transparent"
+													className="pointer-events-auto h-6 w-6 hover:bg-transparent border-0"
 													variant="ghost"
 													onClick={() => setIsPasswordVisible((prev) => !prev)}
 													aria-label={
@@ -159,7 +161,7 @@ export function SignUpForm({ isLoading, setIsLoading }: Props) {
 															: 'Hide password'
 													}
 												>
-													{!isPasswordVisible ? (
+													{isPasswordVisible ? (
 														<Eye className="h-4 w-4" />
 													) : (
 														<EyeOff className="h-4 w-4" />
@@ -191,7 +193,7 @@ export function SignUpForm({ isLoading, setIsLoading }: Props) {
 												<Button
 													type="button"
 													size="icon"
-													className="pointer-events-auto h-6 w-6 hover:bg-transparent"
+													className="pointer-events-auto h-6 w-6 hover:bg-transparent border-0"
 													variant="ghost"
 													onClick={() =>
 														setIsConfirmPasswordVisible((prev) => !prev)
@@ -202,7 +204,7 @@ export function SignUpForm({ isLoading, setIsLoading }: Props) {
 															: 'Hide password'
 													}
 												>
-													{!isConfirmPasswordVisible ? (
+													{isConfirmPasswordVisible ? (
 														<Eye className="h-4 w-4" />
 													) : (
 														<EyeOff className="h-4 w-4" />

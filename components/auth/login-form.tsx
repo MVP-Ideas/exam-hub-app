@@ -13,11 +13,8 @@ import {
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-
-import { useRouter } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
-import useLoginUser from '@/hooks/auth/useLoginUser';
+import { useAuth } from '@/hooks';
 
 const loginSchema = z.object({
 	email: z.string().email({ message: 'Invalid email address' }),
@@ -32,7 +29,6 @@ type Props = {
 };
 
 export function LoginForm({ isLoading, setIsLoading }: Props) {
-	const router = useRouter();
 	const form = useForm<z.infer<typeof loginSchema>>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
@@ -40,16 +36,13 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
 			password: '',
 		},
 	});
-	const { loginUser } = useLoginUser();
+	const { handleLoginLocal } = useAuth();
 
 	const onSubmit = async (data: z.infer<typeof loginSchema>) => {
 		setIsLoading(true);
 
 		try {
-			await loginUser(data);
-
-			toast.success('Login successful');
-			router.push('/');
+			await handleLoginLocal(data);
 		} catch (error) {
 			console.error('Login error', error);
 		}
