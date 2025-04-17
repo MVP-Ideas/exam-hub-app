@@ -1,7 +1,7 @@
 import api from '@/lib/axios';
 import { isProblemDetails } from '@/lib/utils';
 import { PaginationResponse } from '@/types/pagination';
-import { User } from '@/types/user';
+import { User, UserUpdate } from '@/types/user';
 
 const BASE_URL = 'users';
 
@@ -27,6 +27,16 @@ const UserService = {
 				role: params.role,
 			},
 		});
+		if (isProblemDetails(response.data)) throw response.data;
+		return response.data;
+	},
+	updateUser: async (id: string, user: UserUpdate) => {
+		const response = await api.put<User>(`${BASE_URL}/${id}`, user);
+		if (isProblemDetails(response.data)) throw response.data;
+		return response.data;
+	},
+	deleteUser: async (id: string) => {
+		const response = await api.delete<boolean>(`${BASE_URL}/${id}`);
 		if (isProblemDetails(response.data)) throw response.data;
 		return response.data;
 	},

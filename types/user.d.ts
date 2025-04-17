@@ -13,3 +13,14 @@ export type UserPreference = {
 	key: string;
 	value: string;
 };
+
+export type UserUpdate = {
+	name?: string;
+	preferences?: UserPreferenceUpdate[];
+};
+
+export type UserPreferenceUpdate = {
+	id?: string;
+	key: string;
+	value: string;
+};

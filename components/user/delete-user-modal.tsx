@@ -10,18 +10,24 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { User } from '@/types/user';
+import useDeleteUser from '@/hooks/users/useDeleteUser';
 
 export default function DeleteUserModal({
 	user,
-	onCancel,
-	onConfirm,
+	onClose,
 }: {
 	user: User;
-	onCancel: () => void;
-	onConfirm: () => void;
+	onClose: () => void;
 }) {
+	const { deleteUser, isPending } = useDeleteUser(user.id);
+
+	const handleConfirm = async () => {
+		await deleteUser();
+		onClose();
+	};
+
 	return (
-		<Dialog open onOpenChange={(open) => !open && onCancel()}>
+		<Dialog open onOpenChange={(open) => !open && onClose()}>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Delete User</DialogTitle>
@@ -36,7 +42,11 @@ export default function DeleteUserModal({
 					<DialogClose asChild>
 						<Button variant="outline">Cancel</Button>
 					</DialogClose>
-					<Button variant="destructive" onClick={onConfirm}>
+					<Button
+						variant="destructive"
+						disabled={isPending}
+						onClick={handleConfirm}
+					>
 						Delete
 					</Button>
 				</DialogFooter>

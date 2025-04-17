@@ -1,5 +1,5 @@
 import UserService from '@/services/user-service';
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import { useQuery } from '@tanstack/react-query';
 
 const useGetCurrentUser = () => {
@@ -12,6 +12,7 @@ const useGetCurrentUser = () => {
 		isSuccess,
 		isFetched,
 		error,
+		
 	} = useQuery({
 		queryKey: ['currentUser'],
 		queryFn: async () => {

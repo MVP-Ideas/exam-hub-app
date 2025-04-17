@@ -12,17 +12,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { User } from '@/types/user';
+import useUpdateUser from '@/hooks/users/useUpdateUser';
 
 export function EditUserModal({
 	user,
 	onClose,
-	onSave,
 }: {
 	user: User;
 	onClose: () => void;
-	onSave?: (name: string) => void;
 }) {
 	const [name, setName] = useState(user.name);
+	const { updateUser, isPending } = useUpdateUser(user.id);
+
+	const handleSave = async () => {
+		await updateUser({ name });
+		onClose();
+	};
 
 	return (
 		<Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -41,12 +46,7 @@ export function EditUserModal({
 					<DialogClose asChild>
 						<Button variant="outline">Cancel</Button>
 					</DialogClose>
-					<Button
-						onClick={() => {
-							onSave?.(name);
-							onClose();
-						}}
-					>
+					<Button disabled={isPending} onClick={handleSave}>
 						Save
 					</Button>
 				</DialogFooter>

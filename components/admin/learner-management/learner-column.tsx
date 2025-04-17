@@ -42,8 +42,8 @@ const learnerColumn = ({
 		cell: ({ row }) => {
 			const user = row.original;
 			return (
-				<div className="flex items-center gap-2 overflow-hidden">
-					<p className="font-bold">{user.name}</p>
+				<div className="flex items-center gap-2 max-w-[175px]">
+					<p className="font-bold truncate">{user.name}</p>
 				</div>
 			);
 		},
@@ -55,8 +55,8 @@ const learnerColumn = ({
 		cell: ({ row }) => {
 			const user = row.original;
 			return (
-				<div className="flex items-center gap-2">
-					<p>{user.email}</p>
+				<div className="flex items-center gap-2 max-w-[175px]">
+					<p className="truncate">{user.email}</p>
 				</div>
 			);
 		},
@@ -64,12 +64,12 @@ const learnerColumn = ({
 
 	{
 		accessorKey: 'examsCompleted',
-		header: () => <span>Exams Completed</span>,
+		header: () => <span>Completed</span>,
 		cell: ({ row }) => {
 			const user = row.original;
 			return (
-				<div className="flex items-center gap-2">
-					<p>1</p>
+				<div className="flex w-full gap-2">
+					<p className="text-center w-full">1</p>
 				</div>
 			);
 		},
@@ -82,7 +82,7 @@ const learnerColumn = ({
 			const user = row.original;
 			return (
 				<div className="flex items-center gap-2">
-					<p>100%</p>
+					<p className="text-center w-full">100%</p>
 				</div>
 			);
 		},

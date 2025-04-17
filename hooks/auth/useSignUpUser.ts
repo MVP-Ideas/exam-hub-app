@@ -1,6 +1,6 @@
 import { extractAxiosErrorMessage } from '@/lib/utils';
 import AuthService from '@/services/auth-service';
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserLocalRegister } from '@/types/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';

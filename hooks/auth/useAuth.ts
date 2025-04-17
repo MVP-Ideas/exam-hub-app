@@ -1,14 +1,14 @@
 import { useState, useCallback } from 'react';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginScopes } from '@/config/auth-config';
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserB2CLoginRegister, UserLocalLogin } from '@/types/auth';
 import { toast } from 'sonner';
-import AuthService from '@/services/auth-service';
 import useSignUpOrLoginUserB2C from './useSignUpOrLoginUserB2C';
 import useLoginUser from './useLoginUser';
 import { usePathname, useRouter } from 'next/navigation';
 import useGetCurrentUser from '../users/useGetCurrentUser';
+import useLogoutUser from './useLogoutUser';
 
 const useAuth = () => {
 	const router = useRouter();
@@ -18,8 +18,13 @@ const useAuth = () => {
 	const { logout } = useAuthStore();
 	const { signUpOrLoginB2C } = useSignUpOrLoginUserB2C();
 	const { loginUser } = useLoginUser();
-	const { user: currentUser, isLoading: isLoadingCurrentUser, isFetched, isError } =
-		useGetCurrentUser();
+	const {
+		user: currentUser,
+		isLoading: isLoadingCurrentUser,
+		isFetched,
+		isError,
+	} = useGetCurrentUser();
+	const { logoutUser } = useLogoutUser();
 	const [isLoading, setIsLoading] = useState(false);
 
 	const isAuthenticated = !!currentUser;
@@ -31,20 +36,25 @@ const useAuth = () => {
 			instance.clearCache();
 		}
 		logout();
-		AuthService.logout();
+		logoutUser();
 		if (pathName !== '/login' && pathName !== '/sign-up') {
 			router.push('/login');
 		}
 
 		setIsLoading(false);
-	}, [instance, isAuthenticatedB2C, logout, pathName, router]);
+	}, [instance, isAuthenticatedB2C, logout, logoutUser, pathName, router]);
 
 	const handleLoginLocal = async (user: UserLocalLogin) => {
 		setIsLoading(true);
 		try {
 			await loginUser(user);
 			toast.success('Login successful');
-			router.push('/');
+
+			if (currentUser?.role.toLowerCase() === 'admin') {
+				router.push('/admin');
+			} else {
+				router.push('/');
+			}
 		} catch (error) {
 			console.error('Login error', error);
 			toast.error('Login failed. Try again.');
@@ -80,12 +90,15 @@ const useAuth = () => {
 				accessToken: tokenResponse.accessToken,
 			});
 
-			console.log('Response from signUpOrLoginB2C:', response);
-
 			if (!response) throw new Error();
 
 			toast.success('Login successful');
-			router.push('/');
+
+			if (currentUser?.role.toLowerCase() === 'admin') {
+				router.push('/admin');
+			} else {
+				router.push('/');
+			}
 		} catch (error) {
 			console.log(error);
 			handleLogout();
@@ -99,7 +112,7 @@ const useAuth = () => {
 		isAuthenticated,
 		isLoading,
 		isLoadingCurrentUser,
-		isFetched, 
+		isFetched,
 		isError,
 		handleLoginB2C,
 		handleLoginLocal,

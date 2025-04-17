@@ -1,6 +1,6 @@
 import { extractAxiosErrorMessage } from '@/lib/utils';
 import AuthService from '@/services/auth-service';
-import { useAuthStore } from '@/stores/auth-store';
+import { useAuthStore } from '@/lib/stores/auth-store';
 import { UserLocalLogin } from '@/types/auth';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ const useLoginUser = () => {
 		mutationFn: async (request: UserLocalLogin) =>
 			await AuthService.localLogin(request),
 		onSuccess: (data) => {
-			login(data);
+			login(data.data);
 			queryClient.invalidateQueries({ queryKey: ['currentUser'] });
 		},
 		onError: (error) => {
