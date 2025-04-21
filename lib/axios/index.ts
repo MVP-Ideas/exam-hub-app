@@ -1,33 +1,47 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios from 'axios';
+import axios from "axios";
+import { isProblemDetails } from "../utils";
 
 const api = axios.create({
-	baseURL: process.env.NEXT_PUBLIC_API_URL,
-	withCredentials: true,
-	headers: {
-		'Content-Type': 'application/json',
-	},
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 api.interceptors.response.use(
-	(response) => response,
-	async (error) => {
-		const originalRequest = error.config;
-		if (originalRequest?.url?.includes('/auth/acquire')) {
-			return Promise.reject(error);
-		}
-		if (error.response.status === 401 && !originalRequest._retry) {
-			originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
-			try {
-				await api.post('/auth/acquire');
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-				return api(originalRequest); // Retry the original request with the new access token.
-			} catch {
-				return Promise.reject(error);
-			}
-		}
-		return Promise.reject(error);
-	}
+    // Skip retry if endpoint is /auth/acquire
+    if (originalRequest?.url?.includes("/auth/acquire")) {
+      return Promise.reject(error);
+    }
+
+    // Attempt re-authentication on 401
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        await api.post("/auth/acquire");
+        return api(originalRequest);
+      } catch {
+        return Promise.reject(error);
+      }
+    }
+
+    // Handle ProblemDetails response cleanly
+    const responseData = error.response?.data;
+    if (responseData && isProblemDetails(responseData)) {
+      const wrappedError = new Error(responseData.title || "API error");
+      (wrappedError as any).details = responseData;
+      return Promise.reject(wrappedError);
+    }
+
+    return Promise.reject(error);
+  },
 );
 
 export default api;

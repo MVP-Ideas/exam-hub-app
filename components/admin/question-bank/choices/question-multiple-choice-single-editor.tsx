@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { QuestionChoice } from "@/lib/types/questions";
+import { QuestionChoiceCreateUpdate } from "@/lib/types/questions";
 
 import { XIcon, PlusIcon } from "lucide-react";
 import { Control, UseFormSetValue, useWatch } from "react-hook-form";
@@ -18,11 +18,11 @@ export default function MultipleChoiceSingleEditor({
   const choices = useWatch({ control, name: "choices" }) ?? [];
 
   // Determine which choice is currently correct
-  const correctIndex = choices.findIndex((c: QuestionChoice) => c.isCorrect);
+  const correctIndex = choices.findIndex((c: ChoiceSchema) => c.isCorrect);
 
   const handleSetCorrect = (index: number) => {
     const updated: ChoiceSchema[] = choices.map(
-      (c: QuestionChoice, i: number) => ({
+      (c: QuestionChoiceCreateUpdate, i: number) => ({
         ...c,
         isCorrect: i === index,
       }),
@@ -32,13 +32,13 @@ export default function MultipleChoiceSingleEditor({
 
   return (
     <div className="w-full space-y-2">
-      <FormLabel>Answer Options</FormLabel>
+      <FormLabel>Answer Options (Required)</FormLabel>
       <RadioGroup
         value={correctIndex.toString()}
         onValueChange={(val) => handleSetCorrect(Number(val))}
       >
         <div className="rounded-md border">
-          {choices.map((choice: QuestionChoice, index: number) => (
+          {choices.map((choice: QuestionChoiceCreateUpdate, index: number) => (
             <div
               key={index}
               className="flex items-center justify-between gap-2 border-b p-2 last:border-0"
@@ -80,9 +80,7 @@ export default function MultipleChoiceSingleEditor({
         className="mt-2 w-full"
         type="button"
         onClick={() => {
-          const newChoice: QuestionChoice = {
-            id: `option-${choices.length}`,
-            questionId: choices[0]?.questionId || "",
+          const newChoice: QuestionChoiceCreateUpdate = {
             text: "New Choice",
             isCorrect: false,
           };

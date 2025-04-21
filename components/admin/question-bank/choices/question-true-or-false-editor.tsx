@@ -16,14 +16,10 @@ export default function TrueFalseEditor({ setValue }: Props) {
         onValueChange={(val) =>
           setValue("choices", [
             {
-              id: "true",
-              questionId: "",
               text: "True",
               isCorrect: val === "true",
             },
             {
-              id: "false",
-              questionId: "",
               text: "False",
               isCorrect: val === "false",
             },

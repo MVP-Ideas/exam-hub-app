@@ -8,14 +8,20 @@ import {
   useSensors,
   DragEndEvent,
 } from "@dnd-kit/core";
+import {
+  useSortable,
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 import { useWatch, Control, UseFormSetValue } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, XIcon, GripVertical } from "lucide-react";
-import { QuestionChoice } from "@/lib/types/questions";
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { QuestionChoiceCreateUpdate } from "@/lib/types/questions";
 import { QuestionFormSchema } from "../question-sheet";
 
 type Props = {
@@ -26,71 +32,96 @@ type Props = {
 export default function DragAndDropEditor({ control, setValue }: Props) {
   const choices = useWatch({ control, name: "choices" }) ?? [];
 
-  const [, setActiveId] = useState<string | null>(null);
+  // Generate temporary unique IDs for sortable mapping
+  const idMapRef = useRef<Map<number, string>>(new Map());
+
+  const sortableIds = useMemo(() => {
+    return choices.map((_, index) => {
+      if (!idMapRef.current.has(index)) {
+        idMapRef.current.set(index, `choice-${crypto.randomUUID()}`);
+      }
+      return idMapRef.current.get(index)!;
+    });
+  }, [choices.length]);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
     if (!over || active.id === over.id) return;
 
-    const oldIndex = choices.findIndex((item) => item.id === active.id);
-    const newIndex = choices.findIndex((item) => item.id === over.id);
+    const oldIndex = sortableIds.findIndex((id) => id === active.id);
+    const newIndex = sortableIds.findIndex((id) => id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const updated = [...choices];
-    const [moved] = updated.splice(oldIndex, 1);
-    updated.splice(newIndex, 0, moved);
+    const newChoices = [...choices];
+    const [moved] = newChoices.splice(oldIndex, 1);
+    newChoices.splice(newIndex, 0, moved);
 
-    setValue("choices", updated);
+    const newSortableIds = [...sortableIds];
+    const [movedId] = newSortableIds.splice(oldIndex, 1);
+    newSortableIds.splice(newIndex, 0, movedId);
+
+    setValue("choices", newChoices);
   };
+
+  const handleAddChoice = () => {
+    const newChoice: QuestionChoiceCreateUpdate = {
+      text: "New choice",
+      isCorrect: false,
+    };
+    setValue("choices", [...choices, newChoice]);
+  };
+
+  useEffect(() => {
+    const newMap = new Map<number, string>();
+    choices.forEach((_, idx) => {
+      newMap.set(idx, `choice-${crypto.randomUUID()}`);
+    });
+    idMapRef.current = newMap;
+  }, [choices.length]);
 
   return (
     <div className="space-y-2">
-      <FormLabel>Draggable Items</FormLabel>
+      <FormLabel>Draggable Items (Required)</FormLabel>
 
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
-        onDragStart={(e) => setActiveId(e.active.id as string)}
-        onDragCancel={() => setActiveId(null)}
       >
-        <div className="space-y-1 rounded-md border p-1">
-          {choices.map((choice, index) => (
-            <DraggableItem
-              key={choice.id}
-              id={choice.id ?? `choice-${index}`}
-              text={choice.text}
-              onTextChange={(text) => {
-                const updated = [...choices];
-                updated[index].text = text;
-                setValue("choices", updated);
-              }}
-              onRemove={() => {
-                const updated = choices.filter((_, i) => i !== index);
-                setValue("choices", updated);
-              }}
-            />
-          ))}
-        </div>
+        <SortableContext
+          items={sortableIds}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-1 rounded-md border p-1">
+            {choices.map((choice, index) => (
+              <SortableItem
+                key={sortableIds[index]}
+                id={sortableIds[index]}
+                text={choice.text}
+                onTextChange={(text) => {
+                  const updated = [...choices];
+                  updated[index].text = text;
+                  setValue("choices", updated);
+                }}
+                onRemove={() => {
+                  const updatedChoices = choices.filter((_, i) => i !== index);
+
+                  setValue("choices", updatedChoices);
+                }}
+              />
+            ))}
+          </div>
+        </SortableContext>
       </DndContext>
 
       <Button
         variant="outline"
         className="mt-2 w-full"
         type="button"
-        onClick={() => {
-          const newChoice: QuestionChoice = {
-            id: crypto.randomUUID(),
-            questionId: choices[0]?.questionId || "",
-            text: "New choice",
-            isCorrect: false,
-          };
-          setValue("choices", [...choices, newChoice]);
-        }}
+        onClick={handleAddChoice}
       >
         <PlusIcon size={16} className="mr-2" />
         Add Item
@@ -106,33 +137,24 @@ type ItemProps = {
   onRemove: () => void;
 };
 
-function DraggableItem({ id, text, onTextChange, onRemove }: ItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setDragRef,
-    transform,
-  } = useDraggable({ id });
-  const { setNodeRef: setDropRef } = useDroppable({ id });
+function SortableItem({ id, text, onTextChange, onRemove }: ItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
 
   const style = {
-    transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px)`
-      : undefined,
+    transform: CSS.Transform.toString(transform),
+    transition,
   };
 
   return (
     <div
-      ref={(node) => {
-        setDragRef(node);
-        setDropRef(node);
-      }}
+      ref={setNodeRef}
       style={style}
       className="bg-background flex items-center justify-between gap-2 rounded border p-2 transition-shadow"
     >
       <div
-        {...listeners}
         {...attributes}
+        {...listeners}
         className="text-muted-foreground cursor-grab pr-1 select-none"
       >
         <GripVertical size={16} />

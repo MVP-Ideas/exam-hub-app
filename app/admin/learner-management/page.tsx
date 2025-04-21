@@ -7,7 +7,7 @@ import DeleteUserModal from "@/components/user/delete-user-modal";
 import { EditUserModal } from "@/components/user/edit-user-modal";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import useGetLearners from "@/hooks/users/useGetLearners";
-import { User } from "@/types/user";
+import { User } from "@/lib/types/user";
 import {
   getCoreRowModel,
   getSortedRowModel,
@@ -45,7 +45,7 @@ export default function Page() {
     [debouncedSearch, page],
   );
 
-  const { learners, isLoading } = useGetLearners(queryParams);
+  const { learners, isLoading, isError } = useGetLearners(queryParams);
 
   const activeThisWeek = useMemo(() => {
     if (!learners) return 0;
@@ -130,6 +130,7 @@ export default function Page() {
             table={table}
             columns={columns}
             isLoading={isLoading}
+            isError={isError}
             pagination={learners}
             onNextPage={handleNextPage}
             onPreviousPage={handlePreviousPage}

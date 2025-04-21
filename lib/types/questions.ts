@@ -18,14 +18,15 @@ export type Question = {
   isActive: boolean;
   choices: QuestionChoice[];
   resources: QuestionResource[];
+  aiHelpEnabled: boolean;
 };
 
 export type QuestionChoice = {
-  id?: string;
+  id: string;
   questionId: string;
   text: string;
   isCorrect: boolean;
-  order?: number | null;
+  order: number | null;
 };
 
 export type QuestionResource = {
@@ -33,6 +34,21 @@ export type QuestionResource = {
   type: string;
   value: string;
   description: string;
+};
+
+export type QuestionCreateUpdate = {
+  text: string;
+  description: string;
+  choices: QuestionChoiceCreateUpdate[];
+  resources: string[];
+  type: QuestionType;
+  categoryId: string | null;
+  aiHelpEnabled: boolean;
+};
+
+export type QuestionChoiceCreateUpdate = {
+  text: string;
+  isCorrect: boolean;
 };
 
 export interface ExamQuestion {

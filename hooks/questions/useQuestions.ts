@@ -1,7 +1,7 @@
 "use client";
 
-import QuestionService from "@/services/question-service";
-import { PaginationResponse } from "@/types/pagination";
+import QuestionService from "@/lib/services/question-service";
+import { PaginationResponse } from "@/lib/types/pagination";
 import { Question } from "@/lib/types/questions";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
@@ -18,17 +18,26 @@ const useGetQuestions = (params: Props) => {
     data: questions,
     isLoading,
     isFetching,
+    isError,
   } = useQuery<PaginationResponse<Question>>({
-    queryKey: ["questions", params],
-    queryFn: async () => await QuestionService.getQuestions(params),
-    select: (data) => data,
+    queryKey: ["questions", JSON.stringify(params)],
+    queryFn: async () => await QuestionService.list(params),
     placeholderData: keepPreviousData,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 10,
   });
 
+  const emptyResponse: PaginationResponse<Question> = {
+    items: [],
+    page: params.page,
+    pageSize: params.pageSize,
+    totalItems: 0,
+    totalPages: 0,
+  };
+
   return {
-    questions,
+    questions: !isError ? questions : emptyResponse,
     isLoading: isLoading || isFetching,
+    isError,
   };
 };
 

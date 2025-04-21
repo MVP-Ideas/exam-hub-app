@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { QuestionChoice } from "@/lib/types/questions";
+import { QuestionChoiceCreateUpdate } from "@/lib/types/questions";
 import { Checkbox } from "@/components/ui/checkbox";
 import { XIcon, PlusIcon } from "lucide-react";
 import { Control, UseFormSetValue, useWatch } from "react-hook-form";
@@ -24,9 +24,9 @@ export default function MultipleChoiceMultipleEditor({
 
   return (
     <div className="space-y-2">
-      <FormLabel>Selectable Options</FormLabel>
+      <FormLabel>Selectable Options (Required)</FormLabel>
       <div className="rounded-md border">
-        {choices.map((choice: QuestionChoice, index: number) => (
+        {choices.map((choice: QuestionChoiceCreateUpdate, index: number) => (
           <div
             key={index}
             className="flex items-center justify-between gap-2 border-b p-2 last:border-0"
@@ -65,9 +65,7 @@ export default function MultipleChoiceMultipleEditor({
         className="mt-2 w-full"
         type="button"
         onClick={() => {
-          const newChoice: QuestionChoice = {
-            id: `option-${choices.length}`,
-            questionId: choices[0]?.questionId || "",
+          const newChoice: QuestionChoiceCreateUpdate = {
             text: "New choice",
             isCorrect: false,
           };

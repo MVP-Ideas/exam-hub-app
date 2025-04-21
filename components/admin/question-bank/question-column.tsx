@@ -1,20 +1,10 @@
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Question } from "@/lib/types/questions";
 import { ColumnDef } from "@tanstack/react-table";
-import { Delete, Edit } from "lucide-react";
 import { format } from "date-fns";
 import QuestionSheet from "./question-sheet";
 
-type Props = {
-  onEditQuestion: (question: Question) => void;
-  onDeleteQuestion: (question: Question) => void;
-};
-
-const questionColumn = ({
-  onEditQuestion,
-  onDeleteQuestion,
-}: Props): ColumnDef<Question>[] => [
+const questionColumn = (): ColumnDef<Question>[] => [
   {
     accessorKey: "text",
     header: () => <span className="pl-2">Question</span>,
@@ -58,8 +48,10 @@ const questionColumn = ({
       const question = row.original;
 
       return (
-        <div className="max-w-[100px] truncate pl-2 text-sm font-medium">
-          {question.category || "General"}
+        <div className="max-w-[200px] truncate pl-2 text-sm font-medium">
+          {question.category || (
+            <span className="text-muted-foreground">None</span>
+          )}
         </div>
       );
     },
@@ -80,13 +72,13 @@ const questionColumn = ({
       return <span>{format(new Date(question.createdAt), "PP")}</span>;
     },
   },
-  {
-    id: "usedIn",
-    header: () => <span>Used In</span>,
-    cell: () => {
-      return <span className="text-muted-foreground text-sm">3 exams</span>;
-    },
-  },
+  // {
+  //   id: "usedIn",
+  //   header: () => <span>Used In</span>,
+  //   cell: () => {
+  //     return <span className="text-muted-foreground text-sm">3 exams</span>;
+  //   },
+  // },
   {
     id: "actions",
     header: () => <span>Actions</span>,
@@ -94,15 +86,8 @@ const questionColumn = ({
       const question = row.original;
 
       return (
-        <div className="flex items-center gap-1">
-          <QuestionSheet questionId={question.id} />
-          <Button
-            variant="ghost"
-            className="cursor-pointer"
-            onClick={() => onDeleteQuestion(question)}
-          >
-            <Delete className="text-destructive" />
-          </Button>
+        <div className="flex items-center gap-1 p-2">
+          <QuestionSheet mode="edit" questionId={question.id} />
         </div>
       );
     },

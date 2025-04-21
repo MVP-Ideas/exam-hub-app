@@ -17,7 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { PaginationResponse } from "@/types/pagination";
+import { PaginationResponse } from "@/lib/types/pagination";
 import { Button } from "../ui/button";
 import { FileQuestion } from "lucide-react";
 
@@ -26,6 +26,7 @@ interface DataTableProps<TData, TValue> {
   tableName?: string;
   columns: ColumnDef<TData, TValue>[];
   isLoading: boolean;
+  isError?: boolean;
   classNames?: {
     container?: string;
   };
@@ -39,6 +40,7 @@ export default function DataTable<TData, TValue>({
   tableName,
   columns,
   isLoading,
+  isError,
   classNames,
   pagination,
   onNextPage,
@@ -80,7 +82,20 @@ export default function DataTable<TData, TValue>({
           ))}
         </TableHeader>
         <TableBody>
-          {isLoading ? (
+          {isError ? (
+            <TableRow>
+              <TableCell colSpan={columns.length}>
+                <div className="pointer-events-none flex h-[calc(45vh-49px)] flex-col items-center justify-center gap-2">
+                  <div className="bg-muted rounded-full p-4">
+                    <FileQuestion size={48} className="text-destructive" />
+                  </div>
+                  <div className="text-destructive text-sm font-medium">
+                    Error fetching data
+                  </div>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : isLoading ? (
             Array.from({ length: 10 }).map((_, rowIndex) => (
               <TableRow key={rowIndex}>
                 {table.getVisibleFlatColumns().map((column, colIndex) => (
