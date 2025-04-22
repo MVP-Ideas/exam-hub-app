@@ -1,46 +1,32 @@
-'use client';
-
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogFooter,
-	DialogClose,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { User } from '@/types/user';
+import useDeleteUser from "@/hooks/users/useDeleteUser";
+import { User } from "@/lib/types/user";
+import ConfirmDeleteDialog from "../common/dialogs/confirm-delete-dialog";
 
 export default function DeleteUserModal({
-	user,
-	onCancel,
-	onConfirm,
+  user,
+  onClose,
 }: {
-	user: User;
-	onCancel: () => void;
-	onConfirm: () => void;
+  user: User;
+  onClose: () => void;
 }) {
-	return (
-		<Dialog open onOpenChange={(open) => !open && onCancel()}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Delete User</DialogTitle>
-				</DialogHeader>
+  const { deleteUser, isPending } = useDeleteUser(user.id);
 
-				<p className="text-sm text-muted-foreground">
-					Are you sure you want to delete <strong>{user.name}</strong>? This
-					action cannot be undone.
-				</p>
+  const handleDeleteUser = async () => {
+    try {
+      await deleteUser();
+      onClose();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  };
 
-				<DialogFooter className="mt-4">
-					<DialogClose asChild>
-						<Button variant="outline">Cancel</Button>
-					</DialogClose>
-					<Button variant="destructive" onClick={onConfirm}>
-						Delete
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
+  return (
+    <ConfirmDeleteDialog
+      title="Delete User"
+      description={`Are you sure you want to delete ${user.name}? This action cannot be undone.`}
+      onConfirm={handleDeleteUser}
+      onClose={onClose}
+      isPending={isPending}
+    />
+  );
 }

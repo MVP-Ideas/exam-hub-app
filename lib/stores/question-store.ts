@@ -1,15 +1,15 @@
 import { questionsList } from "@/lib/constants";
-import { Question } from "@/lib/types";
+import { ExamQuestion } from "@/lib/types/questions";
 import { create } from "zustand";
 
 type QuestionStore = {
   timer: number;
   isOnBreak: boolean;
-  questions: Question[];
+  questions: ExamQuestion[];
   intervalId: NodeJS.Timeout | null;
 
   setTimer: (time: number) => void;
-  setQuestions: (questions: Question[]) => void;
+  setQuestions: (questions: ExamQuestion[]) => void;
   resetQuestions: () => void;
 
   startTimer: () => void;
@@ -17,10 +17,9 @@ type QuestionStore = {
   startBreak: () => void;
   stopBreak: () => void;
 
-  updateQuestion: (order: number, question: Question) => void;
-  getAnsweredQuestions: () => Question[];
+  updateQuestion: (order: number, question: ExamQuestion) => void;
+  getAnsweredQuestions: () => ExamQuestion[];
 };
-
 
 const loadLocalState = <T>(key: string, defaultValue: T): T => {
   if (typeof window !== "undefined") {

@@ -5,16 +5,18 @@ import useGetCurrentUser from '../users/useGetCurrentUser';
 const useCheckAuthenticated = () => {
 	const router = useRouter();
 
-	const { user, isFetched } = useGetCurrentUser();
+	const { user, isFetched, isError } = useGetCurrentUser();
 	useEffect(() => {
-		console.log('User', user);
+		if (!isFetched) return;
 
-		if (isFetched) return;
-
-		if (user) {
-			router.replace('/');
+		if (!isError && isFetched && user) {
+			if (user.role.toLowerCase() === 'admin') {
+				router.push('/admin');
+			} else {
+				router.push('/');
+			}
 		}
-	}, [isFetched, router, user]);
+	}, [isError, isFetched, router, user]);
 };
 
 export default useCheckAuthenticated;

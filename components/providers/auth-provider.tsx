@@ -17,7 +17,7 @@ export default function AuthenticationProvider({
 	const { isAuthenticated, isFetched } = useAuth();
 
 	useEffect(() => {
-		if (!isFetched) return; // wait until query is resolved
+		if (!isFetched) return;
 
 		if (!isAuthenticated && !PUBLIC_ROUTES.includes(pathName)) {
 			router.replace('/login');

@@ -1,6 +1,6 @@
-import { Question, QuestionType } from "./types"; // Adjust import as needed
+import { ExamQuestion, QuestionType } from "./types/questions";
 
-export const questionsList: Question[] = [
+export const questionsList: ExamQuestion[] = [
   {
     order: 1,
     question:
