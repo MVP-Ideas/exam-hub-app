@@ -1,8 +1,16 @@
 "use client";
+
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks";
+
 export default function Page() {
+  const { handleLogout } = useAuth();
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen flex-col items-center justify-center">
       <h1 className="text-2xl font-bold">Exam Hub</h1>
+      <Button onClick={handleLogout} className="bg-primary">
+        Logout
+      </Button>
     </div>
   );
 }
