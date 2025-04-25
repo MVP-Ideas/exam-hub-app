@@ -12,27 +12,24 @@ export const b2cPolicies = {
 	},
 	authorities: {
 		signUpSignIn: {
-			authority:
-				'https://LevelUpYourDataExamHubDev.b2clogin.com/LevelUpYourDataExamHubDev.onmicrosoft.com/b2c_1_susi',
+			authority: `${process.env.NEXT_PUBLIC_B2C_BASE_AUTHORITY}/b2c_1_susi`,
 		},
 		forgotPassword: {
-			authority:
-				'https://LevelUpYourDataExamHubDev.b2clogin.com/LevelUpYourDataExamHubDev.onmicrosoft.com/b2c_1_reset',
+			authority: `${process.env.NEXT_PUBLIC_B2C_BASE_AUTHORITY}/b2c_1_reset`,
 		},
 		editProfile: {
-			authority:
-				'https://LevelUpYourDataExamHubDev.b2clogin.com/LevelUpYourDataExamHubDev.onmicrosoft.com/b2c_1_edit_profile',
+			authority: `${process.env.NEXT_PUBLIC_B2C_BASE_AUTHORITY}/b2c_1_edit_profile`,
 		},
 	},
-	authorityDomain: 'LevelUpYourDataExamHubDev.b2clogin.com',
+	authorityDomain: process.env.NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN!,
 };
 
 export const msalConfig: Configuration = {
 	auth: {
-		clientId: '92826569-1414-4e93-90fc-6b2010c0a5d8',
+		clientId: process.env.NEXT_PUBLIC_B2C_CLIENT_ID!,
 		authority: b2cPolicies.authorities.signUpSignIn.authority,
-		redirectUri: 'http://localhost:3000',
-		postLogoutRedirectUri: 'http://localhost:3000',
+		redirectUri: process.env.NEXT_PUBLIC_B2C_REDIRECT_URI,
+		postLogoutRedirectUri: process.env.NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI,
 		knownAuthorities: [b2cPolicies.authorityDomain],
 	},
 	cache: {
@@ -63,7 +60,7 @@ export const msalConfig: Configuration = {
 };
 
 export const scopeApi =
-	'https://LevelUpYourDataExamHubDev.onmicrosoft.com/examhub-api/userprofile.read';
+	`${process.env.NEXT_PUBLIC_B2C_SCOPE_BASE}/userprofile.read`;
 
 export const loginScopes = ['openid', 'profile', 'email', scopeApi];
 

@@ -85,13 +85,10 @@ const useAuth = () => {
         accountType: loginResult.account.idTokenClaims?.idp ?? "B2C",
       };
 
-      const response = await signUpOrLoginB2C({
+      await signUpOrLoginB2C({
         request: userDto,
         accessToken: tokenResponse.accessToken,
       });
-
-      if (!response) throw new Error();
-
       toast.success("Login successful");
 
       if (currentUser?.role.toLowerCase() === "admin") {
