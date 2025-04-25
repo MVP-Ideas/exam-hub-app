@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { isProblemDetails } from "../utils";
 
 const api = axios.create({
@@ -32,12 +32,9 @@ api.interceptors.response.use(
       }
     }
 
-    // Handle ProblemDetails response cleanly
     const responseData = error.response?.data;
     if (responseData && isProblemDetails(responseData)) {
-      const wrappedError = new Error(responseData.title || "API error");
-      (wrappedError as any).details = responseData;
-      return Promise.reject(wrappedError);
+      (error as AxiosError & { details?: any }).details = responseData;
     }
 
     return Promise.reject(error);

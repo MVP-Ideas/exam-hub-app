@@ -16,6 +16,7 @@ import {
   LayoutDashboardIcon,
   LogOutIcon,
   SettingsIcon,
+  TestTube,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -35,6 +36,11 @@ const navItems = [
     href: "/admin/question-bank",
     icon: <FileQuestionIcon size={20} className="text-muted" />,
     label: "Question Bank",
+  },
+  {
+    href: "/admin/exams",
+    icon: <TestTube size={20} className="text-muted" />,
+    label: "Exam Management",
   },
 ];
 

@@ -2,7 +2,6 @@ import api from "@/lib/axios";
 import { Question, QuestionCreateUpdate } from "@/lib/types/questions";
 
 import { PaginationResponse } from "@/lib/types/pagination";
-import { QuestionCreateUpdate } from "../types/questions";
 
 const BASE_URL = "questions";
 
