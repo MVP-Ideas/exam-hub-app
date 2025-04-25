@@ -38,10 +38,10 @@ import {
   QuestionCreateUpdate,
 } from "@/lib/types/questions";
 import QuestionTypeSelect from "./question-type-select";
-import QuestionCategorySelect from "./question-category-select";
-import AddLinkDialog from "./modals/add-link-dialog";
-import UploadFileDialog from "./modals/upload-file-dialog";
-import ResourceCard from "./common/resource-card";
+import QuestionCategorySelect from "../../categories/question-category-select";
+import QuestionAddLinkDialog from "./modals/question-add-link-dialog";
+import QuestionUploadFileDialog from "./modals/question-upload-file-dialog";
+import ResourceCard from "../resources/resource-card";
 import useUpdateQuestion from "@/hooks/questions/useUpdateQuestion";
 import { toast } from "sonner";
 import useDeleteQuestion from "@/hooks/questions/useDeleteQuestion";
@@ -55,19 +55,27 @@ const choiceSchema = z.object({
 
 export type ChoiceSchema = z.infer<typeof choiceSchema>;
 
-const schema = z.object({
-  text: z.string().min(1, "Question text is required"),
-  description: z.string().optional(),
-  type: z.nativeEnum(QuestionType),
-  categoryId: z.string().optional(),
-  choices: z
-    .array(choiceSchema)
-    .min(1, "At least one choice is required")
-    .refine((choices) => choices.some((choice) => choice.isCorrect === true), {
-      message: "At least one choice must be marked as correct.",
-    }),
-  resources: z.array(z.string()).optional(),
-});
+const schema = z
+  .object({
+    text: z.string().min(1, "Question text is required"),
+    description: z.string().optional(),
+    type: z.nativeEnum(QuestionType),
+    categoryId: z.string().optional(),
+    choices: z.array(choiceSchema).min(1, "At least one choice is required"),
+    resources: z.array(z.string()).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const isDragAndDrop = data.type === QuestionType.DragAndDrop;
+    const correctCount = data.choices.filter((c) => c.isCorrect).length;
+
+    if (!isDragAndDrop && correctCount === 0) {
+      ctx.addIssue({
+        path: ["choices"],
+        code: z.ZodIssueCode.custom,
+        message: "At least one choice must be correct",
+      });
+    }
+  });
 
 export type QuestionFormSchema = z.infer<typeof schema>;
 
@@ -75,12 +83,22 @@ type Props = {
   mode: "create" | "edit";
   questionId?: string;
   children?: React.ReactNode;
+  onSave?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  showClose?: boolean;
 };
 
-export default function QuestionSheet({ mode, questionId, children }: Props) {
+export default function QuestionSheet({
+  mode,
+  questionId,
+  children,
+  onSave,
+  onDelete,
+  showClose = true,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const { question, isLoading } = useQuestionById(questionId || "");
+  const { question, isLoading } = useQuestionById(questionId || "", open);
   const { createQuestion, isPending: isCreating } = useCreateQuestion();
   const { updateQuestion, isPending: isUpdating } = useUpdateQuestion(
     questionId || "",
@@ -137,6 +155,7 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
     if (response) {
       reset();
       setOpen(false);
+      onSave?.(response.id);
     }
   };
 
@@ -147,6 +166,7 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
       if (response) {
         setDeleteOpen(false);
         setOpen(false);
+        onDelete?.(questionId);
       }
     } catch {
       toast.error("Failed to delete question");
@@ -169,6 +189,12 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
     });
   };
 
+  const triggerButton = children || (
+    <Button variant="ghost" className="w-fit">
+      <Edit size={16} />
+    </Button>
+  );
+
   useEffect(() => {
     if (mode === "edit" && question) {
       reset({
@@ -182,9 +208,10 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
     }
   }, [mode, question, reset, open]);
 
-  if (isLoading || !question) {
+  if (isLoading) {
     return (
-      <Sheet>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetTrigger asChild>{triggerButton}</SheetTrigger>
         <SheetContent side="right">
           <SheetTitle>
             <p className="text-lg font-medium">Loading Question...</p>
@@ -197,20 +224,32 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
     );
   }
 
+  if (mode === "edit" && !question && !isLoading) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetTrigger asChild>{triggerButton}</SheetTrigger>
+        <SheetContent side="right">
+          <SheetTitle>
+            <p className="text-lg font-medium">Question not found</p>
+          </SheetTitle>
+          <SheetDescription className="text-muted-foreground text-sm">
+            The selected question no longer exists or failed to load.
+          </SheetDescription>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetTrigger asChild>
-          {children || (
-            <Button variant="ghost" className="w-fit">
-              <Edit size={16} />
-            </Button>
-          )}
-        </SheetTrigger>
+        <SheetTrigger asChild>{triggerButton}</SheetTrigger>
+
         <SheetContent
-          showClose={false}
+          hidden={isLoading}
+          showClose={showClose}
           side="right"
-          className="flex min-w-screen flex-col overflow-y-auto p-0 md:min-w-[90vw] lg:min-w-[50vw]"
+          className="flex min-w-screen flex-col overflow-y-auto p-0 pt-4 md:min-w-[80vw] lg:min-w-[50vw]"
         >
           <FormProvider {...form}>
             <Form {...form}>
@@ -242,21 +281,23 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
                 </SheetHeader>
 
                 <div className="flex w-full flex-col justify-start gap-4">
-                  <FormField
-                    control={control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>Type (Required)</FormLabel>
-                        <QuestionTypeSelect
-                          value={field.value}
-                          onChange={field.onChange}
-                          includeNull={false}
-                        />
-                      </FormItem>
-                    )}
-                  />
-                  {questionType && (
+                  {mode === "create" || questionType !== undefined ? (
+                    <FormField
+                      control={control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormLabel>Type (Required)</FormLabel>
+                          <QuestionTypeSelect
+                            value={field.value}
+                            onChange={field.onChange}
+                            includeNull={false}
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  ) : null}
+                  {questionType != undefined && (
                     <FormField
                       control={control}
                       name="categoryId"
@@ -283,7 +324,7 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
                   )}
                 </div>
 
-                {questionType && (
+                {questionType != undefined && (
                   <>
                     <FormField
                       control={control}
@@ -369,7 +410,7 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
                               </p>
                             </div>
                           </div>
-                          <UploadFileDialog />
+                          <QuestionUploadFileDialog />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -386,7 +427,7 @@ export default function QuestionSheet({ mode, questionId, children }: Props) {
                               </p>
                             </div>
                           </div>
-                          <AddLinkDialog />
+                          <QuestionAddLinkDialog />
                         </div>
                       </div>
                     </div>

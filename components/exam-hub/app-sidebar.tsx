@@ -25,7 +25,6 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { ExamQuestion } from "@/lib/types";
 import {
   Collapsible,
   CollapsibleContent,
@@ -36,6 +35,7 @@ import { useQuestionStore } from "@/lib/stores/question-store";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import useAuth from "@/hooks/auth/useAuth";
+import { ExamQuestion } from "@/lib/types/questions";
 
 type Props = {
   questions: ExamQuestion[];

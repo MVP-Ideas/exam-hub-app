@@ -48,6 +48,7 @@ export default function ConfirmDeleteDialog({
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button
+            type="button"
             variant="destructive"
             onClick={handleConfirm}
             disabled={isPending}

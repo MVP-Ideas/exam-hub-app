@@ -1,11 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { z } from "zod";
-import { useForm, useFormContext } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,73 +10,47 @@ import {
 } from "@/components/ui/dialog";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { UseFormReturn, FieldValues, Path } from "react-hook-form";
 
-import { QuestionFormSchema } from "../question-sheet";
-import { ResourceFileCreate } from "@/lib/types/resource";
-import useCreateFileResource from "@/hooks/resources/useCreateFileResource";
+type Props<T extends FieldValues> = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  form: UseFormReturn<T>;
+  onSubmit: (values: T) => Promise<void>;
+  isPending?: boolean;
+  triggerText?: string;
+  disabled?: boolean;
+};
 
-const fileSchema = z.object({
-  title: z.string().min(1, "Title is required").max(50),
-  description: z.string().max(500).optional(),
-  file: z
-    .instanceof(File)
-    .refine((file) => file.size <= 50 * 1024 * 1024, "File must be under 50MB"),
-});
-
-type FileForm = z.infer<typeof fileSchema>;
-
-export default function UploadFileDialog() {
-  const [open, setOpen] = useState(false);
-
-  const form = useFormContext<QuestionFormSchema>();
-  const { createFileResource, isPending } = useCreateFileResource();
-
-  const localForm = useForm<FileForm>({
-    resolver: zodResolver(fileSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-    },
-  });
-
+export default function UploadFileDialog<T extends FieldValues>({
+  open,
+  setOpen,
+  form,
+  onSubmit,
+  disabled = false,
+  isPending = false,
+  triggerText = "Upload",
+}: Props<T>) {
   const {
     control,
     handleSubmit,
-    reset,
-
     formState: { isValid },
-  } = localForm;
-
-  const onSubmit = async (data: FileForm) => {
-    const resourceData: ResourceFileCreate = {
-      title: data.title,
-      description: data.description ?? "",
-      file: data.file,
-    };
-
-    const resource = await createFileResource(resourceData);
-    if (!resource?.id) return;
-
-    const prev = form.getValues("resources") ?? [];
-    form.setValue("resources", [...prev, resource.id]);
-
-    setOpen(false);
-    reset();
-  };
+  } = form;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" type="button">
-          Upload
+        <Button variant="outline" size="sm" type="button" disabled={disabled}>
+          {triggerText}
         </Button>
       </DialogTrigger>
 
@@ -94,11 +62,11 @@ export default function UploadFileDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...localForm}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Form {...form}>
+          <div className="space-y-4">
             <FormField
               control={control}
-              name="title"
+              name={"title" as Path<T>}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
@@ -112,7 +80,7 @@ export default function UploadFileDialog() {
 
             <FormField
               control={control}
-              name="file"
+              name={"file" as Path<T>}
               render={({ field: { onChange } }) => (
                 <FormItem>
                   <FormLabel>File</FormLabel>
@@ -133,7 +101,7 @@ export default function UploadFileDialog() {
 
             <FormField
               control={control}
-              name="description"
+              name={"description" as Path<T>}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
@@ -150,14 +118,14 @@ export default function UploadFileDialog() {
 
             <div className="flex justify-end">
               <Button
-                onClick={handleSubmit(onSubmit)}
                 type="button"
                 disabled={!isValid || isPending}
+                onClick={handleSubmit(onSubmit)}
               >
-                Upload
+                {triggerText}
               </Button>
             </div>
-          </form>
+          </div>
         </Form>
       </DialogContent>
     </Dialog>

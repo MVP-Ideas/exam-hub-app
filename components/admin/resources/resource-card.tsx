@@ -5,13 +5,14 @@ import useResourceById from "@/hooks/resources/useResourceById";
 import { Link, TrashIcon, UploadIcon } from "lucide-react";
 import NextLink from "next/link";
 import { useFormContext } from "react-hook-form";
-import { QuestionFormSchema } from "../question-sheet";
+import { QuestionFormSchema } from "../question-bank/question-sheet";
 
 type Props = {
   resourceId: string;
+  disabled?: boolean;
 };
 
-export default function ResourceCard({ resourceId }: Props) {
+export default function ResourceCard({ resourceId, disabled = false }: Props) {
   const form = useFormContext<QuestionFormSchema>();
   const { resource, isLoading } = useResourceById(resourceId);
 
@@ -59,7 +60,11 @@ export default function ResourceCard({ resourceId }: Props) {
           </div>
         </NextLink>
 
-        <Button variant="destructive" onClick={handleDelete}>
+        <Button
+          variant="destructive"
+          onClick={handleDelete}
+          disabled={disabled}
+        >
           <TrashIcon size={16} />
           <span>Delete</span>
         </Button>

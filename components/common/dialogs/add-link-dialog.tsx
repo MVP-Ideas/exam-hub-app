@@ -1,10 +1,3 @@
-"use client";
-
-import { useForm, useFormContext } from "react-hook-form";
-import { z } from "zod";
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,73 +7,46 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { FieldValues, Form, Path, UseFormReturn } from "react-hook-form";
 
-import { QuestionFormSchema } from "../question-sheet";
-import useCreateUrlResource from "@/hooks/resources/useCreateUrlResource";
-import { ResourceUrlCreate } from "@/lib/types/resource";
+type Props<T extends FieldValues> = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  form: UseFormReturn<T>;
+  onSubmit: (values: T) => Promise<void>;
+  isPending?: boolean;
+  triggerText?: string;
+  disabled?: boolean;
+};
 
-const linkSchema = z.object({
-  title: z.string().min(1).max(50),
-  url: z.string().url(),
-  description: z.string().max(500).optional(),
-});
-
-type LinkForm = z.infer<typeof linkSchema>;
-
-export default function AddLinkDialog() {
-  const [open, setOpen] = useState(false);
-
-  const form = useFormContext<QuestionFormSchema>();
-  const { createUrlResource, isPending } = useCreateUrlResource();
-
-  const localForm = useForm<LinkForm>({
-    resolver: zodResolver(linkSchema),
-    defaultValues: {
-      title: "",
-      url: "",
-      description: "",
-    },
-  });
-
+export default function AddLinkDialog<T extends FieldValues>({
+  open,
+  setOpen,
+  form,
+  onSubmit,
+  disabled = false,
+  isPending = false,
+  triggerText = "Add Link",
+}: Props<T>) {
   const {
-    control: localControl,
+    control,
     handleSubmit,
-    reset,
     formState: { isValid },
-  } = localForm;
-
-  const onSubmit = async (data: LinkForm) => {
-    if (!data.title || !data.url) return;
-    const resourceData: ResourceUrlCreate = {
-      title: data.title,
-      url: data.url,
-      description: data.description ?? "",
-    };
-    const resource = await createUrlResource(resourceData);
-    if (!resource?.id) return;
-
-    const prev = form.getValues("resources") ?? [];
-    const updated = [...prev, resource.id];
-    form.setValue("resources", updated);
-
-    setOpen(false);
-    reset();
-  };
+  } = form;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" type="button">
+        <Button variant="outline" size="sm" type="button" disabled={disabled}>
           Add link
         </Button>
       </DialogTrigger>
@@ -93,11 +59,11 @@ export default function AddLinkDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...localForm}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Form>
+          <div className="space-y-4">
             <FormField
-              control={localControl}
-              name="title"
+              control={control}
+              name={"title" as Path<T>}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Title</FormLabel>
@@ -110,8 +76,8 @@ export default function AddLinkDialog() {
             />
 
             <FormField
-              control={localControl}
-              name="url"
+              control={control}
+              name={"url" as Path<T>}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>URL</FormLabel>
@@ -124,8 +90,8 @@ export default function AddLinkDialog() {
             />
 
             <FormField
-              control={localControl}
-              name="description"
+              control={control}
+              name={"description" as Path<T>}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
@@ -146,10 +112,10 @@ export default function AddLinkDialog() {
                 type="button"
                 disabled={!isValid || isPending}
               >
-                Add Link
+                {triggerText}
               </Button>
             </div>
-          </form>
+          </div>
         </Form>
       </DialogContent>
     </Dialog>
