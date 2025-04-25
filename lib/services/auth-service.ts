@@ -1,5 +1,4 @@
 import api from "@/lib/axios";
-import { isProblemDetails } from "@/lib/utils";
 import {
   TokenResponse,
   UserB2CLoginRegister,
@@ -17,7 +16,6 @@ const AuthService = {
       `${BASE_URL}/register`,
       request,
     );
-    if (isProblemDetails(response.data)) throw response.data;
     return response.data;
   },
 
@@ -30,13 +28,11 @@ const AuthService = {
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    if (isProblemDetails(response.data)) throw response.data;
     return response.data;
   },
 
   verifyToken: async () => {
     const response = await api.post<boolean>(`${BASE_URL}/verify`);
-    if (isProblemDetails(response.data)) throw response.data;
     return response.data;
   },
 
