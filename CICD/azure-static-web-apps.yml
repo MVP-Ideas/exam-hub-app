@@ -22,7 +22,7 @@ jobs:
     vmImage: ubuntu-latest
 
   variables:
-    - group: Azure-Static-Web-Apps-gray-moss-0038e2e0f-variable-group
+    - group: azure-static-web-dev
 
   steps:
     - checkout: self
