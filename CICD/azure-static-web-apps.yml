@@ -1,11 +1,6 @@
-name: Azure Static Web Apps CI/CD
+name: NextJS SSR CI/CD
 
 trigger:
-  branches:
-    include:
-      - dev
-
-pr:
   branches:
     include:
       - dev
@@ -15,7 +10,7 @@ pool:
 
 variables:
   - name: artifactName
-    value: 'staticwebapp_$(Build.BuildId)'
+    value: 'nextjsapp_$(Build.BuildId)'
   - name: baseVersion
     value: '1.0.0'
   - name: buildVersion
@@ -23,10 +18,10 @@ variables:
 
 stages:
 - stage: Build
-  displayName: 'Build and Publish Artifact'
+  displayName: 'Build and Package Next.js App'
   jobs:
     - job: BuildJob
-      displayName: 'Build Static Web App'
+      displayName: 'Build Job'
       timeoutInMinutes: 60
       steps:
         - checkout: self
@@ -39,17 +34,29 @@ stages:
 
         - script: |
             npm install
+          displayName: 'Install dependencies'
+
+        - script: |
             npm run build
-          displayName: 'Install and Build App'
+          displayName: 'Build Next.js App'
+
+        - task: ArchiveFiles@2
+          displayName: 'Archive Build Output'
+          inputs:
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+            includeRootFolder: false
+            archiveType: 'zip'
+            archiveFile: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'
+            replaceExistingArchive: true
 
         - task: PublishPipelineArtifact@1
-          displayName: 'Publish Static Web App Artifact'
+          displayName: 'Publish Build Artifact'
           inputs:
-            targetPath: '.next'
+            targetPath: '$(Build.ArtifactStagingDirectory)'
             artifact: $(artifactName)
 
 - stage: DeployDev
-  displayName: 'Deploy to Static Web Dev Slot'
+  displayName: 'Deploy to Dev App Service'
   dependsOn: Build
   variables:
     - group: Dev-Variables
@@ -63,41 +70,23 @@ stages:
               - download: current
                 artifact: $(artifactName)
 
-              - task: AzureCLI@2
-                displayName: 'Set Build Version as App Setting (Dev)'
+              - task: AzureWebApp@1
+                displayName: 'Deploy to Azure App Service (Dev)'
                 inputs:
                   azureSubscription: 'Azure_Development'
-                  scriptType: 'bash'   # ✅ Correct for Ubuntu
-                  scriptLocation: 'inlineScript'
-                  inlineScript: |
-                    az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
-
-              - task: AzureStaticWebApp@0
-                displayName: 'Deploy to Dev Slot'
-                inputs:
-                  app_location: 'out'  # 🔥 deploy from out/
-                  output_location: '' 
-                  skip_app_build: true
-                  skip_api_build: true
-                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
-                  production_branch: 'main'
-                env:
-                  NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
-                  NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
-                  NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
-                  NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
-                  NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
-                  NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
-                  NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
+                  appType: 'webAppLinux'
+                  appName: 'your-dev-app-service-name'
+                  package: '$(Pipeline.Workspace)/$(artifactName)/$(artifactName).zip'
+                  runtimeStack: 'NODE|18-lts'
 
               - script: |
                   curl -H "Content-Type: application/json" \
-                       -d "{\"text\":\"✅ Static Web App - Development Deployment Completed!\nBuild ID: $(Build.BuildId)\nVersion: $(buildVersion)\nEnvironment: Development\nCommit: $(Build.SourceVersion)\"}" \
-                       "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41"
+                       -d "{\"text\":\"✅ DEV Deploy Complete!\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
+                       "https://levelupyourdata.webhook.office.com/webhookb2/..."
                 displayName: 'Notify Teams - Dev Deployment'
 
 - stage: DeployProd
-  displayName: 'Deploy to Static Web Production Slot'
+  displayName: 'Deploy to Prod App Service'
   dependsOn: DeployDev
   condition: succeeded()
   variables:
@@ -112,35 +101,17 @@ stages:
               - download: current
                 artifact: $(artifactName)
 
-              - task: AzureCLI@2
-                displayName: 'Set Build Version as App Setting (Prod)'
+              - task: AzureWebApp@1
+                displayName: 'Deploy to Azure App Service (Prod)'
                 inputs:
                   azureSubscription: 'Azure_Production'
-                  scriptType: 'bash'   # ✅ Correct for Ubuntu
-                  scriptLocation: 'inlineScript'
-                  inlineScript: |
-                    az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
-
-              - task: AzureStaticWebApp@0
-                displayName: 'Deploy to Production Slot'
-                inputs:
-                  app_location: 'out'  # 🔥 deploy from out/
-                  output_location: '' 
-                  skip_app_build: true
-                  skip_api_build: true
-                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
-                  production_branch: 'main'
-                env:
-                  NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
-                  NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
-                  NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
-                  NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
-                  NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
-                  NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
-                  NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
+                  appType: 'webAppLinux'
+                  appName: 'your-prod-app-service-name'
+                  package: '$(Pipeline.Workspace)/$(artifactName)/$(artifactName).zip'
+                  runtimeStack: 'NODE|18-lts'
 
               - script: |
                   curl -H "Content-Type: application/json" \
-                       -d "{\"text\":\"🚀 Static Web App - Production Deployment Completed!\nBuild ID: $(Build.BuildId)\nVersion: $(buildVersion)\nEnvironment: Production\nCommit: $(Build.SourceVersion)\"}" \
-                       "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41"
+                       -d "{\"text\":\"🚀 PROD Deploy Complete!\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
+                       "https://levelupyourdata.webhook.office.com/webhookb2/..."
                 displayName: 'Notify Teams - Prod Deployment'
