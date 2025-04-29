@@ -57,8 +57,6 @@ stages:
         runOnce:
           deploy:
             steps:
-              - download: current
-                artifact: $(artifactName)
               - task: UseNode@1
                 inputs:
                   version: '18.x'
