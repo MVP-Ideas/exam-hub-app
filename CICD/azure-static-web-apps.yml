@@ -11,7 +11,7 @@ pr:
       - dev
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
   - name: artifactName
@@ -67,7 +67,7 @@ stages:
                 displayName: 'Set Build Version as App Setting (Dev)'
                 inputs:
                   azureSubscription: 'Azure_Development'
-                  scriptType: 'ps'
+                  scriptType: 'bash'   # ✅ Correct for Ubuntu
                   scriptLocation: 'inlineScript'
                   inlineScript: |
                     az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
@@ -90,18 +90,11 @@ stages:
                   NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
                   NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
 
-              - task: PowerShell@2
+              - script: |
+                  curl -H "Content-Type: application/json" \
+                       -d "{\"text\":\"✅ Static Web App - Development Deployment Completed!\nBuild ID: $(Build.BuildId)\nVersion: $(buildVersion)\nEnvironment: Development\nCommit: $(Build.SourceVersion)\"}" \
+                       "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41"
                 displayName: 'Notify Teams - Dev Deployment'
-                inputs:
-                  targetType: 'inline'
-                  script: |
-                    $body = @{
-                        text = "✅ Static Web App - Development Deployment Completed!`nBuild ID: $(Build.BuildId)`nVersion: $(buildVersion)`nEnvironment: Development`nCommit: $(Build.SourceVersion)"
-                    } | ConvertTo-Json -Depth 5
-
-                    curl -Method POST -Uri "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41" `
-                      -Headers @{ "Content-Type" = "application/json" } `
-                      -Body $body
 
 - stage: DeployProd
   displayName: 'Deploy to Static Web Production Slot'
@@ -123,7 +116,7 @@ stages:
                 displayName: 'Set Build Version as App Setting (Prod)'
                 inputs:
                   azureSubscription: 'Azure_Production'
-                  scriptType: 'ps'
+                  scriptType: 'bash'   # ✅ Correct for Ubuntu
                   scriptLocation: 'inlineScript'
                   inlineScript: |
                     az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
@@ -146,15 +139,8 @@ stages:
                   NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
                   NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
 
-              - task: PowerShell@2
+              - script: |
+                  curl -H "Content-Type: application/json" \
+                       -d "{\"text\":\"🚀 Static Web App - Production Deployment Completed!\nBuild ID: $(Build.BuildId)\nVersion: $(buildVersion)\nEnvironment: Production\nCommit: $(Build.SourceVersion)\"}" \
+                       "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41"
                 displayName: 'Notify Teams - Prod Deployment'
-                inputs:
-                  targetType: 'inline'
-                  script: |
-                    $body = @{
-                        text = "🚀 Static Web App - Production Deployment Completed!`nBuild ID: $(Build.BuildId)`nVersion: $(buildVersion)`nEnvironment: Production`nCommit: $(Build.SourceVersion)"
-                    } | ConvertTo-Json -Depth 5
-
-                    curl -Method POST -Uri "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41" `
-                      -Headers @{ "Content-Type" = "application/json" } `
-                      -Body $body
