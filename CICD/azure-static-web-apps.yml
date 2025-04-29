@@ -1,3 +1,5 @@
+name: Azure Static Web Apps CI/CD
+
 trigger:
   branches:
     include:
@@ -8,10 +10,10 @@ pr:
     include:
       - dev
 
+pool:
+  vmImage: 'ubuntu-latest'
+
 variables:
-  - group: azure-static-web-dev
-  - group: Dev-Variables
-  - group: Prd-Variables
   - name: artifactName
     value: 'staticwebapp_$(Build.BuildId)'
   - name: baseVersion
@@ -25,16 +27,15 @@ stages:
   jobs:
     - job: BuildJob
       displayName: 'Build Static Web App'
-      pool:
-        vmImage: ubuntu-latest
+      timeoutInMinutes: 60
       steps:
         - checkout: self
           submodules: true
 
         - task: UseNode@1
+          displayName: 'Use Node.js 18'
           inputs:
             version: '18.x'
-          displayName: 'Use Node.js 18'
 
         - script: |
             npm install
@@ -50,63 +51,67 @@ stages:
 - stage: DeployDev
   displayName: 'Deploy to Static Web Dev Slot'
   dependsOn: Build
+  variables:
+    - group: Dev-Variables
   jobs:
-    - job: DeployDevJob
-      displayName: 'Deploy to Development Environment'
-      pool:
-        vmImage: ubuntu-latest
-      steps:
-        - download: current
-          artifact: $(artifactName)
+    - deployment: DeployDevJob
+      environment: 'development'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: current
+                artifact: $(artifactName)
 
-        - task: AzureCLI@2
-          displayName: 'Set Build Version as App Setting (Dev)'
-          inputs:
-            azureSubscription: 'Azure_StaticWebApp_Development'
-            scriptType: 'ps'
-            scriptLocation: 'inlineScript'
-            inlineScript: |
-              az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
+              - task: AzureCLI@2
+                displayName: 'Set Build Version as App Setting (Dev)'
+                inputs:
+                  azureSubscription: 'Azure_StaticWebApp_Development'
+                  scriptType: 'ps'
+                  scriptLocation: 'inlineScript'
+                  inlineScript: |
+                    az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
 
-        - task: AzureStaticWebApp@0
-          displayName: 'Deploy to Dev Slot'
-          inputs:
-            app_location: '/'
-            skip_app_build: true
-            output_location: '.next'
-            skip_api_build: true
-            azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
-            production_branch: 'main'
-          env:
-            NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
-            NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
-            NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
-            NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
-            NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
-            NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
-            NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
+              - task: AzureStaticWebApp@0
+                displayName: 'Deploy to Dev Slot'
+                inputs:
+                  app_location: '/'
+                  skip_app_build: true
+                  output_location: '.next'
+                  skip_api_build: true
+                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
+                  production_branch: 'main'
+                env:
+                  NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
+                  NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
+                  NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
+                  NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
+                  NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
+                  NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
+                  NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
 
-        - task: PowerShell@2
-          displayName: 'Notify Teams - Dev Deployment'
-          inputs:
-            targetType: 'inline'
-            script: |
-              $body = @{
-                  text = "✅ Static Web App - Development Deployment Completed!`nBuild ID: $(Build.BuildId)`nVersion: $(buildVersion)`nEnvironment: Development`nCommit: $(Build.SourceVersion)"
-              } | ConvertTo-Json -Depth 5
+              - task: PowerShell@2
+                displayName: 'Notify Teams - Dev Deployment'
+                inputs:
+                  targetType: 'inline'
+                  script: |
+                    $body = @{
+                        text = "✅ Static Web App - Development Deployment Completed!`nBuild ID: $(Build.BuildId)`nVersion: $(buildVersion)`nEnvironment: Development`nCommit: $(Build.SourceVersion)"
+                    } | ConvertTo-Json -Depth 5
 
-              curl -Method POST -Uri "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41" `
-                -Headers @{ "Content-Type" = "application/json" } `
-                -Body $body
+                    curl -Method POST -Uri "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41" `
+                      -Headers @{ "Content-Type" = "application/json" } `
+                      -Body $body
 
 - stage: DeployProd
   displayName: 'Deploy to Static Web Production Slot'
   dependsOn: DeployDev
   condition: succeeded()
+  variables:
+    - group: Prd-Variables
   jobs:
     - deployment: DeployProdJob
-      displayName: 'Deploy to Production'
-      environment: 'production' # Manual approval required here
+      environment: 'production'
       strategy:
         runOnce:
           deploy:
