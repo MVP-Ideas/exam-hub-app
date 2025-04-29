@@ -12,36 +12,44 @@ pr:
 
 variables:
   - group: azure-static-web-dev
+  - name: artifactName
+    value: 'staticwebapp_$(Build.BuildId)'
+  - name: baseVersion
+    value: '1.0.0'
+  - name: buildVersion
+    value: '$(baseVersion)-build-$(Build.BuildId)'
 
-jobs:
-- job: BuildJob
-  displayName: 'Build Static Web App'
-  pool:
-    vmImage: ubuntu-latest
+stages:
+- stage: Build
+  displayName: 'Build and Publish Artifact'
+  jobs:
+    - job: BuildJob
+      displayName: 'Build Static Web App'
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+        - checkout: self
+          submodules: true
 
-  steps:
-    - checkout: self
-      submodules: true
+        - task: UseNode@1
+          inputs:
+            version: '18.x'
+          displayName: 'Use Node.js 18'
 
-    - task: UseNode@1
-      inputs:
-        version: '18.x'
-      displayName: 'Use Node.js 18'
+        - script: |
+            npm install
+            npm run build
+          displayName: 'Install and Build App'
 
-    - script: |
-        npm install
-        npm run build
-      displayName: 'Install and Build App'
-
-    - task: PublishPipelineArtifact@1
-      displayName: 'Publish Static Web Artifact'
-      inputs:
-        targetPath: '.next'
-        artifact: 'staticwebapp'
+        - task: PublishPipelineArtifact@1
+          displayName: 'Publish Static Web App Artifact'
+          inputs:
+            targetPath: '.next'
+            artifact: $(artifactName)
 
 - stage: DeployDev
   displayName: 'Deploy to Static Web Dev Slot'
-  dependsOn: BuildJob
+  dependsOn: Build
   jobs:
     - job: DeployDevJob
       displayName: 'Deploy to Development Environment'
@@ -49,7 +57,16 @@ jobs:
         vmImage: ubuntu-latest
       steps:
         - download: current
-          artifact: staticwebapp
+          artifact: $(artifactName)
+
+        - task: AzureCLI@2
+          displayName: 'Set Build Version as App Setting (Dev)'
+          inputs:
+            azureSubscription: 'Azure_StaticWebApp_Development'
+            scriptType: 'ps'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
 
         - task: AzureStaticWebApp@0
           displayName: 'Deploy to Dev Slot'
@@ -58,8 +75,8 @@ jobs:
             skip_app_build: true
             output_location: '.next'
             skip_api_build: true
-            azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APPS_API_TOKEN_GRAY_MOSS_0038E2E0F)'
-            production_branch: 'main' # production branch, but deploying to preview slot
+            azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
+            production_branch: 'main'
           env:
             NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
             NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
@@ -69,6 +86,19 @@ jobs:
             NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
             NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
 
+        - task: PowerShell@2
+          displayName: 'Notify Teams - Dev Deployment'
+          inputs:
+            targetType: 'inline'
+            script: |
+              $body = @{
+                  text = "✅ Static Web App - Development Deployment Completed!`nBuild ID: $(Build.BuildId)`nVersion: $(buildVersion)`nEnvironment: Development`nCommit: $(Build.SourceVersion)"
+              } | ConvertTo-Json -Depth 5
+
+              curl -Method POST -Uri "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41" `
+                -Headers @{ "Content-Type" = "application/json" } `
+                -Body $body
+
 - stage: DeployProd
   displayName: 'Deploy to Static Web Production Slot'
   dependsOn: DeployDev
@@ -76,13 +106,22 @@ jobs:
   jobs:
     - deployment: DeployProdJob
       displayName: 'Deploy to Production'
-      environment: 'production' # <-- manual approval required
+      environment: 'production' # Manual approval required here
       strategy:
         runOnce:
           deploy:
             steps:
               - download: current
-                artifact: staticwebapp
+                artifact: $(artifactName)
+
+              - task: AzureCLI@2
+                displayName: 'Set Build Version as App Setting (Prod)'
+                inputs:
+                  azureSubscription: 'Azure_StaticWebApp_Production'
+                  scriptType: 'ps'
+                  scriptLocation: 'inlineScript'
+                  inlineScript: |
+                    az staticwebapp appsettings set --name $(STATIC_WEB_APP_NAME) --resource-group $(STATIC_WEB_APP_RG) --setting-names BUILD_VERSION="$(buildVersion)"
 
               - task: AzureStaticWebApp@0
                 displayName: 'Deploy to Production Slot'
@@ -91,7 +130,7 @@ jobs:
                   skip_app_build: true
                   output_location: '.next'
                   skip_api_build: true
-                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APPS_API_TOKEN_GRAY_MOSS_0038E2E0F)'
+                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
                 env:
                   NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
@@ -101,3 +140,16 @@ jobs:
                   NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
                   NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
                   NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
+
+              - task: PowerShell@2
+                displayName: 'Notify Teams - Prod Deployment'
+                inputs:
+                  targetType: 'inline'
+                  script: |
+                    $body = @{
+                        text = "🚀 Static Web App - Production Deployment Completed!`nBuild ID: $(Build.BuildId)`nVersion: $(buildVersion)`nEnvironment: Production`nCommit: $(Build.SourceVersion)"
+                    } | ConvertTo-Json -Depth 5
+
+                    curl -Method POST -Uri "https://levelupyourdata.webhook.office.com/webhookb2/b255efda-cb31-4344-97f4-474de372c149@2de3958c-ed82-45dd-b08b-b30df437cd37/IncomingWebhook/ab98a01a381540f3819fdedc532c8cac/7948401b-7a2a-4848-9074-80dce91a157d/V2RoqMxVxhm5PIIh8hzlkgQIkIray6AWAMLNe9QPB6FI41" `
+                      -Headers @{ "Content-Type" = "application/json" } `
+                      -Body $body
