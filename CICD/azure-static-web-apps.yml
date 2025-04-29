@@ -1,4 +1,5 @@
 name: Azure Static Web Apps CI/CD
+
 trigger:
   branches:
     include:
@@ -9,20 +10,14 @@ pr:
     include:
       - dev
 
+variables:
+  - group: azure-static-web-dev
+
 jobs:
-- job: build_and_deploy_job
-  displayName: Build and Deploy Job
-  condition: |
-    or(
-      eq(variables['Build.Reason'], 'Manual'),
-      eq(variables['Build.Reason'], 'PullRequest'),
-      eq(variables['Build.Reason'], 'IndividualCI')
-    )
+- job: BuildJob
+  displayName: 'Build Static Web App'
   pool:
     vmImage: ubuntu-latest
-
-  variables:
-    - group: azure-static-web-dev
 
   steps:
     - checkout: self
@@ -33,21 +28,76 @@ jobs:
         version: '18.x'
       displayName: 'Use Node.js 18'
 
-    - task: AzureStaticWebApp@0
+    - script: |
+        npm install
+        npm run build
+      displayName: 'Install and Build App'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Static Web Artifact'
       inputs:
-        app_location: '/'
-        app_build_command: 'npm run build'
-        output_location: '.next'
-        verbose: true
-        build_timeout_in_minutes: 15
-        azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APPS_API_TOKEN_GRAY_MOSS_0038E2E0F)'
-        production_branch: 'dev'
-        skip_api_build: true
-      env:
-        NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
-        NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
-        NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
-        NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
-        NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
-        NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
-        NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
+        targetPath: '.next'
+        artifact: 'staticwebapp'
+
+- stage: DeployDev
+  displayName: 'Deploy to Static Web Dev Slot'
+  dependsOn: BuildJob
+  jobs:
+    - job: DeployDevJob
+      displayName: 'Deploy to Development Environment'
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+        - download: current
+          artifact: staticwebapp
+
+        - task: AzureStaticWebApp@0
+          displayName: 'Deploy to Dev Slot'
+          inputs:
+            app_location: '/'
+            skip_app_build: true
+            output_location: '.next'
+            skip_api_build: true
+            azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APPS_API_TOKEN_GRAY_MOSS_0038E2E0F)'
+            production_branch: 'main' # production branch, but deploying to preview slot
+          env:
+            NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
+            NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
+            NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
+            NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
+            NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
+            NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
+            NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
+
+- stage: DeployProd
+  displayName: 'Deploy to Static Web Production Slot'
+  dependsOn: DeployDev
+  condition: succeeded()
+  jobs:
+    - deployment: DeployProdJob
+      displayName: 'Deploy to Production'
+      environment: 'production' # <-- manual approval required
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: current
+                artifact: staticwebapp
+
+              - task: AzureStaticWebApp@0
+                displayName: 'Deploy to Production Slot'
+                inputs:
+                  app_location: '/'
+                  skip_app_build: true
+                  output_location: '.next'
+                  skip_api_build: true
+                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APPS_API_TOKEN_GRAY_MOSS_0038E2E0F)'
+                  production_branch: 'main'
+                env:
+                  NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
+                  NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
+                  NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
+                  NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
+                  NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
+                  NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
+                  NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
