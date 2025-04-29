@@ -1,27 +1,32 @@
-name: NextJS Static Web App CI/CD (with local build)
+name: Azure Static Web Apps CI/CD
 
 trigger:
   branches:
     include:
       - dev
 
+pr:
+  branches:
+    include:
+      - dev
+
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
 
 variables:
-  - name: artifactName
-    value: 'staticwebapp_$(Build.BuildId)'
   - name: baseVersion
     value: '1.0.0'
   - name: buildVersion
     value: '$(baseVersion)-build-$(Build.BuildId)'
 
 stages:
-- stage: Build
-  displayName: 'Build Next.js Locally'
+- stage: DeployDev
+  displayName: 'Deploy to Static Web App (Dev)'
+  variables:
+    - group: Dev-Variables
   jobs:
-    - job: BuildJob
-      displayName: 'Build and Package'
+    - job: DeployDevJob
+      displayName: 'Build and Deploy to Dev'
       steps:
         - checkout: self
           submodules: true
@@ -29,63 +34,31 @@ stages:
         - task: UseNode@1
           displayName: 'Use Node.js 18'
           inputs:
-            version: '18.x'
+            versionSpec: '18.x'
 
-        - script: |
-            npm install
-          displayName: 'Install dependencies'
-
-        - script: |
-            npm run build
-          displayName: 'Run Next.js Build'
-
-        - task: PublishPipelineArtifact@1
-          displayName: 'Publish Build Output (.next)'
+        - task: AzureStaticWebApp@0
+          displayName: 'Azure Static Web App Deploy - Dev'
           inputs:
-            targetPath: '$(System.DefaultWorkingDirectory)'
-            artifact: $(artifactName)
+            app_location: '/'                   # ✅ your repo root
+            app_build_command: 'npm run build'   # ✅ build handled inside Azure
+            output_location: '.next'             # ✅ standard next.js output
+            skip_api_build: true
+            azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
+            production_branch: 'main'
+          env:
+            NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
+            NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
+            NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
+            NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
+            NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
+            NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
+            NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
 
-- stage: DeployDev
-  displayName: 'Deploy to Static Web App (Dev)'
-  dependsOn: Build
-  variables:
-    - group: Dev-Variables
-  jobs:
-    - deployment: DeployDevJob
-      environment: 'development'
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-              - task: UseNode@1
-                inputs:
-                  version: '18.x'
-                displayName: 'Use Node.js 18'
-
-              - task: AzureStaticWebApp@0
-                inputs:
-                  app_location: '/'
-                  app_build_command: 'npm run build'
-                  output_location: '.next'
-                  verbose: true
-                  build_timeout_in_minutes: 15
-                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
-                  production_branch: 'dev'
-                  skip_api_build: true
-                env:
-                  NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
-                  NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
-                  NEXT_PUBLIC_B2C_BASE_AUTHORITY: $(NEXT_PUBLIC_B2C_BASE_AUTHORITY)
-                  NEXT_PUBLIC_B2C_CLIENT_ID: $(NEXT_PUBLIC_B2C_CLIENT_ID)
-                  NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI: $(NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI)
-                  NEXT_PUBLIC_B2C_REDIRECT_URI: $(NEXT_PUBLIC_B2C_REDIRECT_URI)
-                  NEXT_PUBLIC_B2C_SCOPE_BASE: $(NEXT_PUBLIC_B2C_SCOPE_BASE)
-
-              - script: |
-                  curl -H "Content-Type: application/json" \
-                       -d "{\"text\":\"✅ Dev Deployment Complete\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
-                       "https://levelupyourdata.webhook.office.com/webhookb2/..."
-                displayName: 'Notify Teams - Dev'
+        - script: |
+            curl -H "Content-Type: application/json" \
+                 -d "{\"text\":\"✅ Dev Deployment Complete!\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
+                 "https://levelupyourdata.webhook.office.com/webhookb2/..."
+          displayName: 'Notify Teams - Dev'
 
 - stage: DeployProd
   displayName: 'Deploy to Static Web App (Prod)'
@@ -95,26 +68,28 @@ stages:
     - group: Prd-Variables
   jobs:
     - deployment: DeployProdJob
-      environment: 'production'
+      environment: 'production' # ✅ Make sure environment 'production' in DevOps requires approval
       strategy:
         runOnce:
           deploy:
             steps:
+              - checkout: self
+                submodules: true
 
               - task: UseNode@1
-                inputs:
-                  version: '18.x'
                 displayName: 'Use Node.js 18'
+                inputs:
+                  versionSpec: '18.x'
+
               - task: AzureStaticWebApp@0
+                displayName: 'Azure Static Web App Deploy - Prod'
                 inputs:
                   app_location: '/'
                   app_build_command: 'npm run build'
                   output_location: '.next'
-                  verbose: true
-                  build_timeout_in_minutes: 15
+                  skip_api_build: true
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
-                  skip_api_build: true
                 env:
                   NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
                   NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
@@ -126,6 +101,6 @@ stages:
 
               - script: |
                   curl -H "Content-Type: application/json" \
-                       -d "{\"text\":\"🚀 Prod Deployment Complete\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
+                       -d "{\"text\":\"🚀 Prod Deployment Complete!\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
                        "https://levelupyourdata.webhook.office.com/webhookb2/..."
                 displayName: 'Notify Teams - Prod'
