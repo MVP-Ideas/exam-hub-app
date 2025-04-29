@@ -66,7 +66,7 @@ stages:
               - task: AzureCLI@2
                 displayName: 'Set Build Version as App Setting (Dev)'
                 inputs:
-                  azureSubscription: 'Azure_StaticWebApp_Development'
+                  azureSubscription: 'Azure_Development'
                   scriptType: 'ps'
                   scriptLocation: 'inlineScript'
                   inlineScript: |
@@ -122,7 +122,7 @@ stages:
               - task: AzureCLI@2
                 displayName: 'Set Build Version as App Setting (Prod)'
                 inputs:
-                  azureSubscription: 'Azure_StaticWebApp_Production'
+                  azureSubscription: 'Azure_Production'
                   scriptType: 'ps'
                   scriptLocation: 'inlineScript'
                   inlineScript: |
