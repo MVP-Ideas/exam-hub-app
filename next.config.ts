@@ -8,8 +8,7 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  output: 'export' as const, // ✅ FIXED: force literal type
+  }
 };
 
 export default withPWA({
