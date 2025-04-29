@@ -65,7 +65,7 @@ stages:
                 inputs:
                   app_location: '/'                  # Use root of app
                   output_location: '.next'           # Use local build output
-                  skip_app_build: true               # ✅ We already built!
+                  skip_app_build: false               # ✅ We already built!
                   skip_api_build: true
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
@@ -105,7 +105,7 @@ stages:
                 inputs:
                   app_location: '/'
                   output_location: '.next'
-                  skip_app_build: true
+                  skip_app_build: false
                   skip_api_build: true
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
