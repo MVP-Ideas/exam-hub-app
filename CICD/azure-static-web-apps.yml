@@ -50,6 +50,8 @@ stages:
 - stage: DeployDev
   displayName: 'Deploy to Static Web Dev Slot'
   dependsOn: Build
+  variables:
+    - group: Dev-Variables
   jobs:
     - job: DeployDevJob
       displayName: 'Deploy to Development Environment'
@@ -103,6 +105,8 @@ stages:
   displayName: 'Deploy to Static Web Production Slot'
   dependsOn: DeployDev
   condition: succeeded()
+  variables:
+    - group: Prd-Variables
   jobs:
     - deployment: DeployProdJob
       displayName: 'Deploy to Production'
