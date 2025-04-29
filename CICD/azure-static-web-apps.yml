@@ -75,10 +75,10 @@ stages:
                 inputs:
                   azureSubscription: 'Azure_Development'
                   appType: 'webAppLinux'
-                  appName: '$(APP_SERVICE_NAME)'
+                  appName: '$(STATIC_WEB_APP_NAME)'
                   package: '$(Pipeline.Workspace)/$(artifactName)/$(artifactName).zip'
                   runtimeStack: 'NODE|18-lts'
-                  resourceGroupName: '$(APP_SERVICE_RG)'
+                  resourceGroupName: '$(STATIC_WEB_APP_RG)'
 
               - script: |
                   curl -H "Content-Type: application/json" \
@@ -107,10 +107,10 @@ stages:
                 inputs:
                   azureSubscription: 'Azure_Production'
                   appType: 'webAppLinux'
-                  appName: '$(APP_SERVICE_NAME)'
+                  appName: '$(STATIC_WEB_APP_NAME)'
                   package: '$(Pipeline.Workspace)/$(artifactName)/$(artifactName).zip'
                   runtimeStack: 'NODE|18-lts'
-                  resourceGroupName: '$(APP_SERVICE_RG)'
+                  resourceGroupName: '$(STATIC_WEB_APP_RG)'
 
               - script: |
                   curl -H "Content-Type: application/json" \
