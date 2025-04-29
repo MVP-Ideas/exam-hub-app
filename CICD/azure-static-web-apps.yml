@@ -59,6 +59,10 @@ stages:
             steps:
               - download: current
                 artifact: $(artifactName)
+              - task: UseNode@1
+                inputs:
+                  version: '18.x'
+                displayName: 'Use Node.js 18'
 
               - task: AzureStaticWebApp@0
                 inputs:
@@ -100,7 +104,10 @@ stages:
             steps:
               - download: current
                 artifact: $(artifactName)
-
+              - task: UseNode@1
+                inputs:
+                  version: '18.x'
+                displayName: 'Use Node.js 18'
               - task: AzureStaticWebApp@0
                 inputs:
                   app_location: '/'
