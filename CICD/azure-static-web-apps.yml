@@ -61,14 +61,15 @@ stages:
                 artifact: $(artifactName)
 
               - task: AzureStaticWebApp@0
-                displayName: 'Deploy to Static Web App - Dev'
                 inputs:
-                  app_location: '/'                  # Use root of app
-                  output_location: '.next'           # Use local build output
-                  skip_app_build: false               # ✅ We already built!
-                  skip_api_build: true
+                  app_location: '/'
+                  app_build_command: 'npm run build'
+                  output_location: '.next'
+                  verbose: true
+                  build_timeout_in_minutes: 15
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
-                  production_branch: 'main'
+                  production_branch: 'dev'
+                  skip_api_build: true
                 env:
                   NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
                   NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
@@ -101,14 +102,15 @@ stages:
                 artifact: $(artifactName)
 
               - task: AzureStaticWebApp@0
-                displayName: 'Deploy to Static Web App - Prod'
                 inputs:
                   app_location: '/'
+                  app_build_command: 'npm run build'
                   output_location: '.next'
-                  skip_app_build: false
-                  skip_api_build: true
+                  verbose: true
+                  build_timeout_in_minutes: 15
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
+                  skip_api_build: true
                 env:
                   NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
                   NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
