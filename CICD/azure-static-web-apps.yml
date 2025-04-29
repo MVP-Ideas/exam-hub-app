@@ -78,7 +78,6 @@ stages:
                   app_location: 'out'  # 🔥 deploy from out/
                   output_location: '' 
                   skip_app_build: true
-                  output_location: '.next'
                   skip_api_build: true
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
@@ -128,7 +127,6 @@ stages:
                   app_location: 'out'  # 🔥 deploy from out/
                   output_location: '' 
                   skip_app_build: true
-                  output_location: '.next'
                   skip_api_build: true
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
