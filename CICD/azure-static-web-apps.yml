@@ -67,7 +67,7 @@ stages:
                   output_location: '.next'           # Use local build output
                   skip_app_build: true               # ✅ We already built!
                   skip_api_build: true
-                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_TOKEN)'
+                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
                 env:
                   NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
@@ -107,7 +107,7 @@ stages:
                   output_location: '.next'
                   skip_app_build: true
                   skip_api_build: true
-                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_TOKEN)'
+                  azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
                   production_branch: 'main'
                 env:
                   NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
