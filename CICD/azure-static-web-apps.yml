@@ -75,7 +75,8 @@ stages:
               - task: AzureStaticWebApp@0
                 displayName: 'Deploy to Dev Slot'
                 inputs:
-                  app_location: '/'
+                  app_location: 'out'  # 🔥 deploy from out/
+                  output_location: '' 
                   skip_app_build: true
                   output_location: '.next'
                   skip_api_build: true
@@ -124,7 +125,8 @@ stages:
               - task: AzureStaticWebApp@0
                 displayName: 'Deploy to Production Slot'
                 inputs:
-                  app_location: '/'
+                  app_location: 'out'  # 🔥 deploy from out/
+                  output_location: '' 
                   skip_app_build: true
                   output_location: '.next'
                   skip_api_build: true
