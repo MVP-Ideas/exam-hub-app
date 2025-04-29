@@ -11,7 +11,7 @@ pr:
       - dev
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-latest'
 
 variables:
   - name: artifactName
