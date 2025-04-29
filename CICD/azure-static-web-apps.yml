@@ -57,7 +57,7 @@ stages:
         - script: |
             curl -H "Content-Type: application/json" \
                  -d "{\"text\":\"✅ Dev Deployment Complete!\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
-                 "https://levelupyourdata.webhook.office.com/webhookb2/..."
+                 "$(TEAMS_WEBHOOK)"
           displayName: 'Notify Teams - Dev'
 
 - stage: DeployProd
@@ -102,5 +102,5 @@ stages:
               - script: |
                   curl -H "Content-Type: application/json" \
                        -d "{\"text\":\"🚀 Prod Deployment Complete!\\nBuild ID: $(Build.BuildId)\\nVersion: $(buildVersion)\\nCommit: $(Build.SourceVersion)\"}" \
-                       "https://levelupyourdata.webhook.office.com/webhookb2/..."
+                       "$(TEAMS_WEBHOOK)"
                 displayName: 'Notify Teams - Prod'
