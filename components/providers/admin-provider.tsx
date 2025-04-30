@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuthStore } from "@/lib/stores/auth-store";
 import { BeatLoader } from "react-spinners";
+import { useAuth } from "@/hooks";
 
 export default function AdminProvider({
   children,
@@ -12,16 +12,14 @@ export default function AdminProvider({
 }) {
   const router = useRouter();
   const pathName = usePathname();
-  const { user } = useAuthStore();
+  const { currentUser: user, isLoadingCurrentUser  } =useAuth();
 
   useEffect(() => {
     // If user exists and is not admin, redirect
-    if (user && user.role?.toLowerCase() !== "admin") {
-      console.log(user.role);
-      console.log("Not an admin, redirecting to home");
+    if (!isLoadingCurrentUser && user && user.role?.toLowerCase() !== "admin") {
       router.replace("/");
     }
-  }, [user, pathName, router]);
+  }, [user, pathName, router, isLoadingCurrentUser]);
 
   if (!user) {
     return (

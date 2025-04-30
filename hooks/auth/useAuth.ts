@@ -106,6 +106,7 @@ const useAuth = () => {
   };
 
   return {
+    currentUser,
     isAuthenticated,
     isLoading,
     isLoadingCurrentUser,
