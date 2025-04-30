@@ -80,7 +80,18 @@ stages:
                 displayName: 'Use Node.js 18'
                 inputs:
                   versionSpec: '18.x'
-
+                  
+              - script: |
+                  echo "🔍 Printing key deployment variables:"
+                  echo "AZURE_STATIC_WEB_APP_FRONTEND = ${AZURE_STATIC_WEB_APP_FRONTEND:-(not set)}"
+                  echo "NEXT_PUBLIC_API_URL = ${NEXT_PUBLIC_API_URL:-(not set)}"
+                  echo "NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN = ${NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN:-(not set)}"
+                  echo "NEXT_PUBLIC_B2C_BASE_AUTHORITY = ${NEXT_PUBLIC_B2C_BASE_AUTHORITY:-(not set)}"
+                  echo "NEXT_PUBLIC_B2C_CLIENT_ID = ${NEXT_PUBLIC_B2C_CLIENT_ID:-(not set)}"
+                  echo "NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI = ${NEXT_PUBLIC_B2C_LOGOUT_REDIRECT_URI:-(not set)}"
+                  echo "NEXT_PUBLIC_B2C_REDIRECT_URI = ${NEXT_PUBLIC_B2C_REDIRECT_URI:-(not set)}"
+                  echo "NEXT_PUBLIC_B2C_SCOPE_BASE = ${NEXT_PUBLIC_B2C_SCOPE_BASE:-(not set)}"
+                displayName: '🔍 Debug - Print Variable Group Values'
               - task: AzureStaticWebApp@0
                 displayName: 'Azure Static Web App Deploy - Prod'
                 inputs:
