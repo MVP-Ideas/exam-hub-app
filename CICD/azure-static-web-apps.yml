@@ -100,7 +100,7 @@ stages:
                   output_location: '.next'
                   skip_api_build: true
                   azure_static_web_apps_api_token: '$(AZURE_STATIC_WEB_APP_FRONTEND)'
-                  production_branch: 'main'
+                  production_branch: 'dev'
                 env:
                   NEXT_PUBLIC_API_URL: $(NEXT_PUBLIC_API_URL)
                   NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN: $(NEXT_PUBLIC_B2C_AUTHORITY_DOMAIN)
