@@ -48,22 +48,22 @@ export default function Page() {
 						image="/sign-up/facebook.svg"
 						providerUrl={'facebook'}
 						text="Sign up with Facebook"
-						isLoading={isLoading}
-						setIsLoading={setIsLoading}
+						disabled={isLoading}
+						setDisabled={setIsLoading}
 					/>
 					<MsalSignInButton
 						image="/sign-up/google.svg"
 						providerUrl={'google'}
 						text="Sign up with Google"
-						isLoading={isLoading}
-						setIsLoading={setIsLoading}
+						disabled={isLoading}
+						setDisabled={setIsLoading}
 					/>
 					<MsalSignInButton
 						image="/sign-up/linkedin.svg"
 						providerUrl={'linkedin'}
 						text="Sign up with LinkedIn"
-						isLoading={isLoading}
-						setIsLoading={setIsLoading}
+						disabled={isLoading}
+						setDisabled={setIsLoading}
 					/>
 				</div>
 			</div>

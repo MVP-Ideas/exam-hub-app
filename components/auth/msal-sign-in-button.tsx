@@ -9,23 +9,33 @@ type Props = {
   providerUrl: string;
   text: string;
   image: string;
+  disabled?: boolean;
+  setDisabled: (disable: boolean) => void;
 };
 
-export function MsalSignInButton({ providerUrl, text, image }: Props) {
+export function MsalSignInButton({
+  providerUrl,
+  text,
+  image,
+  disabled,
+  setDisabled,
+}: Props) {
   const { handleLoginB2C, isLoading } = useAuth();
 
   const onClick = async () => {
+    setDisabled(true);
     try {
       await handleLoginB2C(providerUrl);
     } catch {
       toast.error("Login failed. Please try again.");
     }
+    setDisabled(false);
   };
 
   return (
     <Button
       onClick={onClick}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       className="bg-background text-foreground border-muted hover:bg-muted hover:text-foreground border transition-colors duration-200 ease-in-out"
     >
       <div className="flex items-center gap-2">
