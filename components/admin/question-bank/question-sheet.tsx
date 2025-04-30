@@ -47,13 +47,23 @@ import { toast } from "sonner";
 import useDeleteQuestion from "@/hooks/questions/useDeleteQuestion";
 import ConfirmDeleteDialog from "@/components/common/dialogs/confirm-delete-dialog";
 import useCreateQuestion from "@/hooks/questions/useCreateQuestion";
+import { Resource } from "@/lib/types/resource";
 
 const choiceSchema = z.object({
   text: z.string().min(1, "Choice text is required"),
   isCorrect: z.boolean(),
 });
 
+export const resourceSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  type: z.enum(["File", "Url"]),
+  value: z.string(),
+});
+
 export type ChoiceSchema = z.infer<typeof choiceSchema>;
+export type ResourceSchema = z.infer<typeof resourceSchema>;
 
 const schema = z
   .object({
@@ -62,7 +72,7 @@ const schema = z
     type: z.nativeEnum(QuestionType),
     categoryId: z.string().optional(),
     choices: z.array(choiceSchema).min(1, "At least one choice is required"),
-    resources: z.array(z.string()).optional(),
+    resources: z.array(resourceSchema).optional(),
   })
   .superRefine((data, ctx) => {
     const isDragAndDrop = data.type === QuestionType.DragAndDrop;
@@ -113,7 +123,7 @@ export default function QuestionSheet({
   const { control, handleSubmit, setValue, watch, reset } = form;
 
   const questionType = watch("type");
-  const resources = watch("resources");
+  const resources = watch("resources") as Resource[] | undefined;
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -143,7 +153,7 @@ export default function QuestionSheet({
           ? data.categoryId
           : null,
       choices: updateChoices,
-      resources: data.resources ?? ([] as string[]),
+      resources: data.resources?.map((resource) => resource.id) ?? [],
       aiHelpEnabled: false,
     };
 
@@ -203,7 +213,7 @@ export default function QuestionSheet({
         type: question.type,
         choices: question.choices ?? [],
         categoryId: question.category ?? "",
-        resources: question.resources.map((resource) => resource.id),
+        resources: question.resources ?? [],
       });
     }
   }, [mode, question, reset, open]);
@@ -436,7 +446,16 @@ export default function QuestionSheet({
                       {resources &&
                         resources?.length > 0 &&
                         resources.map((resource) => (
-                          <ResourceCard key={resource} resourceId={resource} />
+                          <ResourceCard
+                            key={resource.id}
+                            resource={resource}
+                            handleDelete={() => {
+                              const newResources = resources.filter(
+                                (r) => r.id !== resource.id,
+                              );
+                              setValue("resources", newResources);
+                            }}
+                          />
                         ))}
                     </div>
 

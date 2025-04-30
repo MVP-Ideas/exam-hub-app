@@ -1,3 +1,5 @@
+import { Resource } from "./resource";
+
 export enum QuestionType {
   MultipleChoiceSingle = "MultipleChoiceSingle",
   MultipleChoiceMultiple = "MultipleChoiceMultiple",
@@ -17,7 +19,7 @@ export type Question = {
   category: string | null;
   isActive: boolean;
   choices: QuestionChoice[];
-  resources: QuestionResource[];
+  resources: Resource[];
   aiHelpEnabled: boolean;
 };
 
@@ -27,13 +29,6 @@ export type QuestionChoice = {
   text: string;
   isCorrect: boolean;
   order: number | null;
-};
-
-export type QuestionResource = {
-  id?: string;
-  type: string;
-  value: string;
-  description: string;
 };
 
 export type QuestionCreateUpdate = {

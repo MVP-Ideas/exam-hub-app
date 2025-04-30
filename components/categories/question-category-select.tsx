@@ -97,7 +97,9 @@ export default function QuestionCategorySelect({
             {selectedCategory?.name ? (
               <span>{selectedCategory.name}</span>
             ) : (
-              <span className="text-muted-foreground">All Categories</span>
+              <span className="text-muted-foreground">
+                {onIdChange ? "No category" : "Select a category"}
+              </span>
             )}
             <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
           </Button>
@@ -118,7 +120,9 @@ export default function QuestionCategorySelect({
                     setOpen(false);
                   }}
                 >
-                  <span className="text-muted-foreground">All Categories</span>
+                  <span className="text-muted-foreground">
+                    {onIdChange ? "No category" : "All categories"}
+                  </span>
                 </CommandItem>
               )}
 

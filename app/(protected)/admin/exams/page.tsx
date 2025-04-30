@@ -16,10 +16,11 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { BeatLoader } from "react-spinners";
-import ExamCard from "../../../components/admin/exams/list/exam-card";
+
 import { Button } from "@/components/ui/button";
-import ExamCardHorizontal from "../../../components/admin/exams/list/exam-card-horizontal";
+import { Skeleton } from "@/components/ui/skeleton";
+import ExamCard from "@/components/admin/exams/list/exam-card";
+import ExamCardHorizontal from "@/components/admin/exams/list/exam-card-horizontal";
 
 export default function Page() {
   const [search, setSearch] = useState<string>("");
@@ -43,7 +44,6 @@ export default function Page() {
 
   const { exams, isLoading, isFetching, isError, fetchNextPage, hasNextPage } =
     useInfiniteExams(queryParams);
-  
 
   const { ref: loaderRef, inView } = useInView({
     rootMargin: "300px",
@@ -125,29 +125,26 @@ export default function Page() {
               <List size={16} />
             </Button>
           </div>
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {exams &&
-                exams.length > 0 &&
-                exams.map((exam) => <ExamCard key={exam.id} exam={exam} />)}
-
-              {hasNextPage && (
-                <div ref={loaderRef} className="h-4 w-full text-center">
-                  {isFetching && (
-                    <p className="text-muted-foreground text-sm">
-                      Loading more...
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {exams &&
-                exams.length > 0 &&
-                exams.map((exam) => (
-                  <ExamCardHorizontal key={exam.id} exam={exam} />
-                ))}
+          {!isLoading && (
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 gap-4 md:grid-cols-2"
+                  : "flex flex-col gap-4"
+              }
+            >
+              {exams?.length > 0 &&
+                exams.map((exam) =>
+                  viewMode === "grid" ? (
+                    <ExamCard route="/admin/exams" key={exam.id} exam={exam} />
+                  ) : (
+                    <ExamCardHorizontal
+                      route="/admin/exams"
+                      key={exam.id}
+                      exam={exam}
+                    />
+                  ),
+                )}
 
               {hasNextPage && (
                 <div ref={loaderRef} className="h-4 w-full text-center">
@@ -161,15 +158,18 @@ export default function Page() {
             </div>
           )}
 
-          {isLoading && (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-4 rounded-lg">
-              <BeatLoader
-                size={20}
-                className="text-muted-foreground"
-                loading={isLoading}
-              />
-            </div>
-          )}
+          {isLoading &&
+            (viewMode === "grid" ? (
+              <div className="grid h-full w-full grid-cols-2 gap-4">
+                <Skeleton className="bg-background h-96 w-full" />
+                <Skeleton className="bg-background h-96 w-full" />
+              </div>
+            ) : (
+              <div className="flex h-full w-full flex-col gap-4">
+                <Skeleton className="bg-background h-48 w-full" />
+                <Skeleton className="bg-background h-48 w-full" />
+              </div>
+            ))}
 
           {isError && (
             <div className="bg-muted flex h-full w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg">

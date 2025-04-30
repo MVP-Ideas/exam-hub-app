@@ -19,7 +19,6 @@ import {
 import useArchiveExam from "@/hooks/exams/useArchiveExam";
 import { Exam } from "@/lib/types/exam";
 import { getStatusColor, getDifficultyColor } from "@/lib/utils/exam";
-import { formatDuration } from "date-fns";
 import {
   Tag,
   Clock,
@@ -28,14 +27,21 @@ import {
   MoreHorizontal,
   Edit,
   Archive,
+  Flame,
 } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
   exam: Exam;
+  route: string;
+  disableOptions?: boolean;
 };
 
-export default function ExamCardHorizontal({ exam }: Props) {
+export default function ExamCardHorizontal({
+  exam,
+  route,
+  disableOptions = false,
+}: Props) {
   const { archiveExam } = useArchiveExam(exam.id);
   const handleArchive = async () => {
     await archiveExam();
@@ -55,6 +61,15 @@ export default function ExamCardHorizontal({ exam }: Props) {
           <CardHeader className="p-0">
             <div className="flex items-center gap-2">
               <Badge
+                hidden={!exam.isFeatured}
+                variant="outline"
+                className={`bg-primary/20 border-0 text-blue-800`}
+              >
+                <Flame className="mr-1 h-4 w-4" />
+                Featured
+              </Badge>
+              <Badge
+                hidden={disableOptions}
                 variant="outline"
                 className={`${getStatusColor(exam.status)} border-0`}
               >
@@ -84,7 +99,7 @@ export default function ExamCardHorizontal({ exam }: Props) {
               </div>
               <div className="text-muted-foreground flex items-center text-sm">
                 <Clock className="mr-2 h-4 w-4" />
-                <span>{formatDuration({ seconds: exam.durationSeconds })}</span>
+                <span>{exam.durationSeconds / 60} minutes</span>
               </div>
               <div className="text-muted-foreground flex items-center text-sm">
                 <Award className="mr-2 h-4 w-4" />
@@ -103,11 +118,14 @@ export default function ExamCardHorizontal({ exam }: Props) {
 
         {/* Actions */}
         <CardFooter className="flex w-full flex-row gap-2 pr-4 pb-2 pl-0">
-          <Button variant="secondary" className="flex-1">
-            View
-          </Button>
+          <Link
+            href={`${route}/${exam.id}`}
+            className="bg-secondary text-background w-full rounded-lg p-2 text-center text-sm font-semibold"
+          >
+            View Exam
+          </Link>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger hidden={disableOptions} asChild>
               <Button variant="outline" size="icon" className="h-10 w-10">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -116,7 +134,7 @@ export default function ExamCardHorizontal({ exam }: Props) {
               <DropdownMenuItem className="cursor-pointer">
                 <Link
                   className="flex w-full flex-row items-center gap-2"
-                  href={`/admin/exams/${exam.id}/edit`}
+                  href={`${route}/${exam.id}/edit`}
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   <span>Edit</span>

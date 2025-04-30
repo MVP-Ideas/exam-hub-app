@@ -28,6 +28,14 @@ export const settingsSchema = z.object({
   randomizeQuestions: z.boolean(),
 });
 
+export const resourceSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  type: z.enum(["File", "Url"]),
+  value: z.string(),
+});
+
 export const createExamSchema = z.object({
   title: z.string().min(1, "Title is required").max(50),
   description: z.string().min(10, "At least 10 characters").max(500),
@@ -37,7 +45,7 @@ export const createExamSchema = z.object({
     .number({ invalid_type_error: "Time Limit must be a number" })
     .min(1, "Time Limit must be at least 1 minute"),
   passingScore: z.number().min(0, "Passing Score must be at least 0%"),
-  resourceIds: z.array(z.string()).optional(),
+  resources: z.array(resourceSchema).optional(),
   questions: z.array(questionSchema).optional(),
   settings: settingsSchema,
 });
@@ -67,7 +75,7 @@ export default function ExamForm({ type, exam }: Props) {
       difficulty: "",
       timeLimit: 60,
       passingScore: 70,
-      resourceIds: [],
+      resources: [],
       questions: [],
       settings: {
         timeLimitEnabled: false,
@@ -93,7 +101,7 @@ export default function ExamForm({ type, exam }: Props) {
         difficulty: data.difficulty,
         durationSeconds: data.timeLimit * 60,
         passingScore: data.passingScore,
-        resourceIds: data.resourceIds ?? [],
+        resources: data.resources?.map((resource) => resource.id) ?? [],
         questions:
           data.questions !== undefined
             ? data.questions.map((q) => ({
@@ -137,7 +145,7 @@ export default function ExamForm({ type, exam }: Props) {
         difficulty: exam.difficulty,
         timeLimit: Math.floor(exam.durationSeconds / 60),
         passingScore: exam.passingScore,
-        resourceIds: exam.resources ?? [],
+        resources: exam.resources ?? [],
         questions: exam.questions ?? [],
         settings: {
           timeLimitEnabled: exam.settings?.timeLimitEnabled ?? false,

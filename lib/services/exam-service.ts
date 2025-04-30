@@ -5,7 +5,7 @@ import { PaginationResponse } from "../types/pagination";
 const BASE_URL = "exams";
 
 type SearchParams = {
-  search: string;
+  search?: string;
   page: number;
   pageSize: number;
   difficulty?: string | null;

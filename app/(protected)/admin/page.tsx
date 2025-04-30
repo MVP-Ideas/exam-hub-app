@@ -1,10 +1,14 @@
 "use client";
 
 import PlatformMetrics from "@/components/admin/landing/platform-metrics";
+import { useUserStore } from "@/components/providers/user-store-provider";
 import { Badge } from "@/components/ui/badge";
-import { useAuthStore } from "@/lib/stores/auth-store";
+import { UserState } from "@/lib/stores/user-store";
+
 export default function Page() {
-  const { user } = useAuthStore();
+  const { user } = useUserStore((state: UserState) => ({
+    user: state.user,
+  }));
 
   return (
     <div className="flex h-full w-full flex-col items-center gap-6 p-10">

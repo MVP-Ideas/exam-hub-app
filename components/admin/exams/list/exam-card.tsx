@@ -17,7 +17,6 @@ import {
 import useArchiveExam from "@/hooks/exams/useArchiveExam";
 import { Exam } from "@/lib/types/exam";
 import { getDifficultyColor, getStatusColor } from "@/lib/utils/exam";
-import { formatDuration } from "date-fns";
 import {
   MoreHorizontal,
   Edit,
@@ -27,14 +26,17 @@ import {
   Award,
   FileText,
   Archive,
+  Flame,
 } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
   exam: Exam;
+  route: string;
+  disableOptions?: boolean;
 };
 
-export default function ExamCard({ exam }: Props) {
+export default function ExamCard({ exam, route, disableOptions }: Props) {
   const { archiveExam } = useArchiveExam(exam.id);
   const handleArchive = async () => {
     await archiveExam();
@@ -49,6 +51,15 @@ export default function ExamCard({ exam }: Props) {
         <div className="flex justify-between">
           <div className="flex flex-row items-center gap-2">
             <Badge
+              hidden={!exam.isFeatured}
+              variant="outline"
+              className="bg-primary/20 border-0 text-blue-800"
+            >
+              <Flame className="mr-1 h-4 w-4" />
+              Featured
+            </Badge>
+            <Badge
+              hidden={disableOptions}
               variant="outline"
               className={`${getStatusColor(exam.status)} border-0`}
             >
@@ -66,7 +77,7 @@ export default function ExamCard({ exam }: Props) {
           </div>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger hidden={disableOptions} asChild>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -109,7 +120,7 @@ export default function ExamCard({ exam }: Props) {
           </div>
           <div className="text-muted-foreground flex items-center text-sm">
             <Clock className="mr-2 h-4 w-4" />
-            <span>{formatDuration({ seconds: exam.durationSeconds })}</span>
+            <span>{exam.durationSeconds / 60} minutes</span>
           </div>
           <div className="text-muted-foreground flex items-center text-sm">
             <Award className="mr-2 h-4 w-4" />
@@ -125,7 +136,12 @@ export default function ExamCard({ exam }: Props) {
         </div>
       </CardContent>
       <CardFooter className="mt-auto border-t p-4">
-        <Button className="bg-secondary w-full">View Exam</Button>
+        <Link
+          href={`${route}/${exam.id}`}
+          className="bg-secondary text-background w-full rounded-lg p-2 text-center text-sm font-semibold"
+        >
+          View Exam
+        </Link>
       </CardFooter>
     </Card>
   );

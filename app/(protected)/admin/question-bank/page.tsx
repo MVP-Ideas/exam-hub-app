@@ -6,12 +6,12 @@ import QuestionCategorySelect from "@/components/categories/question-category-se
 import QuestionCardList from "@/components/questions/question-card-list";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import useInfiniteQuestions from "@/hooks/questions/useInfiniteQuestions";
 import { CloudOff, FileQuestion, PlusIcon, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { BeatLoader } from "react-spinners";
 
 export default function Page() {
   const [search, setSearch] = useState<string>("");
@@ -116,12 +116,18 @@ export default function Page() {
             )}
 
             {isLoading && (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-4 rounded-lg">
-                <BeatLoader
-                  size={20}
-                  className="text-muted-foreground"
-                  loading={isLoading}
-                />
+              <div className="flex h-full w-full flex-col items-center gap-4 rounded-lg">
+                {/* 4 skeletons */}
+                <div className="flex w-full flex-col gap-4">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
               </div>
             )}
             {isError && (

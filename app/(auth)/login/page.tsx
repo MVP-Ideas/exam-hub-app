@@ -47,22 +47,19 @@ export default function Page() {
             image="/login/facebook.svg"
             providerUrl={"facebook"}
             text="Login with Facebook"
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
+        
           />
           <MsalSignInButton
             image="/login/google.svg"
             providerUrl={"google"}
             text="Login with Google"
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
+     
           />
           <MsalSignInButton
             image="/login/linkedin.svg"
             providerUrl={"linkedin"}
             text="Login with LinkedIn"
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
+          
           />
         </div>
       </div>

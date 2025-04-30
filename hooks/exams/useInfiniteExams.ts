@@ -4,7 +4,7 @@ import { Exam } from "@/lib/types/exam";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 
 type Props = {
-  search: string;
+  search?: string;
   page: number;
   pageSize: number;
   difficulty?: string | null;
