@@ -1,5 +1,6 @@
 export type ProblemDetails = {
-    title: string;
-    detail: string;
-    status: number;
-}
+  title: string;
+  detail: string;
+  status: number;
+};
+

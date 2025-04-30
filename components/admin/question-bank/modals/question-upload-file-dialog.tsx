@@ -42,10 +42,10 @@ export default function QuestionUploadFileDialog() {
     };
 
     const resource = await createFileResource(resourceData);
-    if (!resource?.id) return;
+    if (!resource) return;
 
     const prev = form.getValues("resources") ?? [];
-    form.setValue("resources", [...prev, resource.id]);
+    form.setValue("resources", [...prev, resource]);
 
     setOpen(false);
     localForm.reset();

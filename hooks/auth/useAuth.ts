@@ -1,121 +1,153 @@
-import { useState, useCallback } from "react";
-import { useMsal, useIsAuthenticated } from "@azure/msal-react";
-import { loginScopes } from "@/config/auth-config";
-import { useAuthStore } from "@/lib/stores/auth-store";
-import { UserB2CLoginRegister, UserLocalLogin } from "@/lib/types/auth";
-import { toast } from "sonner";
-import useSignUpOrLoginUserB2C from "./useSignUpOrLoginUserB2C";
-import useLoginUser from "./useLoginUser";
-import { usePathname, useRouter } from "next/navigation";
-import useGetCurrentUser from "../users/useGetCurrentUser";
-import useLogoutUser from "./useLogoutUser";
+"use client";
 
-const useAuth = () => {
+import { useState } from "react";
+import { useMsal } from "@azure/msal-react";
+import { useRouter } from "next/navigation";
+import UserService from "@/lib/services/user-service";
+import AuthService from "@/lib/services/auth-service";
+import { UserLocalLogin, UserB2CLoginRegister } from "@/lib/types/auth";
+import { toast } from "sonner";
+import { loginScopes } from "@/config/auth-config";
+import { extractAxiosErrorMessage } from "@/lib/utils";
+import { useUserStore } from "@/components/providers/user-store-provider";
+import { UserState } from "@/lib/stores/user-store";
+
+export default function useAuth() {
+  const { instance, inProgress } = useMsal();
   const router = useRouter();
-  const pathName = usePathname();
-  const { instance } = useMsal();
-  const isAuthenticatedB2C = useIsAuthenticated();
-  const { logout } = useAuthStore();
-  const { signUpOrLoginB2C } = useSignUpOrLoginUserB2C();
-  const { loginUser } = useLoginUser();
-  const {
-    user: currentUser,
-    isLoading: isLoadingCurrentUser,
-    isFetched,
-    isError,
-  } = useGetCurrentUser();
-  const { logoutUser } = useLogoutUser();
+  const { setUser, clearUser, lastUpdated } = useUserStore(
+    (state: UserState) => ({
+      setUser: state.setUser,
+      clearUser: state.clearUser,
+      lastUpdated: state.lastUpdated,
+    }),
+  );
   const [isLoading, setIsLoading] = useState(false);
 
-  const isAuthenticated = !!currentUser;
-
-  const handleLogout = useCallback(() => {
-    setIsLoading(true);
-    if (isAuthenticatedB2C) {
-      instance.logoutPopup();
-      instance.clearCache();
-    }
-    logout();
-    logoutUser();
-    if (pathName !== "/login" && pathName !== "/sign-up") {
-      router.push("/login");
+  const verifyToken = async () => {
+    // Check if last updated is null or five minutes older
+    if (
+      lastUpdated &&
+      new Date().getTime() - new Date(lastUpdated).getTime() < 5 * 60 * 1000
+    ) {
+      return true;
     }
 
-    setIsLoading(false);
-  }, [instance, isAuthenticatedB2C, logout, logoutUser, pathName, router]);
-
-  const handleLoginLocal = async (user: UserLocalLogin) => {
     setIsLoading(true);
+
     try {
-      await loginUser(user);
-      toast.success("Login successful");
+      const user = await UserService.getCurrentUser();
 
-      if (currentUser?.role.toLowerCase() === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
+      if (!user) throw new Error("No user returned");
+
+      setUser(user);
+
+      return true;
     } catch (error) {
-      console.error("Login error", error);
-      toast.error("Login failed. Try again.");
+      const message = extractAxiosErrorMessage(error);
+      toast.error(message);
+      await instance.logoutRedirect({
+        postLogoutRedirectUri: "/login",
+      });
+      clearUser();
+      router.push("/login");
+      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleLoginB2C = async (provider: string | null) => {
+  const handleLoginLocal = async (credentials: UserLocalLogin) => {
     setIsLoading(true);
     try {
-      const loginResult = await instance.loginPopup({
+      await AuthService.localLogin(credentials);
+
+      const user = await UserService.getCurrentUser();
+      if (user) {
+        setUser(user);
+        toast.success("Login successful!");
+
+        if (user.role.toLowerCase() === "admin") {
+          router.replace("/admin");
+        } else {
+          router.replace("/");
+        }
+      } else {
+        throw new Error("Login succeeded but no user returned");
+      }
+    } catch (error) {
+      const message = extractAxiosErrorMessage(error);
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginB2C = async (provider: string) => {
+    setIsLoading(true);
+    try {
+      const res = await instance.loginPopup({
         scopes: loginScopes,
-        domainHint: `${provider}.com`,
+        domainHint: provider ? `${provider}.com` : undefined,
       });
 
-      if (!loginResult.account) throw new Error("No account");
+      if (!res.account) throw new Error("No account returned");
 
-      const tokenResponse = await instance.acquireTokenSilent({
+      const tokenRes = await instance.acquireTokenSilent({
         scopes: loginScopes,
-        account: loginResult.account,
+        account: res.account,
       });
 
       const userDto: UserB2CLoginRegister = {
-        email: tokenResponse.account.username,
-        name: tokenResponse.account.name ?? "unknown",
-        b2cUserId: tokenResponse.uniqueId,
-        accountType: loginResult.account.idTokenClaims?.idp ?? "B2C",
+        email: tokenRes.account.username,
+        name: tokenRes.account.name || "unknown",
+        b2cUserId: tokenRes.uniqueId,
+        accountType: res.account.idTokenClaims?.idp || "B2C",
       };
 
-      await signUpOrLoginB2C({
-        request: userDto,
-        accessToken: tokenResponse.accessToken,
-      });
-      toast.success("Login successful");
+      await AuthService.b2cLoginRegister(userDto, tokenRes.accessToken);
 
-      if (currentUser?.role.toLowerCase() === "admin") {
-        router.push("/admin");
+      const user = await UserService.getCurrentUser();
+      if (user) {
+        setUser(user);
+        toast.success("Login successful!");
+
+        if (user.role.toLowerCase() === "admin") {
+          router.replace("/admin");
+        } else {
+          router.replace("/");
+        }
       } else {
-        router.push("/");
+        throw new Error("B2C login succeeded but no user returned");
       }
     } catch (error) {
-      console.log(error);
-      handleLogout();
-      toast.error("Login failed. Try again.");
+      const message = extractAxiosErrorMessage(error);
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await instance.logoutRedirect({
+        postLogoutRedirectUri: "/login",
+      });
+      clearUser();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    currentUser,
-    isAuthenticated,
-    isLoading,
-    isLoadingCurrentUser,
-    isFetched,
-    isError,
-    handleLoginB2C,
+    isLoading: isLoading || inProgress !== "none",
+    verifyToken,
     handleLoginLocal,
+    handleLoginB2C,
     handleLogout,
   };
-};
-
-export default useAuth;
+}

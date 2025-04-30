@@ -1,47 +1,37 @@
-import { toast } from 'sonner';
-import { Button } from '../ui/button';
-import useAuth from '@/hooks/auth/useAuth';
-import Image from 'next/image';
+"use client";
+
+import { toast } from "sonner";
+import { Button } from "../ui/button";
+import Image from "next/image";
+import { useAuth } from "@/hooks";
 
 type Props = {
-	providerUrl: string | null;
-	text: string;
-	image: string;
-	isLoading: boolean;
-	setIsLoading: (isLoading: boolean) => void;
+  providerUrl: string;
+  text: string;
+  image: string;
 };
 
-export const MsalSignInButton = ({
-	providerUrl,
-	text,
-	image,
-	isLoading,
-	setIsLoading,
-}: Props) => {
-	const { handleLoginB2C } = useAuth();
+export function MsalSignInButton({ providerUrl, text, image }: Props) {
+  const { handleLoginB2C, isLoading } = useAuth();
 
-	const handleLogin = async () => {
-		setIsLoading(true);
-		try {
-			await handleLoginB2C(providerUrl);
-		} catch {
-			toast.error('Login failed. Please try again.');
-		} finally {
-			setIsLoading(false);
-		}
-	};
+  const onClick = async () => {
+    try {
+      await handleLoginB2C(providerUrl);
+    } catch {
+      toast.error("Login failed. Please try again.");
+    }
+  };
 
-	return (
-		<Button
-			className="
-			bg-background text-foreground border border-muted hover:bg-muted hover:text-foreground transition-colors duration-200 ease-in-out"
-			disabled={isLoading}
-			onClick={handleLogin}
-		>
-			<div className="flex flex-row w-full gap-2">
-				<Image src={image} alt="Google" width={20} height={20} />
-				{text}
-			</div>
-		</Button>
-	);
-};
+  return (
+    <Button
+      onClick={onClick}
+      disabled={isLoading}
+      className="bg-background text-foreground border-muted hover:bg-muted hover:text-foreground border transition-colors duration-200 ease-in-out"
+    >
+      <div className="flex items-center gap-2">
+        <Image src={image} alt={text} width={20} height={20} />
+        <span>{text}</span>
+      </div>
+    </Button>
+  );
+}

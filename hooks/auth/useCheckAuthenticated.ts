@@ -1,22 +1,17 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import useGetCurrentUser from '../users/useGetCurrentUser';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/components/providers/user-store-provider";
+import { UserState } from "@/lib/stores/user-store";
 
-const useCheckAuthenticated = () => {
-	const router = useRouter();
+export default function useCheckAuthenticated() {
+  const { user } = useUserStore((state: UserState) => ({
+    user: state.user,
+  }));
+  const router = useRouter();
 
-	const { user, isFetched, isError } = useGetCurrentUser();
-	useEffect(() => {
-		if (!isFetched) return;
-
-		if (!isError && isFetched && user) {
-			if (user.role.toLowerCase() === 'admin') {
-				router.push('/admin');
-			} else {
-				router.push('/');
-			}
-		}
-	}, [isError, isFetched, router, user]);
-};
-
-export default useCheckAuthenticated;
+  useEffect(() => {
+    if (user) {
+      router.replace("/");
+    }
+  }, [user, router]);
+}

@@ -1,3 +1,5 @@
+import { Resource } from "./resource";
+
 export type Exam = {
   id: string;
   title: string;
@@ -6,13 +8,14 @@ export type Exam = {
   difficulty: string;
   durationSeconds: number;
   passingScore: number;
-  resources: string[];
+  resources: Resource[];
   status: string;
   questions: ExamQuestionCreateReadUpdate[];
   settings: ExamSettingsCreateReadUpdate;
   createdAt: string;
   updatedAt: string;
   version: number;
+  isFeatured: boolean;
 };
 
 export type ExamCreateUpdate = {
@@ -22,7 +25,7 @@ export type ExamCreateUpdate = {
   difficulty: string;
   durationSeconds: number;
   passingScore: number;
-  resourceIds: string[];
+  resources: string[];
   isDraft: boolean;
   questions: ExamQuestionCreateReadUpdate[];
   settings: ExamSettingsCreateReadUpdate;

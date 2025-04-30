@@ -14,10 +14,10 @@ import { Search, MoveLeftIcon, FileQuestionIcon, CloudOff } from "lucide-react";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import QuestionTypeSelect from "@/components/admin/question-bank/question-type-select";
 import QuestionCategorySelect from "@/components/categories/question-category-select";
-import { BeatLoader } from "react-spinners";
 import { useInView } from "react-intersection-observer";
 import useInfiniteQuestions from "@/hooks/questions/useInfiniteQuestions";
 import QuestionCardList from "@/components/questions/question-card-list";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   open: boolean;
@@ -90,7 +90,7 @@ export default function QuestionPickerSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 flex h-full flex-1 flex-col gap-4">
           <Input
             icon={<Search size={16} className="text-muted-foreground" />}
             placeholder="Search questions..."
@@ -111,7 +111,7 @@ export default function QuestionPickerSheet({
             />
           </div>
 
-          <div className="mt-2 flex flex-col gap-4">
+          <div className="mt-2 flex h-full flex-col gap-4">
             {!isLoading && questions && questions.length === 0 && (
               <div className="bg-muted flex h-full min-h-[400px] w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg">
                 <FileQuestionIcon size={60} className="text-muted-foreground" />
@@ -133,15 +133,15 @@ export default function QuestionPickerSheet({
 
             {isLoading && (
               <div className="flex h-full min-h-[400px] w-full flex-col items-center justify-center gap-4 rounded-lg">
-                <BeatLoader
-                  size={20}
-                  className="text-muted-foreground"
-                  loading={isLoading}
-                />
+                {/* Skeletons */}
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
               </div>
             )}
             {isError && (
-              <div className="bg-muted flex h-full min-h-[400px] w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg">
+              <div className="bg-muted flex h-full w-full flex-col items-center justify-center gap-4 rounded-lg">
                 <CloudOff size={60} className="text-muted-foreground" />
                 <p className="text-muted-foreground font-bold">
                   Error loading questions.

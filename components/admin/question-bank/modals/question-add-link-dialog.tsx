@@ -41,10 +41,10 @@ export default function QuestionAddLinkDialog() {
       description: data.description ?? "",
     };
     const resource = await createUrlResource(resourceData);
-    if (!resource?.id) return;
+    if (!resource) return;
 
     const prev = form.getValues("resources") ?? [];
-    const updated = [...prev, resource.id];
+    const updated = [...prev, resource];
     form.setValue("resources", updated);
 
     setOpen(false);
