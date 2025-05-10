@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 export function DashboardSidebar({
   ...props
@@ -111,10 +112,10 @@ export function DashboardSidebar({
               {bottomNavItems.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton asChild isActive={activePage === item.id}>
-                    <a href={item.path} className="flex items-center">
+                    <Link href={item.path} className="flex items-center">
                       <item.icon className="mr-2 h-4 w-4" />
                       {item.label}
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

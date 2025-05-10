@@ -16,6 +16,10 @@ export default function FeaturedExams() {
     isFeatured: true,
   }));
 
+  if (!isLoading && (!top2exams || top2exams.length === 0)) {
+    return <></>; // Don't render anything if no featured exams and not loading
+  }
+
   return (
     <section className="mx-auto w-full max-w-7xl px-6 py-8">
       <h2 className="text-foreground mb-6 text-xl font-bold">Featured Exams</h2>

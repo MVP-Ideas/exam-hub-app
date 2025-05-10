@@ -57,7 +57,7 @@ export default function Page() {
       {/* Hero */}
       <div className="relative h-40 overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-900">
         <div className="absolute inset-0 bg-black opacity-30" />
-        <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white">
+        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6 text-white">
           <div className="mb-2 flex space-x-2 text-sm">
             <Badge variant="secondary" className="bg-indigo-600">
               {exam.category}
