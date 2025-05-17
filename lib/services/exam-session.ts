@@ -1,5 +1,9 @@
 import api from "../axios";
-import { ExamSession } from "../types/exam-session";
+import {
+  ExamSession,
+  ExamSessionAnswerCreate,
+  ExamSessionQuestion,
+} from "../types/exam-session";
 
 const BASE_URL = "exam-sessions";
 
@@ -12,8 +16,32 @@ const ExamSessionService = {
     examSessionId: string,
     questionId: string,
   ) => {
-    const response = await api.get<ExamSession>(
+    const response = await api.get<ExamSessionQuestion>(
       `${BASE_URL}/${examSessionId}/questions/${questionId}`,
+    );
+    return response.data;
+  },
+  startExamSession: async (examId: string) => {
+    const response = await api.post(`${BASE_URL}/start`, { examId });
+    return response.data;
+  },
+  answerQuestion: async (
+    examSessionId: string,
+    questionId: string,
+    answer: ExamSessionAnswerCreate,
+  ) => {
+    const response = await api.post(
+      `${BASE_URL}/${examSessionId}/questions/${questionId}/answer`,
+      answer,
+    );
+
+    return response.data;
+  },
+  updateProgress: async (examSessionId: string, timeSpentSeconds: number) => {
+    const payload = { timeSpentSeconds };
+    const response = await api.post<ExamSession>(
+      `${BASE_URL}/${examSessionId}/progress`,
+      payload,
     );
     return response.data;
   },

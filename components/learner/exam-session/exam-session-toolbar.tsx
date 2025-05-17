@@ -7,20 +7,29 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { ExamSessionAnswer } from "@/lib/types/exam-session";
+import { ExamQuestionCreateReadUpdate } from "../../../lib/types/exam";
 import {
   ArrowLeftToLine,
   BookIcon,
   CalculatorIcon,
   FileQuestion,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Props = {
-  answers: ExamSessionAnswer[];
+  examId: string;
+  questions: ExamQuestionCreateReadUpdate[];
+  currentQuestionIndex: number;
+  setCurrentQuestionIndex: (index: number) => void;
 };
 
-export default function ExamSessionToolbar({ answers }: Props) {
-  const temporaryArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+export default function ExamSessionToolbar({
+  examId,
+  questions,
+  currentQuestionIndex,
+  setCurrentQuestionIndex,
+}: Props) {
+  const router = useRouter();
 
   return (
     <Sidebar
@@ -28,21 +37,26 @@ export default function ExamSessionToolbar({ answers }: Props) {
       className="bg-muted/40 flex flex-col gap-y-2 p-2"
     >
       <SidebarHeader className="bg-muted mb-2 flex items-start gap-y-1 rounded-lg p-4">
-        <p className="text-sm font-bold">Question 1</p>
-        <p className="text-primary text-xs font-bold">1 point</p>
+        <p className="text-sm font-bold">Question {currentQuestionIndex + 1}</p>
+        <p className="text-primary text-xs font-bold">
+          {questions[currentQuestionIndex].points} point
+          {questions[currentQuestionIndex].points > 1 ? "s" : ""}
+        </p>
       </SidebarHeader>
 
       <SidebarContent className="bg-background rounded-lg p-4">
         <div className="flex flex-col gap-y-2">
           <p className="text-primary text-sm font-semibold">Item Navigation</p>
           <div className="grid grid-cols-6 gap-2">
-            {temporaryArray.map((item) => (
-              <div
-                key={item}
-                className="bg-background text-foreground flex h-8 w-8 items-center justify-center rounded-sm border text-sm font-semibold"
+            {questions.map((_, index) => (
+              <Button
+                key={index}
+                variant={index === currentQuestionIndex ? "default" : "outline"}
+                className={`h-8 w-8 p-0 text-sm font-semibold`}
+                onClick={() => setCurrentQuestionIndex(index + 1)}
               >
-                {item}
-              </div>
+                {index + 1}
+              </Button>
             ))}
           </div>
           <Separator className="my-2" />
@@ -66,7 +80,13 @@ export default function ExamSessionToolbar({ answers }: Props) {
         </div>
       </SidebarContent>
       <SidebarFooter>
-        <Button variant="destructive" className="w-full font-bold">
+        <Button
+          variant="destructive"
+          className="w-full font-bold"
+          onClick={() => {
+            router.push(`/exams/${examId}`);
+          }}
+        >
           <ArrowLeftToLine />
           Exit Exam
         </Button>

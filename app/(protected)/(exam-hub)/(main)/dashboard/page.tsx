@@ -1,11 +1,14 @@
 "use client";
+
 import RecommendedForYou from "@/components/learner/dashboard/recommended-for-you";
 import UserDashboardStatistics from "@/components/learner/dashboard/user-dashboard-statistics";
 import { Button } from "@/components/ui/button";
-import { useGetCurrentUser } from "@/hooks";
+import { useUserStore } from "@/lib/stores/user-store";
 
 export default function Page() {
-  const { user } = useGetCurrentUser();
+  const { user } = useUserStore((state) => ({
+    user: state.user,
+  }));
 
   return (
     <div className="flex h-full flex-col">

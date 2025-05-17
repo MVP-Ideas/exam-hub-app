@@ -36,11 +36,11 @@ export function MsalSignInButton({
     <Button
       onClick={onClick}
       disabled={isLoading || disabled}
-      className="bg-background text-foreground border-muted hover:bg-muted hover:text-foreground border transition-colors duration-200 ease-in-out"
+      className="bg-background text-foreground border-muted hover:bg-muted hover:text-foreground border p-6 transition-colors duration-200 ease-in-out"
     >
       <div className="flex items-center gap-2">
         <Image src={image} alt={text} width={20} height={20} />
-        <span>{text}</span>
+        <span className="text-base">{text}</span>
       </div>
     </Button>
   );

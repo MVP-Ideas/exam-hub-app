@@ -7,6 +7,7 @@ import QuestionSheet from "@/components/admin/question-bank/question-sheet";
 import { Question } from "@/lib/types/questions";
 import { cn } from "@/lib/utils";
 import { getQuestionTypeBadge } from "@/lib/constants/question";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Props = {
   questions: Question[];
@@ -21,75 +22,93 @@ export default function QuestionCardList({
 }: Props) {
   return (
     <>
-      {questions.map((q) => {
-        const isAdded = addedQuestionIds.includes(q.id);
+      {questions.map((question) => {
+        const isAdded = addedQuestionIds.includes(question.id);
 
         return (
-          <div
-            key={q.id}
+          <Card
+            key={question.id}
             className={cn(
-              "hover:bg-accent flex-flex-col gap-2 rounded-lg border bg-white p-4 transition md:grid md:grid-cols-[2fr_2fr_1fr_1fr] md:items-center md:gap-4",
+              "bg-white p-4 transition-shadow hover:shadow-md",
               onSelect && isAdded && "bg-muted opacity-75",
             )}
           >
-            {/* Question text + description */}
-            <div className="flex flex-col overflow-hidden">
-              <p className="text-primary truncate text-sm font-bold">
-                {q.text}
-              </p>
-              <p className="text-muted-foreground truncate text-xs">
-                {q.description}
-              </p>
-            </div>
+            <CardContent className="p-0">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-x-2">
+                    <h3 className="text-primary text-sm font-medium">
+                      {question.text}
+                    </h3>
+                    {getQuestionTypeBadge(question.type)}
+                  </div>
 
-            {/* Type */}
-            <div className="text-muted-foreground truncate text-xs">
-              {getQuestionTypeBadge(q.type)}
-            </div>
+                  <div className="text-muted-foreground mt-1 flex items-center gap-x-4 text-sm">
+                    <p className="text-muted-foreground truncate text-xs">
+                      {question.description}
+                    </p>
+                  </div>
 
-            {/* Category */}
-            <div className="flex flex-row items-center gap-2">
-              <TagIcon size={12} className="shrink-0" />
-              <p className="text-muted-foreground text-xs">
-                {q.category || "No category"}
-              </p>
-            </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {question.categories && question.categories.length > 0 ? (
+                      question.categories.map((category) => (
+                        <Badge
+                          key={category.id}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          <TagIcon size={12} className="mr-1 shrink-0" />
+                          {category.name}
+                        </Badge>
+                      ))
+                    ) : (
+                      <div className="flex items-center">
+                        <TagIcon size={12} className="mr-1 shrink-0" />
+                        <span className="text-muted-foreground text-xs">
+                          No category
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-2">
-              <QuestionSheet mode="edit" questionId={q.id} showClose>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Eye className="text-muted-foreground" size={16} />
-                </Button>
-              </QuestionSheet>
+                <div className="flex items-center gap-2">
+                  <QuestionSheet mode="edit" questionId={question.id} showClose>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      type="button"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </QuestionSheet>
 
-              {onSelect && !isAdded && (
-                <Button
-                  variant="default"
-                  size="icon"
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelect(q.id);
-                  }}
-                  className="rounded-full"
-                >
-                  <PlusIcon className="text-background" size={16} />
-                </Button>
-              )}
+                  {onSelect && !isAdded && (
+                    <Button
+                      variant="default"
+                      size="icon"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect(question.id);
+                      }}
+                      className="rounded-full"
+                    >
+                      <PlusIcon className="text-background" size={16} />
+                    </Button>
+                  )}
 
-              {onSelect && isAdded && (
-                <Badge className="bg-muted text-muted-foreground">
-                  <p>Added</p>
-                </Badge>
-              )}
-            </div>
-          </div>
+                  {onSelect && isAdded && (
+                    <Badge className="bg-muted text-muted-foreground">
+                      <p>Added</p>
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         );
       })}
     </>

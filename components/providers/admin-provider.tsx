@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { BeatLoader } from "react-spinners";
-import { UserState } from "@/lib/stores/user-store";
-import { useUserStore } from "./user-store-provider";
+import { UserState, useUserStore } from "@/lib/stores/user-store";
 
 export default function AdminProvider({
   children,
@@ -18,7 +17,6 @@ export default function AdminProvider({
   }));
 
   useEffect(() => {
-    // If user exists and is not admin, redirect
     if (user && user.role?.toLowerCase() !== "admin") {
       router.replace("/");
     }

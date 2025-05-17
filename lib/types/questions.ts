@@ -1,3 +1,4 @@
+import { QuestionCategoryQuestionResponse } from "./question-categories";
 import { Resource } from "./resource";
 
 export enum QuestionType {
@@ -16,7 +17,7 @@ export type Question = {
   text: string;
   description: string;
   type: QuestionType;
-  category: string | null;
+  categories: QuestionCategoryQuestionResponse[];
   isActive: boolean;
   choices: QuestionChoice[];
   resources: Resource[];
@@ -37,7 +38,7 @@ export type QuestionCreateUpdate = {
   choices: QuestionChoiceCreateUpdate[];
   resources: string[];
   type: QuestionType;
-  categoryId: string | null;
+  categoryIds: string[];
   aiHelpEnabled: boolean;
 };
 

@@ -51,3 +51,18 @@ export const getQuestionTypeBadge = (type: QuestionType) => {
       return null;
   }
 };
+
+export const getFormattedQuestionType = (type: QuestionType) => {
+  switch (type) {
+    case QuestionType.MultipleChoiceSingle:
+      return "Multiple Choice (Single)";
+    case QuestionType.MultipleChoiceMultiple:
+      return "Multiple Choice (Multiple)";
+    case QuestionType.TrueFalse:
+      return "True / False";
+    case QuestionType.DragAndDrop:
+      return "Drag and Drop";
+  }
+
+  return type;
+};

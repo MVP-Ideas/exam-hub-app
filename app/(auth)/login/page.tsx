@@ -1,10 +1,15 @@
 "use client";
 
-import { LoginForm } from "@/components/auth/login-form";
 import { MsalSignInButton } from "@/components/auth/msal-sign-in-button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { useCheckAuthenticated } from "@/hooks";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 
 export default function Page() {
@@ -24,48 +29,40 @@ export default function Page() {
           />
         </div>
       </div>
-      <div className="bg-background flex w-full max-w-sm flex-col gap-3 rounded-lg p-10 shadow-md md:w-1/2 md:max-w-lg">
-        <LoginForm isLoading={isLoading} setIsLoading={setIsLoading} />
-        <div className="flex items-center justify-center">
-          <p className="text-muted-foreground under text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/sign-up"
-              className="text-primary hover:text-primary/80 underline"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
-        <div className="flex flex-row items-center justify-center gap-2">
-          <div className="bg-muted h-px w-full border" />
-          <p className="text-muted-foreground text-center text-xs">or</p>
-          <div className="bg-muted h-px w-full border" />
-        </div>
-        <div className="flex flex-col gap-2">
+      <Card className="bg-background flex w-full max-w-xs flex-col gap-4 rounded-lg shadow-md md:w-1/2 md:max-w-lg">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-center text-3xl font-bold">
+            Sign In
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-center text-lg">
+            Choose your preferred login method
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="flex flex-col gap-3 pt-4">
           <MsalSignInButton
             image="/login/facebook.svg"
-            providerUrl={"facebook"}
+            providerUrl="facebook"
             text="Login with Facebook"
             disabled={isLoading}
             setDisabled={setIsLoading}
           />
           <MsalSignInButton
             image="/login/google.svg"
-            providerUrl={"google"}
+            providerUrl="google"
             text="Login with Google"
             disabled={isLoading}
             setDisabled={setIsLoading}
           />
           <MsalSignInButton
-            image="/login/linkedin.svg"
-            providerUrl={"linkedin"}
-            text="Login with LinkedIn"
+            image="/login/microsoft.svg"
+            providerUrl="microsoft"
+            text="Login with Microsoft"
             disabled={isLoading}
             setDisabled={setIsLoading}
           />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

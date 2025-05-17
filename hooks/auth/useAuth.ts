@@ -9,19 +9,23 @@ import { UserLocalLogin, UserB2CLoginRegister } from "@/lib/types/auth";
 import { toast } from "sonner";
 import { loginScopes } from "@/config/auth-config";
 import { extractAxiosErrorMessage } from "@/lib/utils";
-import { useUserStore } from "@/components/providers/user-store-provider";
-import { UserState } from "@/lib/stores/user-store";
+
+import { UserState, useUserStore } from "@/lib/stores/user-store";
 
 export default function useAuth() {
   const { instance, inProgress } = useMsal();
   const router = useRouter();
-  const { setUser, clearUser, lastUpdated } = useUserStore(
-    (state: UserState) => ({
-      setUser: state.setUser,
-      clearUser: state.clearUser,
-      lastUpdated: state.lastUpdated,
-    }),
-  );
+  const {
+    user: currentUser,
+    setUser,
+    clearUser,
+    lastUpdated,
+  } = useUserStore((state: UserState) => ({
+    user: state.user,
+    setUser: state.setUser,
+    clearUser: state.clearUser,
+    lastUpdated: state.lastUpdated,
+  }));
   const [isLoading, setIsLoading] = useState(false);
 
   const verifyToken = async () => {
@@ -42,12 +46,14 @@ export default function useAuth() {
 
       setUser(user);
 
+      console.log("User verified", currentUser, user);
+
       return true;
     } catch (error) {
       const message = extractAxiosErrorMessage(error);
       toast.error(message);
-      await instance.logoutRedirect({
-        postLogoutRedirectUri: "/login",
+      await instance.logout({
+        onRedirectNavigate: () => false,
       });
       clearUser();
       router.push("/login");
@@ -88,6 +94,7 @@ export default function useAuth() {
     try {
       const res = await instance.loginPopup({
         scopes: loginScopes,
+        prompt: "login",
         domainHint: provider ? `${provider}.com` : undefined,
       });
 
@@ -131,11 +138,10 @@ export default function useAuth() {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      await instance.logoutRedirect({
-        postLogoutRedirectUri: "/login",
-      });
+      await AuthService.logout();
       clearUser();
       router.push("/login");
+      instance.logout({ onRedirectNavigate: () => false });
     } catch (error) {
       console.error("Logout failed", error);
     } finally {

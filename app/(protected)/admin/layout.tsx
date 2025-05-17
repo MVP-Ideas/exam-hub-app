@@ -76,7 +76,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
               <div className="flex flex-col items-center gap-4">
-                <Tooltip key={"settings"}>
+                {/* <Tooltip key={"settings"}>
                   <TooltipTrigger asChild>
                     <SettingsIcon
                       size={40}
@@ -84,7 +84,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     />
                   </TooltipTrigger>
                   <TooltipContent side="right">Settings</TooltipContent>
-                </Tooltip>
+                </Tooltip> */}
 
                 {/* Logout Icon */}
                 <Tooltip key={"logout"}>
@@ -124,7 +124,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
               <div className="flex items-center gap-1">
                 {/* Settings Icon */}
-                <Tooltip key={"settings"}>
+                {/* <Tooltip key={"settings"}>
                   <TooltipTrigger asChild>
                     <SettingsIcon
                       size={40}
@@ -132,7 +132,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     />
                   </TooltipTrigger>
                   <TooltipContent side="right">Settings</TooltipContent>
-                </Tooltip>
+                </Tooltip> */}
 
                 {/* Logout Icon */}
                 <Tooltip key={"logout"}>

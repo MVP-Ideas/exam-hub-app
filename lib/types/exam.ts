@@ -16,6 +16,7 @@ export type Exam = {
   updatedAt: string;
   version: number;
   isFeatured: boolean;
+  metadata?: ExamMetadata;
 };
 
 export type ExamCreateUpdate = {
@@ -39,5 +40,11 @@ export type ExamSettingsCreateReadUpdate = {
 
 export type ExamQuestionCreateReadUpdate = {
   questionId: string;
+  text?: string;
   points: number;
+};
+
+export type ExamMetadata = {
+  existingExamSessionId: string;
+  lastUpdated: string;
 };

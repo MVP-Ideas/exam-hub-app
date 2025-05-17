@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import useExamById from "@/hooks/exams/useExamById";
 
 import {
@@ -42,7 +42,10 @@ import { formatUTCDate } from "@/lib/date-utils";
 export default function Page() {
   const { id } = useParams();
   const { exam, isLoading, isError } = useExamById(id as string);
+  
+
   const resources = exam?.resources || [];
+  const router = useRouter();
 
   if (isLoading || isError || !exam) {
     return (
@@ -93,7 +96,9 @@ export default function Page() {
               <CardContent>
                 <p className="text-gray-700">{exam.description}</p>
                 <Separator className="my-6" />
-                <h3 className="mb-4 text-lg font-medium">What You’ll Learn</h3>
+                <h3 className="mb-4 text-lg font-medium">
+                  What You&apos;ll Learn
+                </h3>
                 <ul className="space-y-3">
                   {[
                     `Demonstrate your knowledge in ${exam.category}`,
@@ -189,59 +194,86 @@ export default function Page() {
                   No payment required
                 </p>
               </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="mb-6 w-full">Start Exam</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Ready to start the exam?</DialogTitle>
-                    <DialogDescription>
-                      You have {exam.durationSeconds / 60} minutes to complete
-                      this exam. Make sure you’re in a quiet environment with a
-                      stable internet connection.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="mb-6 space-y-4">
-                    {[
-                      {
-                        Icon: Clock,
-                        label: "Time limit",
-                        value: `${exam.durationSeconds / 60} minutes`,
-                      },
-                      {
-                        Icon: FileText,
-                        label: "Questions",
-                        value: `${exam.questions.length}`,
-                      },
-                      {
-                        Icon: BarChart,
-                        label: "Passing score",
-                        value: `${exam.passingScore}%`,
-                      },
-                    ].map(({ Icon, label, value }) => (
-                      <div key={label} className="flex items-center">
-                        <Icon size={16} className="text-primary mr-2" />
-                        <span className="text-sm">
-                          {label}: {value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <DialogFooter>
-                    <div className="flex w-full gap-4">
-                      <DialogClose asChild>
-                        <Button variant="outline" className="flex-1">
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button variant="secondary" className="flex-1">
-                        Begin Exam
-                      </Button>
+
+              {exam.metadata && exam.metadata.existingExamSessionId ? (
+                // Resume existing exam session
+                <Button
+                  className="mb-6 w-full"
+                  onClick={() => {
+                    router.push(
+                      `/sessions/${exam.metadata?.existingExamSessionId}/1`,
+                    );
+                  }}
+                >
+                  Resume Exam
+                </Button>
+              ) : (
+                // Start new exam session
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="mb-6 w-full">Start Exam</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Ready to start the exam?</DialogTitle>
+                      <DialogDescription>
+                        You have {exam.durationSeconds / 60} minutes to complete
+                        this exam. Make sure you&apos;re in a quiet environment
+                        with a stable internet connection.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="mb-6 space-y-4">
+                      {[
+                        {
+                          Icon: Clock,
+                          label: "Time limit",
+                          value: `${exam.durationSeconds / 60} minutes`,
+                        },
+                        {
+                          Icon: FileText,
+                          label: "Questions",
+                          value: `${exam.questions.length}`,
+                        },
+                        {
+                          Icon: BarChart,
+                          label: "Passing score",
+                          value: `${exam.passingScore}%`,
+                        },
+                      ].map(({ Icon, label, value }) => (
+                        <div key={label} className="flex items-center">
+                          <Icon size={16} className="text-primary mr-2" />
+                          <span className="text-sm">
+                            {label}: {value}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                    <DialogFooter>
+                      <div className="flex w-full gap-4">
+                        <DialogClose asChild>
+                          <Button variant="outline" className="flex-1">
+                            Cancel
+                          </Button>
+                        </DialogClose>
+                        <Button
+                          variant="secondary"
+                          className="flex-1"
+                          onClick={() => {}}
+                        >
+                          Begin Exam
+                        </Button>
+                      </div>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+
+              {exam.metadata?.existingExamSessionId && (
+                <p className="text-muted-foreground mb-6 text-center text-xs">
+                  You have an exam in progress from{" "}
+                  {formatUTCDate(exam.metadata.lastUpdated)}
+                </p>
+              )}
 
               <Separator className="my-6" />
 

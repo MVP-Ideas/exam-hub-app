@@ -1,13 +1,13 @@
+import { Exam } from "./exam";
 import { Resource } from "./resource";
 
 export type ExamSession = {
   id: string;
-  examId: string;
+  exam: Exam;
   startedAt: string;
   finishedAt: string;
   timeSpentSeconds: number;
   maxTimeSeconds: number;
-  questionIds: string[];
   answers: ExamSessionAnswer[];
 };
 
@@ -18,6 +18,7 @@ export type ExamSessionQuestion = {
   type: string;
   choices: ExamSessionQuestionChoice[];
   resources: Resource[];
+  answer?: ExamSessionAnswer;
 };
 
 export type ExamSessionQuestionChoice = {
@@ -35,6 +36,13 @@ export type ExamSessionAnswer = {
 };
 
 export type ExamSessionAnswerChoice = {
-  questionId: string;
+  questionChoiceId: string;
   order?: number;
+};
+
+export type ExamSessionAnswerCreate = {
+  aiAssitanceUsed: boolean;
+  timeSpentSeconds: number;
+  toBeReviewed: boolean;
+  choices: ExamSessionAnswerChoice[];
 };

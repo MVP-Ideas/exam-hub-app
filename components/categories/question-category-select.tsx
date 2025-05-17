@@ -30,7 +30,7 @@ import { Check, ChevronsUpDown } from "lucide-react";
 
 import useQuestionCategories from "@/hooks/question-categories/useQuestionCategories";
 import useCreateQuestionCategory from "@/hooks/question-categories/useCreateQuestionCategory";
-import { cn } from "@/lib/utils"; // or replace with clsx if you're not using cn
+import { cn } from "@/lib/utils";
 
 type Props = {
   value?: string | null;

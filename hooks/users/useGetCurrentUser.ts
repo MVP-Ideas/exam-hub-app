@@ -12,11 +12,11 @@ const useGetCurrentUser = () => {
   } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => await UserService.getCurrentUser(),
-    retry: false, // no retries
+    retry: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchInterval: false,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0, // always considered stale
   });
 
   return {
