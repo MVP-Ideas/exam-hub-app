@@ -1,10 +1,11 @@
+import { ExamCategory } from "./exam-category";
 import { Resource } from "./resource";
 
 export type Exam = {
   id: string;
   title: string;
   description: string;
-  category: string;
+  categories: ExamCategory[];
   difficulty: string;
   durationSeconds: number;
   passingScore: number;
@@ -22,7 +23,7 @@ export type Exam = {
 export type ExamCreateUpdate = {
   title: string;
   description: string;
-  categoryId: string;
+  categoryIds: string[];
   difficulty: string;
   durationSeconds: number;
   passingScore: number;

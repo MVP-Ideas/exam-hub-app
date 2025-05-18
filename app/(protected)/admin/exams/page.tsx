@@ -2,7 +2,6 @@
 
 import ExamDifficultySelect from "@/components/admin/exams/exam-difficulty-select";
 import ExamStatusSelect from "@/components/admin/exams/exam-status-select";
-import ExamCategorySelect from "@/components/categories/exam-category-select";
 import { Input } from "@/components/ui/input";
 import useInfiniteExams from "@/hooks/exams/useInfiniteExams";
 import {
@@ -21,11 +20,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ExamCard from "@/components/admin/exams/list/exam-card";
 import ExamCardHorizontal from "@/components/admin/exams/list/exam-card-horizontal";
+import ExamCategoryMultiselect from "@/components/categories/exam-category-multiselect";
 
 export default function Page() {
   const [search, setSearch] = useState<string>("");
   const [difficulty, setDifficulty] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [categories, setCategories] = useState<string[]>([]);
   const [status, setStatus] = useState<string>("");
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
@@ -36,10 +36,10 @@ export default function Page() {
       page,
       pageSize: 10,
       difficulty,
-      category,
+      category: categories.join(","),
       status,
     }),
-    [search, page, difficulty, category, status],
+    [search, page, difficulty, categories, status],
   );
 
   const { exams, isLoading, isFetching, isError, fetchNextPage, hasNextPage } =
@@ -58,7 +58,7 @@ export default function Page() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, category, difficulty, status]);
+  }, [search, categories, difficulty, status]);
 
   return (
     <div className="flex h-full min-h-screen w-full flex-col items-center pb-10 md:pb-0">
@@ -79,7 +79,7 @@ export default function Page() {
           </Link>
         </div>
 
-        <div className="bg-background border-primary/20 flex h-fit w-full flex-col gap-4 rounded-lg border p-6">
+        <div className="flex h-fit w-full flex-col gap-4 rounded-lg p-0">
           <Input
             icon={<Search size={16} className="text-muted-foreground" />}
             placeholder="Search exams..."
@@ -98,10 +98,11 @@ export default function Page() {
               onChange={(value: string) => setStatus(value || "")}
               includeNull
             />
-            <ExamCategorySelect
-              value={category}
-              onChange={setCategory}
-              includeNull
+          </div>
+          <div className="flex w-full flex-col items-center justify-between gap-2 md:flex-row">
+            <ExamCategoryMultiselect
+              value={categories}
+              onChange={(value: string[]) => setCategories(value)}
             />
           </div>
         </div>

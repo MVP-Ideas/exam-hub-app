@@ -32,7 +32,7 @@ export default function Page() {
       <Card className="bg-background flex w-full max-w-xs flex-col gap-4 rounded-lg shadow-md md:w-1/2 md:max-w-lg">
         <CardHeader className="pb-0">
           <CardTitle className="text-center text-3xl font-bold">
-            Sign In
+            Sign In 
           </CardTitle>
           <CardDescription className="text-muted-foreground text-center text-lg">
             Choose your preferred login method

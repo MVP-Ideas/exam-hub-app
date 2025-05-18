@@ -1,24 +1,27 @@
 "use client";
 
 import { useEffect } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { BeatLoader } from "react-spinners";
-import { useGetCurrentUser } from "@/hooks";
+import { UserState, useUserStore } from "@/lib/stores/user-store";
 
 export default function Page() {
-  const { user, isLoading } = useGetCurrentUser();
+  const router = useRouter();
+  const { user } = useUserStore((state: UserState) => ({
+    user: state.user,
+  }));
 
   useEffect(() => {
-    if (isLoading) return;
-
-    if (!user) {
-      redirect("/login");
-    } else if (user.role === "Admin") {
-      redirect("/admin");
+    if (user) {
+      if (user.role === "Admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
     } else {
-      redirect("/dashboard");
+      router.push("/login");
     }
-  }, [user, isLoading]);
+  }, [user, router]);
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">

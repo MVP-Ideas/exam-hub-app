@@ -110,7 +110,7 @@ export default function Page() {
           </div>
 
           {(types.length > 0 || categories.length > 0) && (
-            <div className="mb-4 flex flex-wrap gap-2">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
               {types.map((type) => (
                 <Badge
                   key={type}
@@ -155,9 +155,8 @@ export default function Page() {
               ))}
               <Button
                 variant="ghost"
-                size="sm"
                 onClick={handleClearFilters}
-                className="text-xs text-slate-500"
+                className="text-muted-foreground mx-2 size-4 text-xs hover:bg-transparent"
               >
                 Clear all
               </Button>

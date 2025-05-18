@@ -2,13 +2,29 @@
 
 import { create } from "zustand";
 import { User } from "@/lib/types/user";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export type UserState = {
   user: User | null;
   lastUpdated: string | null;
   setUser: (user: User) => void;
   clearUser: () => void;
+};
+
+// Create a custom storage that falls back safely when window is undefined
+const customStorage = {
+  getItem: (name: string): string | null => {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(name);
+  },
+  setItem: (name: string, value: string): void => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(name, value);
+  },
+  removeItem: (name: string): void => {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(name);
+  },
 };
 
 export const useUserStore = create(
@@ -21,26 +37,9 @@ export const useUserStore = create(
     }),
     {
       name: "user-storage",
-      skipHydration: true,
-      storage: {
-        getItem: (name) => {
-          const str =
-            typeof window !== "undefined"
-              ? window.localStorage.getItem(name)
-              : null;
-          return str ? JSON.parse(str) : null;
-        },
-        setItem: (name, value) => {
-          if (typeof window !== "undefined") {
-            window.localStorage.setItem(name, JSON.stringify(value));
-          }
-        },
-        removeItem: (name) => {
-          if (typeof window !== "undefined") {
-            window.localStorage.removeItem(name);
-          }
-        },
-      },
+      // Only skip hydration on server to avoid hydration mismatch
+      skipHydration: typeof window === "undefined",
+      storage: createJSONStorage(() => customStorage),
     },
   ),
 );

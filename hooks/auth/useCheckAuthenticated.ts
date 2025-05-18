@@ -10,10 +10,14 @@ export default function useCheckAuthenticated() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (isLoading || pathname === "/logout" || pathname === "/login") return;
+    if (isLoading || pathname === "/logout") return;
 
     if (user) {
-      router.replace("/");
+      if (user.role === "Admin") {
+        router.replace("/admin");
+      } else {
+        router.replace("/dashboard");
+      }
     }
   }, [user, router, isLoading, pathname]);
 }

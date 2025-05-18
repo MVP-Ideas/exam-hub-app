@@ -60,7 +60,7 @@ export default function QuestionTypeFilter({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="flex w-full justify-between bg-white"
+          className="bg-background flex w-full justify-between"
         >
           <div className="flex items-center">
             <Filter className="mr-2 h-4 w-4" />
@@ -70,7 +70,7 @@ export default function QuestionTypeFilter({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-3">
+      <PopoverContent className="bg-background w-[var(--radix-popover-trigger-width)] p-3">
         <div>
           <Input
             placeholder="Search types..."
