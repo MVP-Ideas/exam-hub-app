@@ -40,8 +40,8 @@ export default function ExamDifficultySelect({
       defaultValue={value ?? "null"}
     >
       <SelectTrigger className="bg-background w-full justify-between">
-        <div className="text-foreground flex items-center gap-2">
-          <AlignEndHorizontal className="h-4 w-4 shrink-0" />
+        <div className="flex items-center gap-2">
+          <AlignEndHorizontal className="text-muted-foreground h-4 w-4 shrink-0" />
           <SelectValue placeholder="Select Difficulty" />
         </div>
       </SelectTrigger>

@@ -14,13 +14,11 @@ import useQuestionCategories from "@/hooks/question-categories/useQuestionCatego
 type Props = {
   selectedCategories: string[];
   onChange: (categories: string[]) => void;
-  includeAll?: boolean;
 };
 
 export default function QuestionCategoryFilter({
   selectedCategories = [],
   onChange,
-  includeAll = true,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,7 +59,7 @@ export default function QuestionCategoryFilter({
           variant="outline"
           className="flex w-full justify-between bg-white"
         >
-          <div className="flex items-center">
+          <div className="text-muted-foreground flex items-center">
             <Tag className="mr-2 h-4 w-4" />
             <span className="text-sm">
               {selectedCount ? `${selectedCount} categories` : "All Categories"}
@@ -99,28 +97,6 @@ export default function QuestionCategoryFilter({
           </div>
           <div className="h-fit">
             <div className="space-y-4">
-              {includeAll && (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="all-categories"
-                    checked={allSelected}
-                    onCheckedChange={() => {
-                      if (allSelected) {
-                        handleClearAll();
-                      } else {
-                        handleSelectAll();
-                      }
-                    }}
-                    className="h-4 w-4"
-                  />
-                  <label
-                    htmlFor="all-categories"
-                    className="cursor-pointer text-sm leading-none"
-                  >
-                    All Categories
-                  </label>
-                </div>
-              )}
               {isLoading ? (
                 <div className="text-muted-foreground text-sm">
                   Loading categories...

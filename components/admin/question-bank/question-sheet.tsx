@@ -390,7 +390,7 @@ export default function QuestionSheet({
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Explanation (Optional)</FormLabel>
+                          <FormLabel>Description (Optional)</FormLabel>
                           <FormControl>
                             <Textarea className="min-h-24" {...field} />
                           </FormControl>

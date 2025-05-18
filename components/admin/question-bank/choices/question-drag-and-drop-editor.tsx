@@ -7,16 +7,19 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   useSortable,
   SortableContext,
   verticalListSortingStrategy,
+  arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { useWatch, Control, UseFormSetValue } from "react-hook-form";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -31,8 +34,9 @@ type Props = {
 
 export default function DragAndDropEditor({ control, setValue }: Props) {
   const choices = useWatch({ control, name: "choices" }) ?? [];
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  // Generate temporary unique IDs for sortable mapping
   const idMapRef = useRef<Map<number, string>>(new Map());
 
   const sortableIds = useMemo(() => {
@@ -44,10 +48,26 @@ export default function DragAndDropEditor({ control, setValue }: Props) {
     });
   }, [choices.length]);
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveId(active.id as string);
+    setActiveIndex(sortableIds.findIndex((id) => id === active.id));
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+
+    setActiveId(null);
+    setActiveIndex(null);
+
     if (!over || active.id === over.id) return;
 
     const oldIndex = sortableIds.findIndex((id) => id === active.id);
@@ -55,14 +75,7 @@ export default function DragAndDropEditor({ control, setValue }: Props) {
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const newChoices = [...choices];
-    const [moved] = newChoices.splice(oldIndex, 1);
-    newChoices.splice(newIndex, 0, moved);
-
-    const newSortableIds = [...sortableIds];
-    const [movedId] = newSortableIds.splice(oldIndex, 1);
-    newSortableIds.splice(newIndex, 0, movedId);
-
+    const newChoices = arrayMove([...choices], oldIndex, newIndex);
     setValue("choices", newChoices);
   };
 
@@ -74,14 +87,6 @@ export default function DragAndDropEditor({ control, setValue }: Props) {
     setValue("choices", [...choices, newChoice]);
   };
 
-  useEffect(() => {
-    const newMap = new Map<number, string>();
-    choices.forEach((_, idx) => {
-      newMap.set(idx, `choice-${crypto.randomUUID()}`);
-    });
-    idMapRef.current = newMap;
-  }, [choices.length]);
-
   return (
     <div className="space-y-2">
       <FormLabel>Draggable Items (Required)</FormLabel>
@@ -89,18 +94,20 @@ export default function DragAndDropEditor({ control, setValue }: Props) {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
           items={sortableIds}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-1 rounded-md border p-1">
+          <div className="space-y-2 rounded-md border p-2">
             {choices.map((choice, index) => (
               <SortableItem
                 key={sortableIds[index]}
                 id={sortableIds[index]}
                 text={choice.text}
+                index={index}
                 onTextChange={(text) => {
                   const updated = [...choices];
                   updated[index].text = text;
@@ -108,13 +115,31 @@ export default function DragAndDropEditor({ control, setValue }: Props) {
                 }}
                 onRemove={() => {
                   const updatedChoices = choices.filter((_, i) => i !== index);
-
                   setValue("choices", updatedChoices);
                 }}
+                isDragging={sortableIds[index] === activeId}
               />
             ))}
           </div>
         </SortableContext>
+
+        <DragOverlay adjustScale={false}>
+          {activeId && activeIndex !== null && (
+            <div className="bg-background flex items-center justify-between gap-2 rounded border p-2 shadow-lg">
+              <div className="text-muted-foreground cursor-grab pr-1 select-none">
+                <GripVertical size={16} />
+              </div>
+              <Input
+                value={choices[activeIndex]?.text || ""}
+                readOnly
+                className="w-full"
+              />
+              <Button variant="ghost" size="icon" tabIndex={-1}>
+                <XIcon size={16} />
+              </Button>
+            </div>
+          )}
+        </DragOverlay>
       </DndContext>
 
       <Button
@@ -133,24 +158,35 @@ export default function DragAndDropEditor({ control, setValue }: Props) {
 type ItemProps = {
   id: string;
   text: string;
+  index: number;
   onTextChange: (text: string) => void;
   onRemove: () => void;
+  isDragging: boolean;
 };
 
-function SortableItem({ id, text, onTextChange, onRemove }: ItemProps) {
+function SortableItem({
+  id,
+  text,
+  index,
+  onTextChange,
+  onRemove,
+  isDragging,
+}: ItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-background flex items-center justify-between gap-2 rounded border p-2 transition-shadow"
+      className={`bg-background flex items-center justify-between gap-2 rounded border p-2 ${isDragging ? "z-10" : ""}`}
+      data-index={index}
     >
       <div
         {...attributes}

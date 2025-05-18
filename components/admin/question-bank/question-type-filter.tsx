@@ -15,13 +15,11 @@ import { Label } from "@/components/ui/label";
 type Props = {
   selectedTypes: string[];
   onChange: (types: string[]) => void;
-  includeAll?: boolean;
 };
 
 export default function QuestionTypeFilter({
   selectedTypes = [],
   onChange,
-  includeAll = true,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,11 +56,8 @@ export default function QuestionTypeFilter({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className="bg-background flex w-full justify-between"
-        >
-          <div className="flex items-center">
+        <Button variant="outline" className="flex w-full justify-between">
+          <div className="text-muted-foreground flex items-center">
             <Filter className="mr-2 h-4 w-4" />
             <span className="text-sm">
               {selectedCount ? `${selectedCount} types` : "All Types"}
@@ -70,7 +65,7 @@ export default function QuestionTypeFilter({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="bg-background w-[var(--radix-popover-trigger-width)] p-3">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-3">
         <div>
           <Input
             placeholder="Search types..."
@@ -100,35 +95,6 @@ export default function QuestionTypeFilter({
           </div>
           <div className="h-fit">
             <div className="space-y-4">
-              {includeAll && (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="all-types"
-                    checked={allSelected}
-                    onCheckedChange={() => {
-                      if (allSelected) {
-                        handleClearAll();
-                      } else {
-                        handleSelectAll();
-                      }
-                    }}
-                    className="h-4 w-4"
-                  />
-                  <label
-                    htmlFor="all-types"
-                    className="cursor-pointer text-sm leading-none"
-                    onClick={() => {
-                      if (allSelected) {
-                        handleClearAll();
-                      } else {
-                        handleSelectAll();
-                      }
-                    }}
-                  >
-                    All Types
-                  </label>
-                </div>
-              )}
               {filteredTypes.map((type) => (
                 <div key={type} className="flex items-center space-x-2">
                   <Checkbox

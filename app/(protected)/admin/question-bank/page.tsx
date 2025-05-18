@@ -114,8 +114,8 @@ export default function Page() {
               {types.map((type) => (
                 <Badge
                   key={type}
-                  variant="secondary"
-                  className="bg-background text-foreground flex items-center gap-1"
+                  variant="default"
+                  className="flex items-center gap-1"
                 >
                   {getFormattedQuestionType(type as QuestionType)}
                   <Button
