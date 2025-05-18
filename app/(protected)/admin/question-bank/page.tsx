@@ -134,8 +134,8 @@ export default function Page() {
               {categories.map((categoryName) => (
                 <Badge
                   key={categoryName}
-                  variant="secondary"
-                  className="bg-background text-foreground flex items-center gap-1"
+                  variant="default"
+                  className="flex items-center gap-1"
                 >
                   {categoryName}
                   <Button

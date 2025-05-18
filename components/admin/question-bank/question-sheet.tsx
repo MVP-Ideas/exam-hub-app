@@ -184,7 +184,7 @@ export default function QuestionSheet({
     reset({
       text: "",
       description: "",
-      type: QuestionType.MultipleChoiceSingle,
+      type: questionType || QuestionType.MultipleChoiceSingle,
       categoryIds: [],
       choices: [
         {

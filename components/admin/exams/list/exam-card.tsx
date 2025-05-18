@@ -110,28 +110,43 @@ export default function ExamCard({ exam, route, disableOptions }: Props) {
       </CardHeader>
       <CardContent className="flex-grow pb-2">
         <div className="flex flex-col gap-2">
-          <div className="text-muted-foreground flex items-center text-sm">
-            <Tag className="mr-2 h-4 w-4" />
-            <span>{exam.category}</span>
+          <div className="text-muted-foreground flex flex-col items-start text-sm">
+            <div className="flex flex-row items-center">
+              <Tag className="mr-2 h-4 w-4" />
+              <h3 className="text-sm">Categories:</h3>
+            </div>
           </div>
-          <div className="text-muted-foreground flex items-center text-sm">
-            <BarChart className="mr-2 h-4 w-4" />
-            <span>{exam.difficulty}</span>
+          <div className="mb-2 flex flex-row flex-wrap items-center gap-2">
+            {exam.categories.map((category) => (
+              <Badge
+                key={category.id}
+                variant="default"
+                className="border-0 text-xs"
+              >
+                {category.name}
+              </Badge>
+            ))}
           </div>
-          <div className="text-muted-foreground flex items-center text-sm">
-            <Clock className="mr-2 h-4 w-4" />
-            <span>{exam.durationSeconds / 60} minutes</span>
-          </div>
-          <div className="text-muted-foreground flex items-center text-sm">
-            <Award className="mr-2 h-4 w-4" />
-            <span>Pass: {exam.passingScore}%</span>
-          </div>
-          <div className="text-muted-foreground flex items-center text-sm">
-            <FileText className="mr-2 h-4 w-4" />
-            <span>
-              {Array.isArray(exam.questions) ? exam.questions.length : 0}{" "}
-              Questions
-            </span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="text-muted-foreground flex items-center text-sm">
+              <BarChart className="mr-2 h-4 w-4" />
+              <span>{exam.difficulty}</span>
+            </div>
+            <div className="text-muted-foreground flex items-center text-sm">
+              <Clock className="mr-2 h-4 w-4" />
+              <span>{exam.durationSeconds / 60} minutes</span>
+            </div>
+            <div className="text-muted-foreground flex items-center text-sm">
+              <Award className="mr-2 h-4 w-4" />
+              <span>Pass: {exam.passingScore}%</span>
+            </div>
+            <div className="text-muted-foreground flex items-center text-sm">
+              <FileText className="mr-2 h-4 w-4" />
+              <span>
+                {Array.isArray(exam.questions) ? exam.questions.length : 0}{" "}
+                Questions
+              </span>
+            </div>
           </div>
         </div>
       </CardContent>

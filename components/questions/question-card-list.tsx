@@ -13,6 +13,7 @@ type Props = {
   questions: Question[];
   addedQuestionIds?: string[];
   onSelect?: (id: string) => void;
+  openQuestionSheet?: (id: string) => void;
 };
 
 export default function QuestionCardList({

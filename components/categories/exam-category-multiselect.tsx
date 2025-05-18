@@ -251,8 +251,8 @@ export default function ExamCategoryMultiselect({
           {value.map((categoryId) => (
             <Badge
               key={categoryId}
-              variant="outline"
-              className="bg-background flex items-center gap-1 border-none text-xs"
+              variant="default"
+              className="flex items-center gap-1 border-none text-xs"
             >
               {getCategoryName(categoryId)}
               {!disabled && (
