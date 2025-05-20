@@ -17,12 +17,12 @@ const startExamSessionRequest = async (examId: string) => {
   }
 };
 
-const useStartExamSession = () => {
+const useStartExamSession = (examId: string) => {
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
   const { mutateAsync: startExamSession } = useMutation({
-    mutationFn: (examId: string) => startExamSessionRequest(examId),
+    mutationFn: () => startExamSessionRequest(examId),
     onSuccess: (data: ExamSession) => {
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["examSession", data.id] });

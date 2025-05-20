@@ -25,7 +25,7 @@ export default function Page() {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">
-      <BeatLoader size={48} />
+      <BeatLoader size={24} />
     </div>
   );
 }

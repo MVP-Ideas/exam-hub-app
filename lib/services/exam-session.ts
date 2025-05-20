@@ -22,7 +22,9 @@ const ExamSessionService = {
     return response.data;
   },
   startExamSession: async (examId: string) => {
-    const response = await api.post(`${BASE_URL}/start`, { examId });
+    const response = await api.post<ExamSession>(`${BASE_URL}/start`, {
+      examId,
+    });
     return response.data;
   },
   answerQuestion: async (

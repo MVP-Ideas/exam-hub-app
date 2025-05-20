@@ -36,16 +36,28 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import ResourceCard from "@/components/admin/resources/resource-card";
-import { DialogClose } from "@radix-ui/react-dialog";
+import { DialogClose } from "@/components/ui/dialog";
 import { formatUTCDate } from "@/lib/date-utils";
+import useStartExamSession from "@/hooks/exam-sessions/useStartExamSession";
+import { toast } from "sonner";
 
 export default function Page() {
   const { id } = useParams();
   const { exam, isLoading, isError } = useExamById(id as string);
-  
+  const { startExamSession, isPending } = useStartExamSession(id as string);
 
   const resources = exam?.resources || [];
   const router = useRouter();
+
+  const handleStartExamSession = async () => {
+    const response = await startExamSession();
+
+    if (response) {
+      router.push(`/sessions/${response.id}/1`);
+    }
+
+    toast.error("Failed to start exam session");
+  };
 
   if (isLoading || isError || !exam) {
     return (
@@ -62,11 +74,11 @@ export default function Page() {
         <div className="absolute inset-0 bg-black opacity-30" />
         <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6 text-white">
           <div className="mb-2 flex space-x-2 text-sm">
-            <Badge variant="secondary" className="bg-indigo-600">
-              {exam.category}
-            </Badge>
             <Badge variant="secondary" className="bg-purple-600">
               {exam.difficulty}
+            </Badge>
+            <Badge variant="secondary" className="bg-indigo-600">
+              {exam.categories?.length || 0} Competencies
             </Badge>
           </div>
           <h1 className="mb-2 text-3xl font-bold">{exam.title}</h1>
@@ -101,7 +113,7 @@ export default function Page() {
                 </h3>
                 <ul className="space-y-3">
                   {[
-                    `Demonstrate your knowledge in ${exam.category}`,
+                    `Demonstrate your knowledge in ${exam.categories?.map((category) => category.name).join(", ") || "this field"}`,
                     "Gain certification in core industry concepts",
                     "Enhance your resume with verified skills",
                   ].map((text) => (
@@ -123,7 +135,7 @@ export default function Page() {
                 <CardTitle>Exam Structure</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3">
                   {[
                     {
                       Icon: Clock3,
@@ -140,11 +152,6 @@ export default function Page() {
                       label: "Passing Score",
                       value: `${exam.passingScore}%`,
                     },
-                    {
-                      Icon: BookOpen,
-                      label: "Category",
-                      value: exam.category,
-                    },
                   ].map(({ Icon, label, value }) => (
                     <div
                       key={label}
@@ -159,6 +166,31 @@ export default function Page() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-4">
+                  <div className="bg-accent flex items-center rounded-md p-3">
+                    <BookOpen
+                      size={20}
+                      className="text-primary mr-3 shrink-0"
+                    />
+                    <div>
+                      <div className="text-muted-foreground text-sm">
+                        Categories
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1 font-medium">
+                        {exam.categories?.map((category) => (
+                          <Badge
+                            key={category.id}
+                            variant="default"
+                            className="text-xs"
+                          >
+                            {category.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -199,6 +231,7 @@ export default function Page() {
                 // Resume existing exam session
                 <Button
                   className="mb-6 w-full"
+                  disabled={isPending}
                   onClick={() => {
                     router.push(
                       `/sessions/${exam.metadata?.existingExamSessionId}/1`,
@@ -258,7 +291,8 @@ export default function Page() {
                         <Button
                           variant="secondary"
                           className="flex-1"
-                          onClick={() => {}}
+                          disabled={isPending}
+                          onClick={handleStartExamSession}
                         >
                           Begin Exam
                         </Button>
