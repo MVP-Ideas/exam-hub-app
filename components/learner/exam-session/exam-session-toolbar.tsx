@@ -7,29 +7,84 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { ExamQuestionCreateReadUpdate } from "../../../lib/types/exam";
 import {
   ArrowLeftToLine,
+  ArrowRightToLine,
   BookIcon,
   CalculatorIcon,
   FileQuestion,
+  Grid2X2,
+  ListOrdered,
+  MessageCircle,
+  PauseCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ExamSessionQuestion } from "@/lib/types/exam-session";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { useExamSessionStore } from "@/lib/stores/exam-session-store";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import useCreateQuestionFeedback from "@/hooks/question-feedback/useCreateQuestionFeedback";
 
 type Props = {
   examId: string;
-  questions: ExamQuestionCreateReadUpdate[];
+  endable: boolean;
+  questions: ExamSessionQuestion[];
   currentQuestionIndex: number;
   setCurrentQuestionIndex: (index: number) => void;
+  navMode: "numbers" | "questions";
+  setNavMode: (mode: "numbers" | "questions") => void;
+  isPaused?: boolean;
+  setPaused?: (paused: boolean) => void;
+  isSubmitting?: boolean;
+  submitExamSession?: () => void;
 };
 
 export default function ExamSessionToolbar({
   examId,
+  endable,
   questions,
   currentQuestionIndex,
   setCurrentQuestionIndex,
+  navMode,
+  setNavMode,
+  isPaused,
+  setPaused,
+  isSubmitting,
+  submitExamSession,
 }: Props) {
   const router = useRouter();
+  const { flaggedQuestions } = useExamSessionStore();
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const { createQuestionFeedback, isPending: isSubmittingFeedback } =
+    useCreateQuestionFeedback();
+
+  const handleFeedbackSubmit = async () => {
+    try {
+      const currentQuestion = questions[currentQuestionIndex];
+      await createQuestionFeedback({
+        examSessionQuestionId: currentQuestion.id,
+        feedback: feedbackText,
+      });
+
+      setFeedbackText("");
+      setShowFeedbackDialog(false);
+    } catch (error) {
+      // Error is already handled by the hook with toast notification
+      console.error("Error submitting feedback:", error);
+    }
+  };
 
   return (
     <Sidebar
@@ -46,19 +101,94 @@ export default function ExamSessionToolbar({
 
       <SidebarContent className="bg-background rounded-lg p-4">
         <div className="flex flex-col gap-y-2">
-          <p className="text-primary text-sm font-semibold">Item Navigation</p>
-          <div className="grid grid-cols-6 gap-2">
-            {questions.map((_, index) => (
+          <div className="flex flex-row items-center justify-between">
+            <p className="text-primary text-sm font-semibold">
+              Item Navigation
+            </p>
+            <div className="flex items-center rounded-md border">
               <Button
-                key={index}
-                variant={index === currentQuestionIndex ? "default" : "outline"}
-                className={`h-8 w-8 p-0 text-sm font-semibold`}
-                onClick={() => setCurrentQuestionIndex(index + 1)}
+                variant="ghost"
+                size="sm"
+                className={cn("h-4 p-4", navMode === "numbers" && "bg-muted")}
+                onClick={() => setNavMode("numbers")}
               >
-                {index + 1}
+                <Grid2X2 className="h-4 w-4" />
               </Button>
-            ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn("h-4 p-4", navMode === "questions" && "bg-muted")}
+                onClick={() => setNavMode("questions")}
+              >
+                <ListOrdered className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
+
+          {navMode === "numbers" ? (
+            <div className="grid grid-cols-6 gap-2">
+              {questions.map((question, index) => (
+                <div key={index} className="relative">
+                  {flaggedQuestions.includes(question.id) && (
+                    <div className="absolute -top-1 -right-1">
+                      <div className="bg-destructive flex h-3 w-3 items-center justify-center rounded-full" />
+                    </div>
+                  )}
+                  <Button
+                    variant={
+                      index === currentQuestionIndex ? "default" : "outline"
+                    }
+                    className={cn(
+                      "h-8 w-8 p-0 text-sm font-semibold",
+                      question.answer &&
+                        index !== currentQuestionIndex &&
+                        "bg-green-300 text-black",
+                    )}
+                    onClick={() => {
+                      setCurrentQuestionIndex(index + 1);
+                    }}
+                  >
+                    {index + 1}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="custom-scrollbar flex max-h-72 flex-col overflow-y-auto pt-2 pr-1">
+              {questions.map((question, index) => (
+                <div key={index} className="relative">
+                  {flaggedQuestions.includes(question.id) && (
+                    <div className="absolute -top-0 -right-0">
+                      <div className="bg-destructive flex h-2 w-2 items-center justify-center rounded-full" />
+                    </div>
+                  )}
+                  <Button
+                    key={index}
+                    variant={
+                      index === currentQuestionIndex ? "default" : "outline"
+                    }
+                    className={cn(
+                      "mb-1 h-auto w-full justify-start p-1 text-left text-xs font-medium",
+                      question.answer &&
+                        index !== currentQuestionIndex &&
+                        "text-foreground bg-green-300 hover:bg-green-400",
+                    )}
+                    onClick={() => {
+                      setCurrentQuestionIndex(index + 1);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="bg-muted text-muted-foreground flex h-4 w-4 items-center justify-center rounded-full text-xs font-semibold">
+                        {index + 1}
+                      </span>
+                      <span className="truncate">{question.text}</span>
+                    </div>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <Separator className="my-2" />
           <div className="flex flex-col gap-y-2">
             <p className="text-primary text-sm font-semibold">Exam Tools</p>
@@ -75,14 +205,42 @@ export default function ExamSessionToolbar({
                 <FileQuestion className="h-4 w-4" />
                 Help
               </Button>
+              <Button
+                variant="outline"
+                className="w-full font-semibold"
+                onClick={() => setShowFeedbackDialog(true)}
+              >
+                <MessageCircle className="h-4 w-4" />
+                Question Feedback
+              </Button>
+              {setPaused && (
+                <Button
+                  variant="outline"
+                  className="w-full font-semibold"
+                  onClick={() => setPaused(true)}
+                  disabled={isPaused}
+                >
+                  <PauseCircle className="h-4 w-4" />
+                  Take a Break
+                </Button>
+              )}
+              {endable && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowSubmitDialog(true)}
+                >
+                  <ArrowRightToLine className="h-4 w-4" />
+                  Submit Exam
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </SidebarContent>
       <SidebarFooter>
         <Button
-          variant="destructive"
-          className="w-full font-bold"
+          variant="ghost"
+          className="hover:bg-destructive hover:text-background w-full font-bold"
           onClick={() => {
             router.push(`/exams/${examId}`);
           }}
@@ -92,6 +250,79 @@ export default function ExamSessionToolbar({
         </Button>
       </SidebarFooter>
       <SidebarRail />
+
+      {/* Submit Exam Dialog */}
+      <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Submit Exam</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to submit this exam? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowSubmitDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => {
+                setShowSubmitDialog(false);
+                submitExamSession?.();
+              }}
+            >
+              {isSubmitting ? "Submitting..." : "Yes, Submit Exam"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Question Feedback Dialog */}
+      <Dialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Question Feedback</DialogTitle>
+            <DialogDescription>
+              Please provide feedback about the current question. This will help
+              us improve our exam content.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="feedback">Your Feedback</Label>
+              <Textarea
+                id="feedback"
+                placeholder="Describe any issues or suggestions you have about this question..."
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFeedbackText("");
+                setShowFeedbackDialog(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={handleFeedbackSubmit}
+              disabled={!feedbackText.trim() || isSubmittingFeedback}
+            >
+              {isSubmittingFeedback ? "Submitting..." : "Submit Feedback"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   );
 }

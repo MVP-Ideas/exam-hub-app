@@ -8,17 +8,21 @@ export type ExamSession = {
   finishedAt: string;
   timeSpentSeconds: number;
   maxTimeSeconds: number;
-  answers: ExamSessionAnswer[];
+  questions: ExamSessionQuestion[];
+  totalScore?: number;
 };
 
 export type ExamSessionQuestion = {
   id: string;
+  questionId: string;
   text: string;
   description: string;
   type: string;
+  points: number;
   choices: ExamSessionQuestionChoice[];
   resources: Resource[];
   answer?: ExamSessionAnswer;
+  timeSpentSeconds: number;
 };
 
 export type ExamSessionQuestionChoice = {
@@ -33,6 +37,8 @@ export type ExamSessionAnswer = {
   timeSpentSeconds: number;
   toBeReviewed: boolean;
   choices: ExamSessionAnswerChoice[];
+  points?: number;
+  isCorrect?: boolean;
 };
 
 export type ExamSessionAnswerChoice = {

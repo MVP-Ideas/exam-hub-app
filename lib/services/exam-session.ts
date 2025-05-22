@@ -47,6 +47,18 @@ const ExamSessionService = {
     );
     return response.data;
   },
+  resetAnswers: async (examSessionId: string, examSessionQuestionId: string) => {
+    const response = await api.post<boolean>(
+      `${BASE_URL}/${examSessionId}/questions/${examSessionQuestionId}/reset`,
+    );
+    return response.data;
+  },
+  submitExamSession: async (examSessionId: string) => {
+    const response = await api.post<ExamSession>(
+      `${BASE_URL}/${examSessionId}/submit`,
+    );
+    return response.data;
+  },
 };
 
 export default ExamSessionService;

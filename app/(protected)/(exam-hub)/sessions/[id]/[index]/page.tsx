@@ -6,20 +6,76 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import useExamSessionById from "@/hooks/exam-sessions/useExamSessionById";
-import { ArrowLeft, ArrowRight, Menu, TimerIcon } from "lucide-react";
+import { Menu, TimerIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BeatLoader } from "react-spinners";
 import QuestionBox from "@/components/learner/exam-session/question-box";
-
+import useCountdown from "@/hooks/timer/useCountdown";
+import useUpdateExamProgress from "@/hooks/exam-sessions/useUpdateExamProgress";
+import { useExamSessionStore } from "@/lib/stores/exam-session-store";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import useSubmitExamSession from "@/hooks/exam-sessions/useSubmitExamSession";
 export default function Page() {
   const router = useRouter();
   const { id, index } = useParams();
   const { examSession, isLoading, isError } = useExamSessionById(id as string);
-  const questions = examSession?.exam.questions || [];
+  const { updateProgress } = useUpdateExamProgress(id as string);
+  const { submitExamSession, isPending: isSubmitting } = useSubmitExamSession(
+    id as string,
+  );
+  const questions = examSession?.questions || [];
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(
     parseInt(index as string) || 1,
   );
+
+  // Use the store for navMode
+  const { navMode, setNavMode, setLastVisitedExamId } = useExamSessionStore();
+
+  const initialTimeSeconds = examSession
+    ? examSession.maxTimeSeconds - examSession.timeSpentSeconds
+    : 0;
+
+  const { formatTime, isPaused, setPaused } = useCountdown({
+    initialSeconds: initialTimeSeconds,
+    updateInterval: 10,
+    onComplete: () => {
+      updateProgress(initialTimeSeconds);
+      handleSubmitExamSession();
+    },
+    onTimeUpdate: (seconds) => {
+      if (examSession?.maxTimeSeconds) {
+        const timeSpentSeconds = initialTimeSeconds - seconds;
+
+        if (timeSpentSeconds > 0) {
+          updateProgress(timeSpentSeconds);
+        }
+      }
+    },
+  });
+
+  const handleSubmitExamSession = async () => {
+    try {
+      await submitExamSession();
+      router.push(`/results/${examSession?.id}`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Update last visited exam when the session changes
+  useEffect(() => {
+    if (examSession?.exam?.id) {
+      setLastVisitedExamId(examSession.exam.id);
+    }
+  }, [examSession?.exam?.id, setLastVisitedExamId]);
 
   useEffect(() => {
     router.push(`/sessions/${id}/${currentQuestionIndex}`);
@@ -46,18 +102,35 @@ export default function Page() {
             There may be also no questions in this exam session. Please contact
             us for more information.
           </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/exams")}
+            className="w-full"
+          >
+            Go to Exams
+          </Button>
         </div>
       </div>
     );
   }
 
+  // Calculate number of answered questions
+  const answeredQuestions = questions.filter((q) => q.answer).length;
+
   return (
     <div className="flex h-full w-full flex-row">
       <ExamSessionToolbar
+        endable={answeredQuestions === questions.length}
         examId={examSession.exam.id}
         questions={questions}
         currentQuestionIndex={currentQuestionIndex - 1}
         setCurrentQuestionIndex={setCurrentQuestionIndex}
+        navMode={navMode}
+        setNavMode={setNavMode}
+        isPaused={isPaused}
+        setPaused={setPaused}
+        isSubmitting={isSubmitting}
+        submitExamSession={handleSubmitExamSession}
       />
       <div className="flex h-full w-full flex-col">
         <header className="flex w-full flex-row items-center justify-between p-4">
@@ -66,7 +139,7 @@ export default function Page() {
             <div className="flex flex-col">
               <h2 className="truncate font-bold">{examSession.exam.title}</h2>
               <p className="text-muted-foreground text-xs">
-                {examSession.exam.category}
+                {examSession.exam.categories?.[0]?.name}
               </p>
             </div>
           </div>
@@ -74,7 +147,7 @@ export default function Page() {
             <TimerIcon className="h-4 w-4" />
             <div className="flex flex-col items-end">
               <p className="text-muted-foreground text-xs">Time Remaining</p>
-              <p className="text-lg font-bold">01:30:00</p>
+              <p className="text-lg font-bold">{formatTime()}</p>
             </div>
           </div>
         </header>
@@ -83,39 +156,54 @@ export default function Page() {
         <div className="flex w-full flex-col gap-y-2 px-6 py-4">
           <div className="flex w-full flex-row items-center justify-between">
             <p className="text-muted-foreground text-xs">Exam Progress</p>
-            <p className="text-muted-foreground text-xs">0/10 Questions</p>
+            <p className="text-muted-foreground text-xs">
+              {answeredQuestions}/{questions.length} Questions
+            </p>
           </div>
-          <Progress />
+          <Progress value={(answeredQuestions / questions.length) * 100} />
         </div>
         <Separator />
         {/* Question */}
         <div className="flex flex-1 flex-col">
           <QuestionBox
-            questionId={questions[currentQuestionIndex - 1].questionId}
+            examSessionId={id as string}
+            questionId={questions[currentQuestionIndex - 1].id}
+            currentQuestionIndex={currentQuestionIndex}
+            setCurrentQuestionIndex={setCurrentQuestionIndex}
+            disabledNextButton={currentQuestionIndex === questions.length}
           />
         </div>
-        {/* Footer */}
-        <footer className="flex w-full flex-row items-center justify-between p-4">
-          <Button
-            variant="outline"
-            className="px-4 font-semibold"
-            onClick={() => setCurrentQuestionIndex((prev) => prev - 1)}
-            disabled={currentQuestionIndex === 1}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Previous
-          </Button>
-          <Button
-            variant="secondary"
-            className="px-4 font-semibold"
-            onClick={() => setCurrentQuestionIndex((prev) => prev + 1)}
-            disabled={currentQuestionIndex === questions.length}
-          >
-            Next
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </footer>
       </div>
+
+      {/* Pause Dialog */}
+      <Dialog
+        open={isPaused}
+        onOpenChange={(open) => !open && setPaused(false)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Exam Paused</DialogTitle>
+            <DialogDescription>
+              Your exam timer has been paused. Take the time you need, and when
+              you&apos;re ready to continue, click the button below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-6">
+            <div className="text-center">
+              <p className="text-muted-foreground mb-2">Time Remaining</p>
+              <p className="text-2xl font-bold">{formatTime()}</p>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button
+              onClick={() => setPaused(false)}
+              className="w-full sm:w-auto"
+            >
+              Continue Exam
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

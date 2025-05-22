@@ -54,9 +54,9 @@ export default function Page() {
 
     if (response) {
       router.push(`/sessions/${response.id}/1`);
+    } else {
+      toast.error("Failed to start exam session");
     }
-
-    toast.error("Failed to start exam session");
   };
 
   if (isLoading || isError || !exam) {

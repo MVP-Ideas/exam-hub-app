@@ -6,6 +6,7 @@ import { Providers } from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { Suspense, useEffect } from "react";
 import { useUserStore } from "@/lib/stores/user-store";
+import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -20,6 +21,7 @@ export default function RootLayout({
 }>) {
   useEffect(() => {
     useUserStore.persist.rehydrate();
+    useExamSessionStore.persist.rehydrate();
   }, []);
 
   return (

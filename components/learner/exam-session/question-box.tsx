@@ -1,7 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BeatLoader } from "react-spinners";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,70 +19,78 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Clock } from "lucide-react";
+import {
+  GripVertical,
+  Clock,
+  ArrowLeft,
+  ArrowRight,
+  RefreshCcw,
+  Flag,
+} from "lucide-react";
 import { QuestionType } from "@/lib/types/questions";
 import useExamSessionQuestionByQuestionId from "@/hooks/exam-sessions/useExamSessionQuestionByQuestionId";
 import useAnswerQuestion from "@/hooks/exam-sessions/useAnswerQuestion";
-import useUpdateExamProgress from "@/hooks/exam-sessions/useUpdateExamProgress";
 import useTimer from "@/hooks/timer/useTimer";
-import { getQuestionTypeBadge } from "@/lib/constants/question";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { ExamSessionAnswerCreate } from "@/lib/types/exam-session";
+import useResetAnswer from "@/hooks/exam-sessions/useResetAnswer";
+import { useExamSessionStore } from "@/lib/stores/exam-session-store";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
+import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 
 type QuestionBoxProps = {
+  examSessionId: string;
   questionId: string;
+  currentQuestionIndex: number;
+  setCurrentQuestionIndex: (index: number) => void;
+  disabledNextButton: boolean;
 };
 
-export default function QuestionBox({ questionId }: QuestionBoxProps) {
-  const { id } = useParams();
+export default function QuestionBox({
+  examSessionId,
+  questionId,
+  currentQuestionIndex,
+  setCurrentQuestionIndex,
+  disabledNextButton,
+}: QuestionBoxProps) {
+  const { flaggedQuestions, addFlaggedQuestion, removeFlaggedQuestion } =
+    useExamSessionStore();
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
   const [choiceOrder, setChoiceOrder] = useState<string[]>([]);
+
   const { answerQuestion, isPending: isSubmitting } = useAnswerQuestion();
-  const { updateProgress } = useUpdateExamProgress();
+  const { resetAnswer } = useResetAnswer(examSessionId, questionId);
+  const [answerData, setAnswerData] = useState<ExamSessionAnswerCreate | null>(
+    null,
+  );
+
+  const debouncedAnswerData = useDebouncedValue(answerData, 1000);
 
   const { question, isLoading, isError } = useExamSessionQuestionByQuestionId(
-    id as string,
+    examSessionId,
     questionId,
   );
 
-  const initialSeconds = question?.answer?.timeSpentSeconds || 0;
-
-  const handleTimeUpdate = (newSeconds: number) => {
-    // Update server periodically
-    if (id && newSeconds > 0 && newSeconds % 30 === 0) {
-      updateProgress({
-        examSessionId: id as string,
-        timeSpentSeconds: newSeconds,
-      });
-    }
-  };
+  const initialSeconds = question?.timeSpentSeconds || 0;
 
   const { seconds, formatTime, resetTimer } = useTimer({
     initialSeconds,
   });
 
-  const submitAnswer = async () => {
-    if (!question || isSubmitting) return;
-
-    try {
-      const answerData = {
-        choices: getAnswerChoices(),
-        aiAssitanceUsed: false,
-        timeSpentSeconds: seconds,
-        toBeReviewed: false,
-      };
-
-      await answerQuestion({
-        examSessionId: id as string,
-        questionId: questionId,
-        answer: answerData,
-      });
-    } catch (error) {
-      console.error("Failed to submit answer:", error);
+  const getAnswerChoices = useCallback(() => {
+    if (!question?.type) {
+      return [];
     }
-  };
 
-  const getAnswerChoices = () => {
-    switch (question?.type) {
+    switch (question.type) {
       case QuestionType.MultipleChoiceSingle:
       case QuestionType.TrueFalse:
         return selectedChoices.map((choiceId) => ({
@@ -104,7 +111,35 @@ export default function QuestionBox({ questionId }: QuestionBoxProps) {
       default:
         return [];
     }
-  };
+  }, [question, selectedChoices, choiceOrder]);
+
+  const submitAnswer = useCallback(async () => {
+    if (!question || isSubmitting) return;
+
+    try {
+      await answerQuestion({
+        examSessionId: examSessionId,
+        questionId: questionId,
+        answer: {
+          choices: getAnswerChoices(),
+          aiAssitanceUsed: false,
+          timeSpentSeconds: seconds,
+          toBeReviewed: false,
+        },
+      });
+    } catch (error) {
+      toast.error("Failed to submit answer");
+      console.error("Failed to submit answer:", error);
+    }
+  }, [
+    examSessionId,
+    isSubmitting,
+    question,
+    questionId,
+    answerQuestion,
+    seconds,
+    getAnswerChoices,
+  ]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -145,23 +180,15 @@ export default function QuestionBox({ questionId }: QuestionBoxProps) {
     } else {
       setChoiceOrder([]);
     }
-  }, [questionId, question]);
+  }, [questionId]);
 
   const handleSingleChoiceSelection = (value: string) => {
     setSelectedChoices([value]);
-    // Create answer data directly with the new value instead of relying on state
-    const answerData = {
+    setAnswerData({
       choices: [{ questionChoiceId: value }],
       aiAssitanceUsed: false,
-      timeSpentSeconds: seconds,
       toBeReviewed: false,
-    };
-
-    // Submit with the new value directly
-    answerQuestion({
-      examSessionId: id as string,
-      questionId: questionId,
-      answer: answerData,
+      timeSpentSeconds: seconds - initialSeconds,
     });
   };
 
@@ -174,8 +201,12 @@ export default function QuestionBox({ questionId }: QuestionBoxProps) {
       newChoices = selectedChoices.filter((id) => id !== value);
       setSelectedChoices(newChoices);
     }
-
-    submitAnswer();
+    setAnswerData({
+      choices: newChoices.map((choiceId) => ({ questionChoiceId: choiceId })),
+      aiAssitanceUsed: false,
+      toBeReviewed: false,
+      timeSpentSeconds: seconds - initialSeconds,
+    });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -188,13 +219,39 @@ export default function QuestionBox({ questionId }: QuestionBoxProps) {
       // Use arrayMove helper from dnd-kit
       const newOrder = arrayMove(choiceOrder, oldIndex, newIndex);
       setChoiceOrder(newOrder);
-
-      // Submit after the state updates
-      setTimeout(() => {
-        submitAnswer();
-      }, 300);
+      setAnswerData({
+        choices: newOrder.map((choiceId, index) => ({
+          questionChoiceId: choiceId,
+          order: index,
+        })),
+        aiAssitanceUsed: false,
+        timeSpentSeconds: seconds - initialSeconds,
+        toBeReviewed: false,
+      });
     }
   };
+
+  const isFlagged = flaggedQuestions.includes(questionId);
+
+  useEffect(() => {
+    if (!debouncedAnswerData || isSubmitting) return;
+
+    const submit = async () => {
+      try {
+        await answerQuestion({
+          examSessionId,
+          questionId,
+          answer: debouncedAnswerData,
+        });
+        setAnswerData(null);
+      } catch (error) {
+        toast.error("Failed to submit answer");
+        console.error("Submit error:", error);
+      }
+    };
+
+    submit();
+  }, [debouncedAnswerData]);
 
   if (isLoading) {
     return (
@@ -325,25 +382,76 @@ export default function QuestionBox({ questionId }: QuestionBoxProps) {
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-6 p-6">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-row items-center gap-2">
-            <h2 className="text-xl font-bold">{question.text}</h2>
-            {getQuestionTypeBadge(question.type as QuestionType)}
+    <div className="flex h-full w-full flex-1 flex-col gap-6 p-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col-reverse items-center justify-between gap-y-2 md:flex-row">
+          <div className="flex flex-col items-center gap-2 md:flex-row">
+            <h2 className="text-base font-bold md:text-lg">{question.text}</h2>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (isFlagged) {
+                        removeFlaggedQuestion(questionId);
+                      } else {
+                        addFlaggedQuestion(questionId);
+                      }
+                    }}
+                  >
+                    <Flag
+                      className={cn(
+                        "h-4 w-4",
+                        isFlagged
+                          ? "text-destructive font-bold"
+                          : "text-muted-foreground",
+                      )}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  {isFlagged ? "Unflag question" : "Flag question"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Clock className="text-muted-foreground h-4 w-4" />
-            <span className="text-muted-foreground">Time spent:</span>
+            <span className="text-muted-foreground hidden md:block">
+              Time spent:
+            </span>
             <span className="font-mono">{formatTime()}</span>
           </div>
         </div>
         {question.description && (
-          <p className="text-muted-foreground">{question.description}</p>
+          <p className="text-muted-foreground text-xs md:text-sm">
+            {question.description}
+          </p>
         )}
       </div>
 
-      <div className="flex-1">{renderQuestionContent()}</div>
+      <div className="flex-1">
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-4">{renderQuestionContent()}</div>
+          <div className="flex flex-col gap-4">
+            <Button
+              variant="outline"
+              className="w-fit"
+              onClick={() => {
+                // Reset selected choices and order
+                setSelectedChoices([]);
+                setChoiceOrder([]);
+                resetAnswer();
+              }}
+            >
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Reset question
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {question.resources && question.resources.length > 0 && (
         <div className="mt-4">
@@ -361,6 +469,33 @@ export default function QuestionBox({ questionId }: QuestionBoxProps) {
           </div>
         </div>
       )}
+      {/* Footer */}
+      <footer className="flex w-full flex-row items-center justify-between p-4">
+        <Button
+          variant="outline"
+          className="px-4 font-semibold"
+          onClick={() => {
+            submitAnswer();
+            setCurrentQuestionIndex(currentQuestionIndex - 1);
+          }}
+          disabled={currentQuestionIndex === 1}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Previous
+        </Button>
+        <Button
+          variant="secondary"
+          className="px-4 font-semibold"
+          onClick={() => {
+            submitAnswer();
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+          }}
+          disabled={disabledNextButton}
+        >
+          Next
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </footer>
     </div>
   );
 }
@@ -388,9 +523,13 @@ function SortableItem({ id, text }: { id: string; text: string }) {
       className="flex items-center gap-2 rounded-md border bg-white p-3"
       {...attributes}
     >
-      <button {...listeners} className="cursor-grab touch-manipulation">
+      <Button
+        variant="ghost"
+        {...listeners}
+        className="cursor-grab touch-manipulation"
+      >
         <GripVertical size={16} />
-      </button>
+      </Button>
       <span>{text}</span>
     </div>
   );

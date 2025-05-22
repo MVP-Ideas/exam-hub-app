@@ -2,46 +2,43 @@ import ExamSessionService from "@/lib/services/exam-session";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
+import { toast } from "sonner";
 
-const updateProgressRequest = async (
-  examSessionId: string,
-  timeSpentSeconds: number,
-) => {
+const submitExamSessionRequest = async (examSessionId: string) => {
   try {
-    const response = await ExamSessionService.updateProgress(
-      examSessionId,
-      timeSpentSeconds,
-    );
+    const response = await ExamSessionService.submitExamSession(examSessionId);
     if (response) {
       return response;
     }
-    throw new Error("Failed to update exam progress");
+    throw new Error("Failed to submit exam session");
   } catch (error) {
     throw error;
   }
 };
 
-const useUpdateExamProgress = (examSessionId: string) => {
+const useSubmitExamSession = (examSessionId: string) => {
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
-  const { mutateAsync: updateProgress } = useMutation({
-    mutationFn: (timeSpentSeconds: number) =>
-      updateProgressRequest(examSessionId, timeSpentSeconds),
+  const { mutateAsync: submitExamSession } = useMutation({
+    mutationFn: () => submitExamSessionRequest(examSessionId),
     onSuccess: () => {
       startTransition(() => {
         queryClient.invalidateQueries({
           queryKey: ["examSession", examSessionId],
         });
+        queryClient.invalidateQueries({ queryKey: ["examSessions"] });
       });
+      toast.success("Exam submitted successfully");
     },
     onError: (error) => {
       const message = extractAxiosErrorMessage(error);
-      console.error("Failed to update exam progress:", message);
+      toast.error(message);
+      throw new Error(message);
     },
   });
 
-  return { updateProgress, isPending };
+  return { submitExamSession, isPending };
 };
 
-export default useUpdateExamProgress;
+export default useSubmitExamSession;
