@@ -1,9 +1,8 @@
 "use client";
 
 import PlatformMetrics from "@/components/admin/landing/platform-metrics";
-import { useUserStore } from "@/components/providers/user-store-provider";
 import { Badge } from "@/components/ui/badge";
-import { UserState } from "@/lib/stores/user-store";
+import { UserState, useUserStore } from "@/lib/stores/user-store";
 
 export default function Page() {
   const { user } = useUserStore((state: UserState) => ({

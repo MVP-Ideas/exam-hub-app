@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { STATUS_OPTIONS } from "@/lib/constants/exam";
+import { CircleDotDashedIcon } from "lucide-react";
 
 type Props = {
   value?: string | null;
@@ -27,8 +28,11 @@ export default function ExamStatusSelect({
       value={value ?? "null"}
       defaultValue={"null"}
     >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select Status" />
+      <SelectTrigger className="bg-background w-full justify-between">
+        <div className="flex items-center gap-2">
+          <CircleDotDashedIcon className="h-4 w-4 shrink-0" />
+          <SelectValue placeholder="Select Status" />
+        </div>
       </SelectTrigger>
       <SelectContent>
         {includeNull && (

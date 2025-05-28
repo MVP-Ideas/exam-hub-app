@@ -1,5 +1,4 @@
 import ExamCardHorizontal from "@/components/admin/exams/list/exam-card-horizontal";
-import { Skeleton } from "@/components/ui/skeleton";
 import useGetExams from "@/hooks/exams/useExams";
 
 export default function FeaturedExams() {
@@ -16,14 +15,16 @@ export default function FeaturedExams() {
     isFeatured: true,
   }));
 
+  if (isLoading || !top2exams || top2exams.length === 0) {
+    return null;
+  }
+
   return (
     <section className="mx-auto w-full max-w-7xl px-6 py-8">
       <h2 className="text-foreground mb-6 text-xl font-bold">Featured Exams</h2>
 
       <div className="flex w-full flex-col gap-4">
-        {isLoading ? (
-          <Skeleton className="h-40 w-full rounded-lg" />
-        ) : (
+        {top2exams.length > 0 &&
           top2exams?.map((exam) => (
             <ExamCardHorizontal
               disableOptions
@@ -31,8 +32,7 @@ export default function FeaturedExams() {
               exam={exam}
               route="/exams"
             />
-          ))
-        )}
+          ))}
       </div>
     </section>
   );

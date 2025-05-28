@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { useFormContext } from "react-hook-form";
-import ExamCategorySelect from "@/components/categories/exam-category-select";
+import ExamCategoryMultiselect from "@/components/categories/exam-category-multiselect";
 import { ExamFormSchema } from "./exam-form";
 import ExamDifficultySelect from "../exam-difficulty-select";
 
@@ -70,23 +70,6 @@ export default function ExamDetails({ disabled }: Props) {
       <div className="flex w-full flex-row items-start justify-between gap-4">
         <FormField
           control={control}
-          name="categoryId"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Category</FormLabel>
-              <ExamCategorySelect
-                disabled={disabled}
-                value={field.value}
-                onIdChange={field.onChange}
-                includeNull
-              />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
           name="difficulty"
           render={({ field }) => (
             <FormItem className="w-full">
@@ -103,9 +86,7 @@ export default function ExamDetails({ disabled }: Props) {
             </FormItem>
           )}
         />
-      </div>
 
-      <div className="flex w-full flex-row justify-between gap-4">
         <FormField
           control={control}
           name="timeLimit"
@@ -166,6 +147,21 @@ export default function ExamDetails({ disabled }: Props) {
           )}
         />
       </div>
+
+      <FormField
+        control={control}
+        name="categoryIds"
+        render={({ field }) => (
+          <FormItem className="w-full">
+            <FormLabel>Categories</FormLabel>
+            <ExamCategoryMultiselect
+              disabled={disabled}
+              value={field.value || []}
+              onChange={field.onChange}
+            />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }

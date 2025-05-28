@@ -1,17 +1,23 @@
+"use client";
+
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useUserStore } from "@/components/providers/user-store-provider";
-import { UserState } from "@/lib/stores/user-store";
+import { useRouter, usePathname } from "next/navigation";
+import useGetCurrentUser from "../users/useGetCurrentUser";
 
 export default function useCheckAuthenticated() {
-  const { user } = useUserStore((state: UserState) => ({
-    user: state.user,
-  }));
+  const { user, isLoading } = useGetCurrentUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
+    if (isLoading || pathname === "/logout") return;
+
     if (user) {
-      router.replace("/");
+      if (user.role === "Admin") {
+        router.replace("/admin");
+      } else {
+        router.replace("/dashboard");
+      }
     }
-  }, [user, router]);
+  }, [user, router, isLoading, pathname]);
 }

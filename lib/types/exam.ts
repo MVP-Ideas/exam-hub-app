@@ -1,10 +1,11 @@
+import { ExamCategory } from "./exam-category";
 import { Resource } from "./resource";
 
 export type Exam = {
   id: string;
   title: string;
   description: string;
-  category: string;
+  categories: ExamCategory[];
   difficulty: string;
   durationSeconds: number;
   passingScore: number;
@@ -21,7 +22,7 @@ export type Exam = {
 export type ExamCreateUpdate = {
   title: string;
   description: string;
-  categoryId: string;
+  categoryIds: string[];
   difficulty: string;
   durationSeconds: number;
   passingScore: number;
@@ -39,5 +40,23 @@ export type ExamSettingsCreateReadUpdate = {
 
 export type ExamQuestionCreateReadUpdate = {
   questionId: string;
+  text?: string;
   points: number;
+};
+
+export type ExamExistingSession = {
+  existingExamSessionId: string;
+  lastUpdated: string;
+};
+
+export type ExamPreviousSession = {
+  examSessionId: string;
+  finishedAt: string;
+  scorePercentage: number;
+  passingFlag: string;
+};
+
+export type ExamWithUserMetadata = Exam & {
+  existingOngoingSession: ExamExistingSession;
+  previousSessions: ExamPreviousSession[];
 };

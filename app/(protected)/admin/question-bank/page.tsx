@@ -1,22 +1,25 @@
 "use client";
 
 import QuestionSheet from "@/components/admin/question-bank/question-sheet";
-import QuestionTypeSelect from "@/components/admin/question-bank/question-type-select";
-import QuestionCategorySelect from "@/components/categories/question-category-select";
+import QuestionTypeFilter from "@/components/admin/question-bank/question-type-filter";
+import QuestionCategoryFilter from "@/components/categories/question-category-filter";
 import QuestionCardList from "@/components/questions/question-card-list";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import useInfiniteQuestions from "@/hooks/questions/useInfiniteQuestions";
-import { CloudOff, FileQuestion, PlusIcon, Search } from "lucide-react";
+import { getFormattedQuestionType } from "@/lib/constants/question";
+import { QuestionType } from "@/lib/types/questions";
+import { CloudOff, FileQuestion, PlusIcon, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
 export default function Page() {
   const [search, setSearch] = useState<string>("");
-  const [type, setType] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [types, setTypes] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [page, setPage] = useState(1);
 
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -28,10 +31,10 @@ export default function Page() {
       page,
       search: debouncedSearch,
       pageSize,
-      type,
-      category,
+      type: types.length > 0 ? types.join(",") : null,
+      category: categories.length > 0 ? categories.join(",") : null,
     }),
-    [page, debouncedSearch, type, category],
+    [page, debouncedSearch, types, categories],
   );
 
   const {
@@ -55,10 +58,15 @@ export default function Page() {
     }
   }, [inView, hasNextPage, fetchNextPage]);
 
+  const handleClearFilters = () => {
+    setCategories([]);
+    setTypes([]);
+  };
+
   // Reset page when search, category, type or pageSize changes
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, category, type, pageSize]);
+  }, [debouncedSearch, categories, types, pageSize]);
 
   return (
     <div className="flex h-full min-h-screen w-full flex-col items-center pb-10 md:pb-0">
@@ -78,7 +86,7 @@ export default function Page() {
           </QuestionSheet>
         </div>
 
-        <div className="bg-background border-primary/20 flex h-full w-full flex-col gap-4 rounded-lg border p-6">
+        <div className="flex h-full w-full flex-col gap-4">
           <Input
             icon={<Search size={16} className="text-muted-foreground" />}
             placeholder="Search questions..."
@@ -87,21 +95,77 @@ export default function Page() {
             className="w-full"
           />
           <div className="flex w-full flex-col items-center justify-between gap-2 md:flex-row">
-            <QuestionTypeSelect
-              value={type}
-              onChange={(value: string) => setType(value || "")}
-              includeNull
-            />
-            <QuestionCategorySelect
-              value={category}
-              onChange={(value: string) => setCategory(value || "")}
-              includeNull
-            />
+            <div className="w-full md:w-1/2">
+              <QuestionTypeFilter
+                selectedTypes={types}
+                onChange={(value: string[]) => setTypes(value)}
+              />
+            </div>
+            <div className="w-full md:w-1/2">
+              <QuestionCategoryFilter
+                selectedCategories={categories}
+                onChange={(value: string[]) => setCategories(value)}
+              />
+            </div>
           </div>
+
+          {(types.length > 0 || categories.length > 0) && (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {types.map((type) => (
+                <Badge
+                  key={type}
+                  variant="default"
+                  className="flex items-center gap-1"
+                >
+                  {getFormattedQuestionType(type as QuestionType)}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-4 rounded-md border-none p-0 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTypes((prev) => prev.filter((t) => t !== type));
+                    }}
+                  >
+                    <X size={12} />
+                  </Button>
+                </Badge>
+              ))}
+              {categories.map((categoryName) => (
+                <Badge
+                  key={categoryName}
+                  variant="default"
+                  className="flex items-center gap-1"
+                >
+                  {categoryName}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-4 rounded-md border-none p-0 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCategories((prev) =>
+                        prev.filter((c) => c !== categoryName),
+                      );
+                    }}
+                  >
+                    <X size={12} />
+                  </Button>
+                </Badge>
+              ))}
+              <Button
+                variant="ghost"
+                onClick={handleClearFilters}
+                className="text-muted-foreground mx-2 size-4 text-xs hover:bg-transparent"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
 
           <div className="flex h-full w-full flex-col rounded-lg">
             {!isLoading && !isError && questions && questions.length > 0 && (
-              <div className="custom-scrollbar flex h-full flex-col gap-4 md:max-h-[650px] md:overflow-y-auto">
+              <div className="custom-scrollbar flex h-full flex-col gap-4">
                 <QuestionCardList questions={questions} />
                 {hasNextPage && (
                   <div ref={loaderRef} className="h-4 w-full text-center">

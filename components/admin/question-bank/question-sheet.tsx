@@ -38,7 +38,7 @@ import {
   QuestionCreateUpdate,
 } from "@/lib/types/questions";
 import QuestionTypeSelect from "./question-type-select";
-import QuestionCategorySelect from "../../categories/question-category-select";
+import QuestionCategoryMultiselect from "../../categories/question-category-multiselect";
 import QuestionAddLinkDialog from "./modals/question-add-link-dialog";
 import QuestionUploadFileDialog from "./modals/question-upload-file-dialog";
 import ResourceCard from "../resources/resource-card";
@@ -70,7 +70,7 @@ const schema = z
     text: z.string().min(1, "Question text is required"),
     description: z.string().optional(),
     type: z.nativeEnum(QuestionType),
-    categoryId: z.string().optional(),
+    categoryIds: z.array(z.string()).optional(),
     choices: z.array(choiceSchema).min(1, "At least one choice is required"),
     resources: z.array(resourceSchema).optional(),
   })
@@ -148,10 +148,7 @@ export default function QuestionSheet({
       text: data.text,
       description: data.description ?? "",
       type: data.type,
-      categoryId:
-        data.categoryId !== "" && data.categoryId !== undefined
-          ? data.categoryId
-          : null,
+      categoryIds: data.categoryIds ?? [],
       choices: updateChoices,
       resources: data.resources?.map((resource) => resource.id) ?? [],
       aiHelpEnabled: false,
@@ -187,8 +184,8 @@ export default function QuestionSheet({
     reset({
       text: "",
       description: "",
-      type: QuestionType.MultipleChoiceSingle,
-      categoryId: "",
+      type: questionType || QuestionType.MultipleChoiceSingle,
+      categoryIds: [],
       choices: [
         {
           text: "A choice",
@@ -212,7 +209,7 @@ export default function QuestionSheet({
         description: question.description,
         type: question.type,
         choices: question.choices ?? [],
-        categoryId: question.category ?? "",
+        categoryIds: question.categories.map((c) => c.id),
         resources: question.resources ?? [],
       });
     }
@@ -310,7 +307,7 @@ export default function QuestionSheet({
                   {questionType != undefined && (
                     <FormField
                       control={control}
-                      name="categoryId"
+                      name="categoryIds"
                       render={({ field }) => (
                         <FormItem className="w-full">
                           <FormLabel>Category (Optional)</FormLabel>
@@ -320,10 +317,9 @@ export default function QuestionSheet({
                                 Loading categories...
                               </p>
                             ) : (
-                              <QuestionCategorySelect
+                              <QuestionCategoryMultiselect
                                 value={field.value}
-                                onIdChange={field.onChange}
-                                includeNull
+                                onChange={field.onChange}
                               />
                             )}
                           </FormControl>
@@ -394,7 +390,7 @@ export default function QuestionSheet({
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Explanation (Optional)</FormLabel>
+                          <FormLabel>Description (Optional)</FormLabel>
                           <FormControl>
                             <Textarea className="min-h-24" {...field} />
                           </FormControl>

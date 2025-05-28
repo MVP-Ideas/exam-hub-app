@@ -45,7 +45,7 @@ export default function ResourceCard({
             <div className="flex flex-col">
               <p className="text-sm font-semibold">{resource.title}</p>
               <p className="text-muted-foreground text-xs">
-                {resource.description || "No description"}
+                {resource.description || resource.value}
               </p>
             </div>
           </div>
@@ -69,7 +69,6 @@ export default function ResourceCard({
           disabled={disabled}
         >
           <TrashIcon size={16} />
-          <span>Delete</span>
         </Button>
       </CardContent>
     </Card>

@@ -59,11 +59,11 @@ export default function Page() {
         <div className="absolute inset-0 bg-black opacity-30" />
         <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white">
           <div className="mb-2 flex space-x-2 text-sm">
-            <Badge variant="secondary" className="bg-indigo-600">
-              {exam.category}
-            </Badge>
             <Badge variant="secondary" className="bg-purple-600">
               {exam.difficulty}
+            </Badge>
+            <Badge variant="secondary" className="bg-indigo-600">
+              {exam.categories.length} Categories
             </Badge>
           </div>
           <h1 className="mb-2 text-3xl font-bold">{exam.title}</h1>
@@ -93,10 +93,12 @@ export default function Page() {
               <CardContent>
                 <p className="text-gray-700">{exam.description}</p>
                 <Separator className="my-6" />
-                <h3 className="mb-4 text-lg font-medium">What You’ll Learn</h3>
+                <h3 className="mb-4 text-lg font-medium">
+                  What You&apos;ll Learn
+                </h3>
                 <ul className="space-y-3">
                   {[
-                    `Demonstrate your knowledge in ${exam.category}`,
+                    `Demonstrate your knowledge in ${exam.categories.map((category) => category.name).join(", ")}`,
                     "Gain certification in core industry concepts",
                     "Enhance your resume with verified skills",
                   ].map((text) => (
@@ -118,7 +120,7 @@ export default function Page() {
                 <CardTitle>Exam Structure</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3">
                   {[
                     {
                       Icon: Clock3,
@@ -135,11 +137,6 @@ export default function Page() {
                       label: "Passing Score",
                       value: `${exam.passingScore}%`,
                     },
-                    {
-                      Icon: BookOpen,
-                      label: "Category",
-                      value: exam.category,
-                    },
                   ].map(({ Icon, label, value }) => (
                     <div
                       key={label}
@@ -154,6 +151,28 @@ export default function Page() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="mt-4">
+                  <div className="bg-accent flex items-center rounded-md p-3">
+                    <BookOpen size={20} className="text-primary mr-3" />
+                    <div>
+                      <div className="text-muted-foreground text-sm">
+                        Categories
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1 font-medium">
+                        {exam.categories.map((category) => (
+                          <Badge
+                            key={category.id}
+                            variant="default"
+                            className="text-xs"
+                          >
+                            {category.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -198,8 +217,8 @@ export default function Page() {
                     <DialogTitle>Ready to start the exam?</DialogTitle>
                     <DialogDescription>
                       You have {exam.durationSeconds / 60} minutes to complete
-                      this exam. Make sure you’re in a quiet environment with a
-                      stable internet connection.
+                      this exam. Make sure you&apos;re in a quiet environment
+                      with a stable internet connection.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="mb-6 space-y-4">

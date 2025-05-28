@@ -11,3 +11,8 @@ export type QuestionCategoryCreate = {
   name: string;
   description: string;
 };
+
+export type QuestionCategoryQuestionResponse = {
+  id: string;
+  name: string;
+};

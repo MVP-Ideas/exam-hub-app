@@ -107,7 +107,8 @@ export default function SortableQuestionCard({
         <div className="flex flex-row items-center gap-2">
           <TagIcon size={12} className="shrink-0" />
           <p className="text-muted-foreground text-xs">
-            {question?.category || "No category"}
+            {question?.categories.length || 0}{" "}
+            {question?.categories.length === 1 ? "Category" : "Categories"}
           </p>
         </div>
       </div>

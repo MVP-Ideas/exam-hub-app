@@ -39,7 +39,7 @@ export const resourceSchema = z.object({
 export const createExamSchema = z.object({
   title: z.string().min(1, "Title is required").max(50),
   description: z.string().min(10, "At least 10 characters").max(500),
-  categoryId: z.string(),
+  categoryIds: z.array(z.string()).optional(),
   difficulty: z.string().nonempty("Difficulty is required"),
   timeLimit: z
     .number({ invalid_type_error: "Time Limit must be a number" })
@@ -71,7 +71,7 @@ export default function ExamForm({ type, exam }: Props) {
     defaultValues: {
       title: "New Exam",
       description: "",
-      categoryId: "",
+      categoryIds: [],
       difficulty: "",
       timeLimit: 60,
       passingScore: 70,
@@ -88,6 +88,9 @@ export default function ExamForm({ type, exam }: Props) {
   const { reset, handleSubmit, watch } = form;
 
   const questions = watch("questions");
+  const categoryIds = watch("categoryIds");
+
+  console.log(categoryIds);
 
   const onSubmit = async (
     isDraft: boolean,
@@ -97,7 +100,7 @@ export default function ExamForm({ type, exam }: Props) {
       const examCreate: ExamCreateUpdate = {
         title: data.title,
         description: data.description,
-        categoryId: data.categoryId,
+        categoryIds: data.categoryIds ?? [],
         difficulty: data.difficulty,
         durationSeconds: data.timeLimit * 60,
         passingScore: data.passingScore,
@@ -141,7 +144,7 @@ export default function ExamForm({ type, exam }: Props) {
       reset({
         title: exam.title,
         description: exam.description,
-        categoryId: exam.category,
+        categoryIds: exam.categories.map((category) => category.id),
         difficulty: exam.difficulty,
         timeLimit: Math.floor(exam.durationSeconds / 60),
         passingScore: exam.passingScore,

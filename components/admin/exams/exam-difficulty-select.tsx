@@ -6,6 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DIFFICULTY_OPTIONS } from "@/lib/constants/exam";
+import { AlignEndHorizontal } from "lucide-react";
 import { useEffect } from "react";
 
 type Props = {
@@ -38,8 +39,11 @@ export default function ExamDifficultySelect({
       value={value ?? "null"}
       defaultValue={value ?? "null"}
     >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select Difficulty" />
+      <SelectTrigger className="bg-background w-full justify-between">
+        <div className="flex items-center gap-2">
+          <AlignEndHorizontal className="text-muted-foreground h-4 w-4 shrink-0" />
+          <SelectValue placeholder="Select Difficulty" />
+        </div>
       </SelectTrigger>
       <SelectContent>
         {includeNull && (
