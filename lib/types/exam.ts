@@ -17,7 +17,6 @@ export type Exam = {
   updatedAt: string;
   version: number;
   isFeatured: boolean;
-  metadata?: ExamMetadata;
 };
 
 export type ExamCreateUpdate = {
@@ -45,7 +44,19 @@ export type ExamQuestionCreateReadUpdate = {
   points: number;
 };
 
-export type ExamMetadata = {
+export type ExamExistingSession = {
   existingExamSessionId: string;
   lastUpdated: string;
+};
+
+export type ExamPreviousSession = {
+  examSessionId: string;
+  finishedAt: string;
+  scorePercentage: number;
+  passingFlag: string;
+};
+
+export type ExamWithUserMetadata = Exam & {
+  existingOngoingSession: ExamExistingSession;
+  previousSessions: ExamPreviousSession[];
 };

@@ -55,7 +55,7 @@ export default function QuestionCardList({
                       question.categories.map((category) => (
                         <Badge
                           key={category.id}
-                          variant="secondary"
+                          variant="outline"
                           className="text-xs"
                         >
                           <TagIcon size={12} className="mr-1 shrink-0" />

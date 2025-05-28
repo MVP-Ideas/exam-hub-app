@@ -1,4 +1,5 @@
 import { Exam } from "./exam";
+import { QuestionChoice } from "./questions";
 import { Resource } from "./resource";
 
 export type ExamSession = {
@@ -43,6 +44,7 @@ export type ExamSessionAnswer = {
 
 export type ExamSessionAnswerChoice = {
   questionChoiceId: string;
+  text?: string;
   order?: number;
 };
 
@@ -51,4 +53,26 @@ export type ExamSessionAnswerCreate = {
   timeSpentSeconds: number;
   toBeReviewed: boolean;
   choices: ExamSessionAnswerChoice[];
+};
+
+export type ExamSessionQuestionResultResponse = {
+  id: string;
+  text?: string;
+  type: string;
+  explanation: string;
+  answer?: ExamSessionAnswer;
+  correctChoices: QuestionChoice[];
+};
+
+export type ExamSessionResult = {
+  id: string;
+  examTitle: string;
+  examId: string;
+  score: number;
+  totalScore: number;
+  finishedAt: string;
+  timeSpentSeconds: number;
+  passingScore: number;
+  passingFlag: string;
+  questions: ExamSessionQuestionResultResponse[];
 };

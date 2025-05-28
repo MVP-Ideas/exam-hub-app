@@ -253,20 +253,110 @@ export default function ExamSessionToolbar({
 
       {/* Submit Exam Dialog */}
       <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Submit Exam</DialogTitle>
+            <DialogTitle>Exam Summary</DialogTitle>
             <DialogDescription>
-              Are you sure you want to submit this exam? This action cannot be
-              undone.
+              Review your answers before submitting the exam.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex gap-2 pt-4">
+
+          {/* Overview */}
+          <div className="mt-4 grid w-full grid-cols-3 gap-4 text-center">
+            <div className="rounded-lg border bg-blue-50 p-4">
+              <p className="text-sm font-semibold text-blue-700">
+                Total Questions
+              </p>
+              <p className="text-xl font-bold text-blue-900">
+                {questions.length}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-green-50 p-4">
+              <p className="text-sm font-semibold text-green-700">Answered</p>
+              <p className="text-xl font-bold text-green-900">
+                {questions.filter((q) => q.answer).length}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-yellow-50 p-4">
+              <p className="text-sm font-semibold text-yellow-700">Flagged</p>
+              <p className="text-xl font-bold text-yellow-900">
+                {
+                  questions.filter((q) => flaggedQuestions.includes(q.id))
+                    .length
+                }
+              </p>
+            </div>
+          </div>
+
+          {/* Question List */}
+          <div className="mt-6">
+            <p className="text-primary mb-2 text-sm font-semibold">Questions</p>
+            <div className="custom-scrollbar flex max-h-60 flex-col gap-2 overflow-y-auto pr-2">
+              {questions.map((q, index) => {
+                const isAnswered = !!q.answer;
+                const isFlagged = flaggedQuestions.includes(q.id);
+
+                return (
+                  <div
+                    key={q.id}
+                    className={cn(
+                      "flex items-center justify-between rounded border p-2 text-sm",
+                      isAnswered
+                        ? "border-green-200 bg-green-50"
+                        : "border-red-200 bg-red-50",
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="max-w-[12rem] truncate">{q.text}</div>
+                      <div className="flex gap-1">
+                        {isAnswered && (
+                          <span className="rounded border border-green-500 px-1 text-xs font-medium text-green-700">
+                            Answered
+                          </span>
+                        )}
+                        {isFlagged && (
+                          <span className="rounded border border-yellow-500 px-1 text-xs font-medium text-yellow-700">
+                            Flagged
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setCurrentQuestionIndex(index + 1);
+                        setShowSubmitDialog(false);
+                      }}
+                    >
+                      Review
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Warning */}
+          {questions.some((q) => !q.answer) && (
+            <div className="mt-4 rounded border border-orange-300 bg-orange-50 p-4 text-sm text-orange-700">
+              You have unanswered questions. You can go back to complete them or
+              submit the exam as is.
+            </div>
+          )}
+
+          {/* Footer */}
+          <DialogFooter className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
             <Button
               variant="outline"
-              onClick={() => setShowSubmitDialog(false)}
+              onClick={() => {
+                setShowSubmitDialog(false);
+              }}
             >
-              Cancel
+              Return to Exam
             </Button>
             <Button
               variant="default"
@@ -275,7 +365,7 @@ export default function ExamSessionToolbar({
                 submitExamSession?.();
               }}
             >
-              {isSubmitting ? "Submitting..." : "Yes, Submit Exam"}
+              {isSubmitting ? "Submitting..." : "Submit Exam"}
             </Button>
           </DialogFooter>
         </DialogContent>

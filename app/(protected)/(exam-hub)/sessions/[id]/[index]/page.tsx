@@ -64,7 +64,7 @@ export default function Page() {
   const handleSubmitExamSession = async () => {
     try {
       await submitExamSession();
-      router.push(`/results/${examSession?.id}`);
+      router.push(`/sessions/${examSession?.id}/finish`);
     } catch (error) {
       console.error(error);
     }

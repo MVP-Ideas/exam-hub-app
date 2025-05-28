@@ -3,6 +3,7 @@ import {
   ExamSession,
   ExamSessionAnswerCreate,
   ExamSessionQuestion,
+  ExamSessionResult,
 } from "../types/exam-session";
 
 const BASE_URL = "exam-sessions";
@@ -47,7 +48,10 @@ const ExamSessionService = {
     );
     return response.data;
   },
-  resetAnswers: async (examSessionId: string, examSessionQuestionId: string) => {
+  resetAnswers: async (
+    examSessionId: string,
+    examSessionQuestionId: string,
+  ) => {
     const response = await api.post<boolean>(
       `${BASE_URL}/${examSessionId}/questions/${examSessionQuestionId}/reset`,
     );
@@ -56,6 +60,12 @@ const ExamSessionService = {
   submitExamSession: async (examSessionId: string) => {
     const response = await api.post<ExamSession>(
       `${BASE_URL}/${examSessionId}/submit`,
+    );
+    return response.data;
+  },
+  getResults: async (examSessionId: string) => {
+    const response = await api.get<ExamSessionResult>(
+      `${BASE_URL}/${examSessionId}/result`,
     );
     return response.data;
   },

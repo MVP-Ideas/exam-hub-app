@@ -13,6 +13,10 @@ import {
   CheckCircle,
   Clock3,
   FileQuestion,
+  CheckCircleIcon,
+  XCircleIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +27,7 @@ import {
   CardTitle,
   CardContent,
   CardFooter,
+  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -40,11 +45,13 @@ import { DialogClose } from "@/components/ui/dialog";
 import { formatUTCDate } from "@/lib/date-utils";
 import useStartExamSession from "@/hooks/exam-sessions/useStartExamSession";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export default function Page() {
   const { id } = useParams();
   const { exam, isLoading, isError } = useExamById(id as string);
   const { startExamSession, isPending } = useStartExamSession(id as string);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   const resources = exam?.resources || [];
   const router = useRouter();
@@ -66,6 +73,13 @@ export default function Page() {
       </div>
     );
   }
+
+  // Get the sessions to display
+  const displayedSessions = showAllHistory
+    ? exam.previousSessions
+    : exam.previousSessions.slice(0, 3);
+
+  const hasMoreSessions = exam.previousSessions.length > 3;
 
   return (
     <div className="bg-accent h-full min-h-screen pb-20 md:pb-10">
@@ -196,25 +210,113 @@ export default function Page() {
             </Card>
 
             {/* Resources */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Study Resources</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {resources && resources.length > 0 ? (
-                  resources.map((resource) => (
-                    <ResourceCard resource={resource} key={resource.id} />
-                  ))
-                ) : (
-                  <div className="bg-muted flex h-full w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg p-10">
-                    <FileQuestion size={48} className="text-muted-foreground" />
-                    <p className="text-muted-foreground font-bold">
-                      No resources found.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {resources && resources.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Study Resources</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {resources ? (
+                    resources.map((resource) => (
+                      <ResourceCard resource={resource} key={resource.id} />
+                    ))
+                  ) : (
+                    <div className="bg-muted flex h-full w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg p-10">
+                      <FileQuestion
+                        size={48}
+                        className="text-muted-foreground"
+                      />
+                      <p className="text-muted-foreground font-bold">
+                        No resources found.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Exam History */}
+            {exam.previousSessions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exam History</CardTitle>
+                  <CardDescription>
+                    {exam.previousSessions.length} previous attempt
+                    {exam.previousSessions.length !== 1 ? "s" : ""}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {displayedSessions.map((session) => (
+                    <div
+                      key={session.examSessionId}
+                      className="bg-card hover:bg-accent/50 flex items-center justify-between rounded-lg border p-4 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {session.passingFlag === "Passed" ? (
+                          <div className="flex items-center gap-2">
+                            <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                            <span className="font-medium text-green-700">
+                              Passed
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <XCircleIcon className="h-5 w-5 text-red-600" />
+                            <span className="font-medium text-red-700">
+                              Failed
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="text-muted-foreground flex items-center gap-6 text-sm">
+                        <div className="text-right">
+                          <p className="text-foreground font-medium">
+                            {session.scorePercentage}%
+                          </p>
+                          <p className="text-xs">Score</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-foreground font-medium">
+                            {new Date(session.finishedAt).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs">
+                            {new Date(session.finishedAt).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {hasMoreSessions && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        onClick={() => setShowAllHistory(!showAllHistory)}
+                        className="text-muted-foreground hover:text-foreground hover:bg-accent flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors"
+                      >
+                        {showAllHistory ? (
+                          <>
+                            <ChevronUpIcon className="h-4 w-4" />
+                            Show Less
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDownIcon className="h-4 w-4" />
+                            Show {exam.previousSessions.length - 3} More
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Right: Exam Card */}
@@ -227,14 +329,15 @@ export default function Page() {
                 </p>
               </div>
 
-              {exam.metadata && exam.metadata.existingExamSessionId ? (
+              {exam.existingOngoingSession &&
+              exam.existingOngoingSession.existingExamSessionId ? (
                 // Resume existing exam session
                 <Button
                   className="mb-6 w-full"
                   disabled={isPending}
                   onClick={() => {
                     router.push(
-                      `/sessions/${exam.metadata?.existingExamSessionId}/1`,
+                      `/sessions/${exam.existingOngoingSession.existingExamSessionId}/1`,
                     );
                   }}
                 >
@@ -302,10 +405,10 @@ export default function Page() {
                 </Dialog>
               )}
 
-              {exam.metadata?.existingExamSessionId && (
+              {exam?.existingOngoingSession && (
                 <p className="text-muted-foreground mb-6 text-center text-xs">
                   You have an exam in progress from{" "}
-                  {formatUTCDate(exam.metadata.lastUpdated)}
+                  {formatUTCDate(exam.existingOngoingSession.lastUpdated)}
                 </p>
               )}
 

@@ -72,7 +72,7 @@ export default function QuestionBox({
     null,
   );
 
-  const debouncedAnswerData = useDebouncedValue(answerData, 1000);
+  const debouncedAnswerData = useDebouncedValue(answerData, 500);
 
   const { question, isLoading, isError } = useExamSessionQuestionByQuestionId(
     examSessionId,
@@ -160,6 +160,18 @@ export default function QuestionBox({
         resetTimer(0);
       }
 
+      if (!question.answer && question.type === QuestionType.DragAndDrop) {
+        setChoiceOrder(choiceIds);
+        setAnswerData({
+          choices: choiceIds.map((choiceId) => ({
+            questionChoiceId: choiceId,
+          })),
+          aiAssitanceUsed: false,
+          toBeReviewed: false,
+          timeSpentSeconds: seconds - initialSeconds,
+        });
+      }
+
       if (question.answer && question.answer.choices.length > 0) {
         if (question.type === QuestionType.DragAndDrop) {
           // Sort the choice IDs based on the order from the answer
@@ -180,7 +192,7 @@ export default function QuestionBox({
     } else {
       setChoiceOrder([]);
     }
-  }, [questionId]);
+  }, [question]);
 
   const handleSingleChoiceSelection = (value: string) => {
     setSelectedChoices([value]);

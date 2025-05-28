@@ -103,8 +103,8 @@ export default function ExamCardHorizontal({
               {exam.categories.map((category) => (
                 <Badge
                   key={category.id}
-                  variant="default"
-                  className="border-0 text-xs"
+                  variant="outline"
+                  className="border text-xs"
                 >
                   {category.name}
                 </Badge>
