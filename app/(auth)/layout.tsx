@@ -1,11 +1,11 @@
 interface AuthLayoutProps {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
-	return (
-		<main className="h-screen w-screen bg-linear-to-r from-primary to-primary/50">
-			{children}
-		</main>
-	);
+  return (
+    <main className="from-primary h-screen w-screen bg-linear-to-r to-indigo-500">
+      {children}
+    </main>
+  );
 }

@@ -2,15 +2,15 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import useGetCurrentUser from "../users/useGetCurrentUser";
+import { useUserStore } from "@/lib/stores/user-store";
 
 export default function useCheckAuthenticated() {
-  const { user, isLoading } = useGetCurrentUser();
+  const user = useUserStore((state) => state.user);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (isLoading || pathname === "/logout") return;
+    if (pathname === "/logout") return;
 
     if (user) {
       if (user.role === "Admin") {
@@ -19,5 +19,5 @@ export default function useCheckAuthenticated() {
         router.replace("/dashboard");
       }
     }
-  }, [user, router, isLoading, pathname]);
+  }, [user, router, pathname]);
 }

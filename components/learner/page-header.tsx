@@ -1,5 +1,4 @@
 import { BellDot, Search } from "lucide-react";
-import AvatarDropdown from "./avatar-dropdown";
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { SidebarTrigger } from "../ui/sidebar";
@@ -26,7 +25,6 @@ export default function PageHeader() {
       />
       <div className="flex w-full flex-1 flex-row items-center justify-end gap-4">
         <BellDot size={20} />
-        <AvatarDropdown />
       </div>
     </header>
   );
