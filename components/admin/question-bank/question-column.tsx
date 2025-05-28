@@ -41,21 +41,21 @@ const questionColumn = (): ColumnDef<Question>[] => [
       );
     },
   },
-  {
-    accessorKey: "category",
-    header: () => <span>Category</span>,
-    cell: ({ row }) => {
-      const question = row.original;
+  // {
+  //   accessorKey: "category",
+  //   header: () => <span>Category</span>,
+  //   cell: ({ row }) => {
+  //     const question = row.original;
 
-      return (
-        <div className="max-w-[200px] truncate pl-2 text-sm font-medium">
-          {question.category || (
-            <span className="text-muted-foreground">None</span>
-          )}
-        </div>
-      );
-    },
-  },
+  //     return (
+  //       <div className="max-w-[200px] truncate pl-2 text-sm font-medium">
+  //         {question.category || (
+  //           <span className="text-muted-foreground">None</span>
+  //         )}
+  //       </div>
+  //     );
+  //   },
+  // },
   {
     accessorKey: "updatedAt",
     header: () => <span>Last Updated</span>,
