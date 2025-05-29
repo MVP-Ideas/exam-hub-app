@@ -32,7 +32,7 @@ export default function RecommendedForYou() {
         {exams.items.length > 0 &&
           exams.items.map((exam) => (
             <ExamCardHorizontal
-              route={`/exams/${exam.id}`}
+              route={`/exams`}
               disableOptions
               exam={exam}
               key={exam.id}

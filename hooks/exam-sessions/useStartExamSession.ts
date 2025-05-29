@@ -1,5 +1,4 @@
 import ExamSessionService from "@/lib/services/exam-session";
-import { ExamSession } from "@/lib/types/exam-session";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
@@ -23,9 +22,10 @@ const useStartExamSession = (examId: string) => {
 
   const { mutateAsync: startExamSession } = useMutation({
     mutationFn: () => startExamSessionRequest(examId),
-    onSuccess: (data: ExamSession) => {
+    onSuccess: () => {
       startTransition(() => {
-        queryClient.invalidateQueries({ queryKey: ["examSession", data.id] });
+        queryClient.invalidateQueries({ queryKey: ["examSession"] });
+        queryClient.invalidateQueries({ queryKey: ["exam"] });
       });
       toast.success("Exam session started successfully");
     },

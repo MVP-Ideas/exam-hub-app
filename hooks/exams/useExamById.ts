@@ -1,7 +1,7 @@
 import ExamService from "@/lib/services/exam-service";
 import { useQuery } from "@tanstack/react-query";
 
-const useExamById = (examId: string, showUserStats: boolean = false) => {
+const useExamById = (examId: string, showUserStats: boolean = true) => {
   const {
     data: exam,
     isLoading,
