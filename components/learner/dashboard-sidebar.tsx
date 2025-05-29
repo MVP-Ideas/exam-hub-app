@@ -40,23 +40,49 @@ export function DashboardSidebar({
       icon: BarChart2,
       path: "/analytics",
       id: "analytics",
+      disabled: true,
     },
     {
       label: "Study Plan",
       icon: Calendar,
       path: "/study-plan",
       id: "study-plan",
+      disabled: true,
     },
   ];
 
   const resourceNavItems = [
-    { label: "Library", icon: BookOpen, path: "/library", id: "library" },
-    { label: "Bookmarks", icon: Star, path: "/bookmarks", id: "bookmarks" },
-    { label: "Help Center", icon: HelpCircle, path: "/help", id: "help" },
+    {
+      label: "Library",
+      icon: BookOpen,
+      path: "/library",
+      id: "library",
+      disabled: true,
+    },
+    {
+      label: "Bookmarks",
+      icon: Star,
+      path: "/bookmarks",
+      id: "bookmarks",
+      disabled: true,
+    },
+    {
+      label: "Help Center",
+      icon: HelpCircle,
+      path: "/help",
+      id: "help",
+      disabled: true,
+    },
   ];
 
   const bottomNavItems = [
-    { label: "Settings", icon: Settings, path: "/settings", id: "settings" },
+    {
+      label: "Settings",
+      icon: Settings,
+      path: "/settings",
+      id: "settings",
+      disabled: true,
+    },
     { label: "Sign Out", icon: LogOut, path: "/logout", id: "logout" },
   ];
 
@@ -71,7 +97,7 @@ export function DashboardSidebar({
       <SidebarContent className="border-muted flex w-full flex-col border-r">
         {/* Main Navigation */}
         <div className="py-2">
-          <div className="px-4 py-2 text-sm font-medium text-gray-500">
+          <div className="text-muted-foreground px-4 py-2 text-sm font-medium">
             Main
           </div>
           <nav className="space-y-1">
@@ -83,7 +109,7 @@ export function DashboardSidebar({
                 className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent"
                 asChild
               >
-                <Link href={item.path}>
+                <Link href={item.disabled ? "#" : item.path}>
                   {activeTab === item.id && (
                     <div className="bg-primary absolute top-0 left-0 h-full w-1 rounded-r-full" />
                   )}
@@ -95,8 +121,11 @@ export function DashboardSidebar({
                         : "text-foreground hover:bg-muted"
                     }`}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="ml-4 h-4 w-4" />
                     {item.label}
+                    {item.disabled && (
+                      <p className="text-muted-foreground text-xs">(Ongoing)</p>
+                    )}
                   </div>
                 </Link>
               </Button>
@@ -118,8 +147,9 @@ export function DashboardSidebar({
                 onClick={() => setActiveTab(item.id)}
                 className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent"
                 asChild
+                disabled={item.disabled}
               >
-                <Link href={item.path}>
+                <Link href={item.disabled ? "#" : item.path}>
                   {activeTab === item.id && (
                     <div className="bg-primary absolute top-0 left-0 h-full w-1 rounded-r-full" />
                   )}
@@ -128,11 +158,14 @@ export function DashboardSidebar({
                     className={`flex flex-1 flex-row items-center gap-2 rounded-sm py-2 text-left font-semibold ${
                       activeTab === item.id
                         ? "bg-muted text-foreground"
-                        : "text-foreground hover:bg-primary/10"
+                        : "text-foreground hover:bg-muted"
                     }`}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="ml-4 h-4 w-4" />
                     {item.label}
+                    {item.disabled && (
+                      <p className="text-muted-foreground text-xs">(Ongoing)</p>
+                    )}
                   </div>
                 </Link>
               </Button>
@@ -173,20 +206,24 @@ export function DashboardSidebar({
                 onClick={() => setActiveTab(item.id)}
                 className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent"
                 asChild
+                disabled={item.disabled}
               >
                 <Link href={item.path}>
                   {activeTab === item.id && (
-                    <div className="bg-foreground absolute top-0 left-0 h-full w-1 rounded-r-full" />
+                    <div className="bg-primary absolute top-0 left-0 h-full w-1 rounded-r-full" />
                   )}
-                  <item.icon className="ml-4 h-4 w-4" />
                   <div
-                    className={`flex-1 rounded-sm px-2 py-2 text-left text-sm font-medium ${
+                    className={`flex flex-1 flex-row items-center gap-2 rounded-sm py-2 text-left font-semibold ${
                       activeTab === item.id
                         ? "bg-muted text-foreground"
                         : "text-foreground hover:bg-muted"
                     }`}
                   >
+                    <item.icon className="ml-4 h-4 w-4" />
                     {item.label}
+                    {item.disabled && (
+                      <p className="text-muted-foreground text-xs">(Ongoing)</p>
+                    )}
                   </div>
                 </Link>
               </Button>
