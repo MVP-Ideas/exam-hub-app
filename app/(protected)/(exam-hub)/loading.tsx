@@ -1,5 +1,10 @@
-import { Skeleton } from "@/components/ui/skeleton";
+"use client";
+import AppLoader from "@/components/common/app-loader";
 
 export default function Loading() {
-  return <Skeleton className="h-full w-full" />;
+  return (
+    <div className="flex h-screen w-screen items-center justify-center">
+      <AppLoader />
+    </div>
+  );
 }

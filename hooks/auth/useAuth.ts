@@ -5,27 +5,17 @@ import { useMsal } from "@azure/msal-react";
 import { useRouter } from "next/navigation";
 import UserService from "@/lib/services/user-service";
 import AuthService from "@/lib/services/auth-service";
-import { UserLocalLogin, UserB2CLoginRegister } from "@/lib/types/auth";
+import { UserB2CLoginRegister } from "@/lib/types/auth";
 import { toast } from "sonner";
 import { loginScopes } from "@/config/auth-config";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 
-import { UserState, useUserStore } from "@/lib/stores/user-store";
+import { useUserStore } from "@/lib/stores/user-store";
 
 export default function useAuth() {
   const { instance, inProgress } = useMsal();
   const router = useRouter();
-  const {
-    user: currentUser,
-    setUser,
-    clearUser,
-    lastUpdated,
-  } = useUserStore((state: UserState) => ({
-    user: state.user,
-    setUser: state.setUser,
-    clearUser: state.clearUser,
-    lastUpdated: state.lastUpdated,
-  }));
+  const { setUser, clearUser, lastUpdated } = useUserStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const verifyToken = async () => {
@@ -46,8 +36,6 @@ export default function useAuth() {
 
       setUser(user);
 
-      console.log("User verified", currentUser, user);
-
       return true;
     } catch (error) {
       const message = extractAxiosErrorMessage(error);
@@ -58,32 +46,6 @@ export default function useAuth() {
       clearUser();
       router.push("/login");
       return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLoginLocal = async (credentials: UserLocalLogin) => {
-    setIsLoading(true);
-    try {
-      await AuthService.localLogin(credentials);
-
-      const user = await UserService.getCurrentUser();
-      if (user) {
-        setUser(user);
-        toast.success("Login successful!");
-
-        if (user.role.toLowerCase() === "admin") {
-          router.replace("/admin");
-        } else {
-          router.replace("/");
-        }
-      } else {
-        throw new Error("Login succeeded but no user returned");
-      }
-    } catch (error) {
-      const message = extractAxiosErrorMessage(error);
-      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +114,6 @@ export default function useAuth() {
   return {
     isLoading: isLoading || inProgress !== "none",
     verifyToken,
-    handleLoginLocal,
     handleLoginB2C,
     handleLogout,
   };

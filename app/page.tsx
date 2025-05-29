@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { BeatLoader } from "react-spinners";
 import { UserState, useUserStore } from "@/lib/stores/user-store";
+import AppLoader from "@/components/common/app-loader";
 
 export default function Page() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function Page() {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">
-      <BeatLoader size={24} />
+      <AppLoader />
     </div>
   );
 }

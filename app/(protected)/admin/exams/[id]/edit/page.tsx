@@ -5,9 +5,9 @@ import ExamForm from "@/components/admin/exams/create/exam-form";
 import { cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 import useExamById from "@/hooks/exams/useExamById";
-import { BeatLoader } from "react-spinners";
 import { Badge } from "@/components/ui/badge";
 import { getStatusColor } from "@/lib/utils/exam";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const sections = [
   { id: "exam-details", label: "Details" },
@@ -47,7 +47,7 @@ export default function Page() {
           <ExamForm exam={exam} type="edit" />
         ) : !isError ? (
           <div className="flex h-full w-full items-center justify-center">
-            <BeatLoader color="#3b82f6" />
+            <Skeleton className="h-full w-full" />
           </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center">

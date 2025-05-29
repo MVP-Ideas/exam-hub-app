@@ -3,6 +3,7 @@
 import learnerColumn from "@/components/admin/learner-management/learner-column";
 import DataTable from "@/components/common/data-table";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import DeleteUserModal from "@/components/user/delete-user-modal";
 import { EditUserModal } from "@/components/user/edit-user-modal";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
@@ -16,7 +17,6 @@ import {
 import { Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { BeatLoader } from "react-spinners";
 
 export default function Page() {
   const router = useRouter();
@@ -98,14 +98,14 @@ export default function Page() {
         <div className="bg-background border-primary/20 flex w-full flex-col gap-4 rounded-lg border p-6">
           <div className="border-primary/50 bg-primary/5 flex w-full flex-col gap-2 rounded-lg border px-6 py-4">
             <p className="text-primary text-xs font-bold">Total Learners</p>
-            {isLoading && <BeatLoader className="py-2" size={5} />}
+            {isLoading && <Skeleton className="h-4 w-full" />}
             {!isLoading && (
               <p className="text-xl font-bold">{learners?.totalItems || 0}</p>
             )}
           </div>
           <div className="flex w-full flex-col gap-2 rounded-lg border border-green-500 bg-green-50 px-6 py-4">
             <p className="text-xs font-bold text-green-500">Active This Week</p>
-            {isLoading && <BeatLoader className="py-2" size={5} />}
+            {isLoading && <Skeleton className="h-4 w-full" />}
             {!isLoading && (
               <p className="text-xl font-bold">{activeThisWeek}</p>
             )}

@@ -63,11 +63,7 @@ export default function AllExams({
         {exams.length > 0 && (
           <>
             {exams.map((exam) => (
-              <ExamCardHorizontal
-                key={exam.id}
-                exam={exam}
-                route={`/exams/${exam.id}`}
-              />
+              <ExamCardHorizontal key={exam.id} exam={exam} route={`/exams`} />
             ))}
             {hasNextPage && (
               <div ref={loaderRef} className="text-center">

@@ -14,7 +14,7 @@ import {
   FileQuestionIcon,
   LayoutDashboardIcon,
   LogOutIcon,
-  SettingsIcon,
+  // SettingsIcon,
   TestTube,
   Users,
 } from "lucide-react";
