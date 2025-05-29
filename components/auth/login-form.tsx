@@ -14,7 +14,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BeatLoader } from "react-spinners";
-import { useAuth } from "@/hooks";
+// import { useAuth } from "@/hooks";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -36,12 +36,12 @@ export function LoginForm({ isLoading, setIsLoading }: Props) {
       password: "",
     },
   });
-  const { handleLoginLocal } = useAuth();
+  // const { handleLoginLocal } = useAuth();
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
 
-    await handleLoginLocal(data);
+    console.log(data);
 
     setIsLoading(false);
   };
