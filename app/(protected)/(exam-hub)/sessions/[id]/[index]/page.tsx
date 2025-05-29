@@ -9,7 +9,6 @@ import useExamSessionById from "@/hooks/exam-sessions/useExamSessionById";
 import { Menu, TimerIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BeatLoader } from "react-spinners";
 import QuestionBox from "@/components/learner/exam-session/question-box";
 import useCountdown from "@/hooks/timer/useCountdown";
 import useUpdateExamProgress from "@/hooks/exam-sessions/useUpdateExamProgress";
@@ -23,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import useSubmitExamSession from "@/hooks/exam-sessions/useSubmitExamSession";
+import AppLoader from "@/components/common/app-loader";
 export default function Page() {
   const router = useRouter();
   const { id, index } = useParams();
@@ -84,7 +84,7 @@ export default function Page() {
   if ((isLoading || !examSession) && !isError) {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <BeatLoader />
+        <AppLoader />
       </div>
     );
   }

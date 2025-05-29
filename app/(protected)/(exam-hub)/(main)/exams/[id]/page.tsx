@@ -19,7 +19,6 @@ import {
   ChevronDownIcon,
 } from "lucide-react";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -46,6 +45,7 @@ import { formatUTCDate } from "@/lib/date-utils";
 import useStartExamSession from "@/hooks/exam-sessions/useStartExamSession";
 import { toast } from "sonner";
 import { useState } from "react";
+import AppLoader from "@/components/common/app-loader";
 
 export default function Page() {
   const { id } = useParams();
@@ -69,31 +69,37 @@ export default function Page() {
   if (isLoading || isError || !exam) {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <Skeleton className="h-10 w-10" />
+        <AppLoader />
       </div>
     );
   }
 
   // Get the sessions to display
-  const displayedSessions = showAllHistory
-    ? exam.previousSessions
-    : exam.previousSessions.slice(0, 3);
+  const displayedSessions =
+    exam.previousSessions && exam.previousSessions.length > 0
+      ? showAllHistory
+        ? exam.previousSessions
+        : exam.previousSessions.slice(0, 3)
+      : [];
 
-  const hasMoreSessions = exam.previousSessions.length > 3;
+  const hasMoreSessions =
+    exam.previousSessions && exam.previousSessions.length > 3;
 
   return (
     <div className="bg-accent h-full min-h-screen pb-20 md:pb-10">
       {/* Hero */}
-      <div className="relative h-40 overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-900">
+      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-900">
         <div className="absolute inset-0 bg-black opacity-30" />
         <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6 text-white">
           <div className="mb-2 flex space-x-2 text-sm">
             <Badge variant="secondary" className="bg-purple-600">
               {exam.difficulty}
             </Badge>
-            <Badge variant="secondary" className="bg-indigo-600">
-              {exam.categories?.length || 0} Competencies
-            </Badge>
+            {exam.categories?.length > 0 && (
+              <Badge variant="secondary" className="bg-indigo-600">
+                {exam.categories?.length} Competencies
+              </Badge>
+            )}
           </div>
           <h1 className="mb-2 text-3xl font-bold">{exam.title}</h1>
           <div className="flex items-center space-x-4 text-sm">
@@ -183,28 +189,30 @@ export default function Page() {
                 </div>
 
                 <div className="mt-4">
-                  <div className="bg-accent flex items-center rounded-md p-3">
-                    <BookOpen
-                      size={20}
-                      className="text-primary mr-3 shrink-0"
-                    />
-                    <div>
-                      <div className="text-muted-foreground text-sm">
-                        Categories
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-1 font-medium">
-                        {exam.categories?.map((category) => (
-                          <Badge
-                            key={category.id}
-                            variant="default"
-                            className="text-xs"
-                          >
-                            {category.name}
-                          </Badge>
-                        ))}
+                  {exam.categories?.length > 0 && (
+                    <div className="bg-accent flex items-center rounded-md p-3">
+                      <BookOpen
+                        size={20}
+                        className="text-primary mr-3 shrink-0"
+                      />
+                      <div>
+                        <div className="text-muted-foreground text-sm">
+                          Categories
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1 font-medium">
+                          {exam.categories?.map((category) => (
+                            <Badge
+                              key={category.id}
+                              variant="default"
+                              className="text-xs"
+                            >
+                              {category.name}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -236,7 +244,7 @@ export default function Page() {
             )}
 
             {/* Exam History */}
-            {exam.previousSessions.length > 0 && (
+            {exam.previousSessions && exam.previousSessions.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Exam History</CardTitle>

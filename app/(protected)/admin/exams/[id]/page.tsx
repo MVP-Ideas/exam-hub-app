@@ -15,7 +15,6 @@ import {
   FileQuestion,
 } from "lucide-react";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -24,30 +23,20 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import ResourceCard from "@/components/admin/resources/resource-card";
-import { DialogClose } from "@radix-ui/react-dialog";
 import { formatUTCDate } from "@/lib/date-utils";
+import AppLoader from "@/components/common/app-loader";
 
 export default function Page() {
   const { id } = useParams();
-  const { exam, isLoading, isError } = useExamById(id as string);
+  const { exam, isLoading, isError } = useExamById(id as string, false);
   const resources = exam?.resources || [];
 
   if (isLoading || isError || !exam) {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <Skeleton className="h-10 w-10" />
+        <AppLoader />
       </div>
     );
   }
@@ -62,15 +51,17 @@ export default function Page() {
             <Badge variant="secondary" className="bg-purple-600">
               {exam.difficulty}
             </Badge>
-            <Badge variant="secondary" className="bg-indigo-600">
-              {exam.categories.length} Categories
-            </Badge>
+            {exam.categories.length > 0 && (
+              <Badge variant="secondary" className="bg-indigo-600">
+                {exam.categories.length} Categories
+              </Badge>
+            )}
           </div>
           <h1 className="mb-2 text-3xl font-bold">{exam.title}</h1>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center">
               <Users size={16} className="mr-1" />
-              <span>1,293 Students</span>
+              <span>1,293 Takers</span>
             </div>
             <div className="flex items-center">
               <CalendarIcon size={16} className="mr-1" />
@@ -153,27 +144,29 @@ export default function Page() {
                   ))}
                 </div>
 
-                <div className="mt-4">
-                  <div className="bg-accent flex items-center rounded-md p-3">
-                    <BookOpen size={20} className="text-primary mr-3" />
-                    <div>
-                      <div className="text-muted-foreground text-sm">
-                        Categories
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-1 font-medium">
-                        {exam.categories.map((category) => (
-                          <Badge
-                            key={category.id}
-                            variant="default"
-                            className="text-xs"
-                          >
-                            {category.name}
-                          </Badge>
-                        ))}
+                {exam.categories.length > 0 && (
+                  <div className="mt-4">
+                    <div className="bg-accent flex items-center rounded-md p-3">
+                      <BookOpen size={20} className="text-primary mr-3" />
+                      <div>
+                        <div className="text-muted-foreground text-sm">
+                          Categories
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1 font-medium">
+                          {exam.categories.map((category) => (
+                            <Badge
+                              key={category.id}
+                              variant="default"
+                              className="text-xs"
+                            >
+                              {category.name}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -208,60 +201,6 @@ export default function Page() {
                   No payment required
                 </p>
               </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="mb-6 w-full">Start Exam</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Ready to start the exam?</DialogTitle>
-                    <DialogDescription>
-                      You have {exam.durationSeconds / 60} minutes to complete
-                      this exam. Make sure you&apos;re in a quiet environment
-                      with a stable internet connection.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="mb-6 space-y-4">
-                    {[
-                      {
-                        Icon: Clock,
-                        label: "Time limit",
-                        value: `${exam.durationSeconds / 60} minutes`,
-                      },
-                      {
-                        Icon: FileText,
-                        label: "Questions",
-                        value: `${exam.questions.length}`,
-                      },
-                      {
-                        Icon: BarChart,
-                        label: "Passing score",
-                        value: `${exam.passingScore}%`,
-                      },
-                    ].map(({ Icon, label, value }) => (
-                      <div key={label} className="flex items-center">
-                        <Icon size={16} className="text-primary mr-2" />
-                        <span className="text-sm">
-                          {label}: {value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <DialogFooter>
-                    <div className="flex w-full gap-4">
-                      <DialogClose asChild>
-                        <Button variant="outline" className="flex-1">
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button variant="secondary" className="flex-1">
-                        Begin Exam
-                      </Button>
-                    </div>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-
               <Separator className="my-6" />
 
               <div className="space-y-4">

@@ -27,8 +27,12 @@ const ExamService = {
     });
     return response.data;
   },
-  get: async (id: string) => {
-    const response = await api.get<ExamWithUserMetadata>(`${BASE_URL}/${id}`);
+  get: async (id: string, showUserStats: boolean = false) => {
+    const response = await api.get<ExamWithUserMetadata>(`${BASE_URL}/${id}`, {
+      params: {
+        showUserStats,
+      },
+    });
     return response.data;
   },
   create: async (data: ExamCreateUpdate) => {

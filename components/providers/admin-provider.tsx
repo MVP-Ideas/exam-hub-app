@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { BeatLoader } from "react-spinners";
 import { UserState, useUserStore } from "@/lib/stores/user-store";
+import AppLoader from "@/components/common/app-loader";
 
 export default function AdminProvider({
   children,
@@ -25,7 +25,7 @@ export default function AdminProvider({
   if (!user) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center">
-        <BeatLoader size={20} />
+        <AppLoader />
       </div>
     );
   }

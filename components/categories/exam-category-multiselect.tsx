@@ -163,7 +163,7 @@ export default function ExamCategoryMultiselect({
               </Button>
             </div>
 
-            <div className="max-h-[200px] space-y-2 overflow-y-auto">
+            <div className="h-full space-y-2">
               {isLoading ? (
                 <div className="text-muted-foreground py-2 text-sm">
                   Loading categories...

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 export default function Page() {
   const { handleLogout, isLoading } = useAuth();
@@ -14,12 +15,21 @@ export default function Page() {
   }, [handleLogout, isLoading]);
 
   return (
-    <div className="flex h-full flex-col items-center justify-center text-white">
+    <div className="text-background flex h-full flex-col items-center justify-center">
+      <DotLottieReact
+        src="/loading.lottie"
+        loop
+        autoplay
+        speed={0.5}
+        className="h-40 w-auto"
+      />
       <h1 className="text-2xl font-bold">Logging out...</h1>
       <p>Please wait...</p>
       <p>You will be redirected shortly.</p>
       <p>If not, please click the button below.</p>
-      <Button onClick={handleLogout}>Logout</Button>
+      <Button variant="default" onClick={handleLogout} className="mt-4">
+        Logout
+      </Button>
     </div>
   );
 }

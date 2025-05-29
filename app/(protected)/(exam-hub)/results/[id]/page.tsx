@@ -9,7 +9,6 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { BeatLoader } from "react-spinners";
 import { cn } from "@/lib/utils";
 import { formatUTCDate } from "@/lib/date-utils";
 import { ExamSessionQuestionResultResponse } from "@/lib/types/exam-session";
@@ -22,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { QuestionType } from "@/lib/types/questions";
+import AppLoader from "@/components/common/app-loader";
 
 export default function Page() {
   const { id } = useParams();
@@ -32,7 +32,7 @@ export default function Page() {
   if (isLoading || isError) {
     return (
       <div className="flex h-screen w-full items-center justify-center py-10">
-        <BeatLoader size={10} color="#000" />
+        <AppLoader />
       </div>
     );
   }
@@ -47,7 +47,7 @@ export default function Page() {
   ).length;
 
   return (
-    <div className="bg-accent flex h-full w-full flex-col items-center justify-center py-10">
+    <div className="bg-accent flex h-full min-h-screen w-full flex-col items-center py-10">
       <div className="border-primary/20 bg-background mx-5 flex w-full max-w-3xl flex-col gap-y-2 overflow-hidden rounded-lg border p-6 text-center md:mx-0">
         {/* Exam Details */}
         <div className="flex flex-col items-start">
@@ -144,7 +144,7 @@ export default function Page() {
           </div>
         </div>
         {/* Buttons Back to Exam Hub */}
-        <div className="flex w-full flex-row items-center justify-center gap-x-2">
+        <div className="flex w-full flex-row items-center justify-center gap-x-2 pt-10">
           <Link href="/dashboard" className="w-full">
             <Button variant="outline" className="w-full">
               <ArrowLeftIcon className="h-4 w-4" />

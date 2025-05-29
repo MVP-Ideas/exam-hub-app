@@ -28,6 +28,7 @@ const useSubmitExamSession = (examSessionId: string) => {
           queryKey: ["examSession", examSessionId],
         });
         queryClient.invalidateQueries({ queryKey: ["examSessions"] });
+        queryClient.invalidateQueries({ queryKey: ["exams"] });
       });
       toast.success("Exam submitted successfully");
     },

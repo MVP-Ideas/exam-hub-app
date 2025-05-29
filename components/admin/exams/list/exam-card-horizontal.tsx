@@ -94,22 +94,28 @@ export default function ExamCardHorizontal({
 
           <CardContent className="p-0">
             <div className="text-muted-foreground flex flex-col items-start text-sm">
-              <div className="flex flex-row items-center">
-                <Tag className="mr-2 h-4 w-4" />
-                <h3 className="text-sm">Categories:</h3>
-              </div>
+              {exam.categories.length > 0 && (
+                <>
+                  <div className="flex flex-row items-center">
+                    <Tag className="mr-2 h-4 w-4" />
+                    <h3 className="text-sm">Categories:</h3>
+                  </div>
+
+                  <div className="my-2 flex flex-row flex-wrap items-center gap-2">
+                    {exam.categories.map((category) => (
+                      <Badge
+                        key={category.id}
+                        variant="outline"
+                        className="border text-xs"
+                      >
+                        {category.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            <div className="my-2 flex flex-row flex-wrap items-center gap-2">
-              {exam.categories.map((category) => (
-                <Badge
-                  key={category.id}
-                  variant="outline"
-                  className="border text-xs"
-                >
-                  {category.name}
-                </Badge>
-              ))}
-            </div>
+
             <div className="flex flex-row flex-wrap items-center gap-4">
               <div className="text-muted-foreground flex items-center text-sm">
                 <BarChart className="mr-2 h-4 w-4" />

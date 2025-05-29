@@ -18,9 +18,6 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false);
   return (
     <div className="relative flex min-h-svh w-full flex-row items-center justify-center gap-10 p-6 md:p-10 lg:p-14">
-      {/* Blur overlay */}
-      <div className="bg-background/20 absolute"></div>
-
       {/* Main focused content */}
       <div className="bg-background relative z-10 flex w-full max-w-4xl flex-row items-center justify-center overflow-hidden rounded-xl shadow-xl">
         <div className="bg-primary hidden h-full w-full max-w-sm flex-row items-center justify-center gap-3 md:flex md:w-1/2">
@@ -31,16 +28,17 @@ export default function Page() {
               width={400}
               height={400}
               className="h-full w-full object-cover"
+              priority
             />
           </div>
         </div>
         <Card className="bg-background flex h-full w-full max-w-xs flex-1 flex-col gap-4 rounded-lg border-0 shadow-none md:w-1/2 md:max-w-lg">
           <CardHeader className="pb-0">
             <CardTitle className="text-center text-3xl font-bold">
-              Sign In
+              Welcome to Exam Hub
             </CardTitle>
             <CardDescription className="text-muted-foreground text-center text-lg">
-              Choose your preferred login method
+              Choose your preferred login method to continue
             </CardDescription>
           </CardHeader>
 
