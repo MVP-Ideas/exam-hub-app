@@ -193,17 +193,29 @@ export default function ExamSessionToolbar({
           <div className="flex flex-col gap-y-2">
             <p className="text-primary text-sm font-semibold">Exam Tools</p>
             <div className="flex flex-col gap-y-2">
-              <Button variant="outline" className="w-full font-semibold">
+              <Button
+                variant="outline"
+                className="w-full font-semibold"
+                disabled
+              >
                 <CalculatorIcon className="h-4 w-4" />
-                Calculator
+                Calculator (Ongoing)
               </Button>
-              <Button variant="outline" className="w-full font-semibold">
+              <Button
+                variant="outline"
+                className="w-full font-semibold"
+                disabled
+              >
                 <BookIcon className="h-4 w-4" />
-                Resources
+                Resources (Ongoing)
               </Button>
-              <Button variant="outline" className="w-full font-semibold">
+              <Button
+                variant="outline"
+                className="w-full font-semibold"
+                disabled
+              >
                 <FileQuestion className="h-4 w-4" />
-                Help
+                Help (Ongoing)
               </Button>
               <Button
                 variant="outline"
@@ -225,10 +237,7 @@ export default function ExamSessionToolbar({
                 </Button>
               )}
               {endable && (
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowSubmitDialog(true)}
-                >
+                <Button onClick={() => setShowSubmitDialog(true)}>
                   <ArrowRightToLine className="h-4 w-4" />
                   Submit Exam
                 </Button>

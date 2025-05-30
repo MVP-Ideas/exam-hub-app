@@ -152,7 +152,7 @@ export default function Page() {
             </Button>
           </Link>
           <Link href={`/exams/${examSessionResult?.examId}`} className="w-full">
-            <Button variant="secondary" className="w-full">
+            <Button className="w-full">
               Go to Exam Page <ArrowRightIcon className="h-4 w-4" />
             </Button>
           </Link>

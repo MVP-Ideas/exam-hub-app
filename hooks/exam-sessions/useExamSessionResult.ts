@@ -7,7 +7,7 @@ const useExamSessionResult = (examSessionId: string) => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["exam-session-result", examSessionId],
+    queryKey: ["examSessionResult", examSessionId],
     queryFn: () => ExamSessionService.getResults(examSessionId),
     enabled: !!examSessionId,
   });

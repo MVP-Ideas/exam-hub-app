@@ -7,10 +7,10 @@ const useExamById = (examId: string, showUserStats: boolean = true) => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["exam", examId],
+    queryKey: ["examById", examId],
     queryFn: async () => await ExamService.get(examId, showUserStats),
     select: (data) => data,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0,
     enabled: !!examId,
   });
 

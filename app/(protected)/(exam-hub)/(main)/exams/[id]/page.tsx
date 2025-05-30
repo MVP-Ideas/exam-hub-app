@@ -46,6 +46,7 @@ import useStartExamSession from "@/hooks/exam-sessions/useStartExamSession";
 import { toast } from "sonner";
 import { useState } from "react";
 import AppLoader from "@/components/common/app-loader";
+import { getDifficultyColor } from "@/lib/utils/exam";
 
 export default function Page() {
   const { id } = useParams();
@@ -92,7 +93,10 @@ export default function Page() {
         <div className="absolute inset-0 bg-black opacity-30" />
         <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6 text-white">
           <div className="mb-2 flex space-x-2 text-sm">
-            <Badge variant="secondary" className="bg-purple-600">
+            <Badge
+              variant="secondary"
+              className={`border-0 ${getDifficultyColor(exam.difficulty)}`}
+            >
               {exam.difficulty}
             </Badge>
             {exam.categories?.length > 0 && (
@@ -412,7 +416,7 @@ export default function Page() {
                           </Button>
                         </DialogClose>
                         <Button
-                          variant="secondary"
+                          variant="default"
                           className="flex-1"
                           disabled={isPending}
                           onClick={handleStartExamSession}
