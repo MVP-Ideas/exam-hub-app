@@ -9,6 +9,7 @@ import {
   TestTube,
   Settings,
   LogOut,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -57,6 +58,12 @@ export function AdminSidebar({
   ];
 
   const bottomNavItems = [
+    {
+      label: "Learner Mode",
+      icon: User,
+      path: "/dashboard",
+      id: "dashboard",
+    },
     {
       label: "Settings",
       icon: Settings,

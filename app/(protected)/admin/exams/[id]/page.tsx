@@ -43,9 +43,9 @@ export default function Page() {
   }
 
   return (
-    <div className="bg-accent min-h-screen pb-20 md:pb-10">
+    <div className="bg-accent min-h-screen w-full p-0 pb-20 md:pb-10">
       {/* Hero */}
-      <div className="relative h-40 overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-900">
+      <div className="relative h-40 w-full overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-900">
         <div className="absolute inset-0 bg-black opacity-30" />
         <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white">
           <div className="mb-2 flex space-x-2 text-sm">

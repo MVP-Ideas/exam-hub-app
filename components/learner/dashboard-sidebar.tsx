@@ -12,6 +12,7 @@ import {
   LogOut,
   HelpCircle,
   Plus,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -23,6 +24,8 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useUserStore } from "@/lib/stores/user-store";
+import { UserState } from "@/lib/stores/user-store";
 
 export function DashboardSidebar({
   ...props
@@ -30,6 +33,9 @@ export function DashboardSidebar({
   const pathname = usePathname();
   const activePage = pathname.split("/").pop() || "dashboard";
   const [activeTab, setActiveTab] = useState(activePage);
+  const { user } = useUserStore((state: UserState) => ({
+    user: state.user,
+  }));
 
   // Navigation items with their icons and paths
   const mainNavItems = [
@@ -77,13 +83,27 @@ export function DashboardSidebar({
 
   const bottomNavItems = [
     {
+      label: "Admin Mode",
+      icon: Shield,
+      path: "/admin",
+      id: "admin",
+      visible: user?.role === "Admin",
+    },
+    {
       label: "Settings",
       icon: Settings,
       path: "/settings",
       id: "settings",
       disabled: true,
+      visible: true,
     },
-    { label: "Sign Out", icon: LogOut, path: "/logout", id: "logout" },
+    {
+      label: "Sign Out",
+      icon: LogOut,
+      path: "/logout",
+      id: "logout",
+      visible: true,
+    },
   ];
 
   return (
@@ -206,6 +226,7 @@ export function DashboardSidebar({
                 onClick={() => setActiveTab(item.id)}
                 className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent"
                 asChild
+                hidden={!item.visible}
                 disabled={item.disabled}
               >
                 <Link href={item.path}>

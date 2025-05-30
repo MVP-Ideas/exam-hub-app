@@ -87,9 +87,9 @@ export default function Page() {
   }, [debouncedSearch, page, router]);
 
   return (
-    <div className="flex w-full flex-col items-center">
-      <div className="flex h-full w-full max-w-5xl flex-col items-center gap-6 p-10">
-        <div className="w-full">
+    <div className="flex h-full min-h-screen w-full flex-col p-10 md:pb-0">
+      <div className="flex h-full w-full flex-col gap-6">
+        <div className="flex w-full flex-col items-start gap-2">
           <h1 className="text-2xl font-bold">Learner Management</h1>
           <p className="text-sm">
             Manage learners, track progress, and organize groups

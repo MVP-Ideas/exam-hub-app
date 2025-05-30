@@ -47,14 +47,14 @@ export default function ExamSettings({ disabled = false }: Props) {
     >
       <h2 className="text-lg font-bold">Exam Settings</h2>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {settings.map((setting) => (
           <FormField
             key={setting.name}
             control={control}
             name={`settings.${setting.name}`}
             render={({ field }) => (
-              <FormItem className="flex w-full flex-row items-center justify-between gap-4 rounded-lg border p-2">
+              <FormItem className="flex w-full flex-row flex-wrap items-center justify-between gap-4 rounded-lg border p-2">
                 <div className="bg-muted rounded-md p-2">{setting.icon}</div>
                 <div className="flex flex-1 flex-col items-start">
                   <FormLabel className="text-sm font-bold">
