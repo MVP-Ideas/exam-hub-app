@@ -15,7 +15,7 @@ export default function Page() {
   }, [handleLogout, isLoading]);
 
   return (
-    <div className="text-background flex h-full flex-col items-center justify-center">
+    <div className="text-background bg-primary flex h-screen w-full flex-col items-center justify-center">
       <DotLottieReact
         src="/loading.lottie"
         loop

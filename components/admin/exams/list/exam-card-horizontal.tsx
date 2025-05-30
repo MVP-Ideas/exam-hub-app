@@ -144,7 +144,7 @@ export default function ExamCardHorizontal({
         <CardFooter className="flex w-full flex-row gap-2 pr-4 pb-2 pl-0">
           <Link
             href={`${route}/${exam.id}`}
-            className="bg-secondary text-background w-full rounded-lg p-2 text-center text-sm font-semibold"
+            className="bg-primary text-background w-full rounded-lg p-2 text-center text-sm font-semibold"
           >
             View Exam
           </Link>

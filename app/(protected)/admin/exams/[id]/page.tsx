@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import ResourceCard from "@/components/admin/resources/resource-card";
 import { formatUTCDate } from "@/lib/date-utils";
 import AppLoader from "@/components/common/app-loader";
+import { getDifficultyColor } from "@/lib/utils/exam";
 
 export default function Page() {
   const { id } = useParams();
@@ -48,7 +49,10 @@ export default function Page() {
         <div className="absolute inset-0 bg-black opacity-30" />
         <div className="relative z-10 flex h-full flex-col justify-end p-6 text-white">
           <div className="mb-2 flex space-x-2 text-sm">
-            <Badge variant="secondary" className="bg-purple-600">
+            <Badge
+              variant="secondary"
+              className={`border-0 ${getDifficultyColor(exam.difficulty)}`}
+            >
               {exam.difficulty}
             </Badge>
             {exam.categories.length > 0 && (

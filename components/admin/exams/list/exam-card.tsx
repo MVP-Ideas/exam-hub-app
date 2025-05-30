@@ -158,7 +158,7 @@ export default function ExamCard({ exam, route, disableOptions }: Props) {
       <CardFooter className="mt-auto border-t p-4">
         <Link
           href={`${route}/${exam.id}`}
-          className="bg-secondary text-background w-full rounded-lg p-2 text-center text-sm font-semibold"
+          className="bg-primary text-background w-full rounded-lg p-2 text-center text-sm font-semibold"
         >
           View Exam
         </Link>

@@ -72,7 +72,7 @@ export default function Page() {
           </div>
           <Link
             href={"exams/create"}
-            className="bg-secondary hover:bg-secondary/80 flex w-fit flex-row items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors duration-200"
+            className="bg-primary hover:bg-primary/80 flex w-fit flex-row items-center rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors duration-200"
           >
             <PlusIcon className="mr-2 h-4 w-4" />
             Add Exam

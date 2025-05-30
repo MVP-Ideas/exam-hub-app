@@ -79,7 +79,7 @@ export default function Page() {
             </p>
           </div>
           <QuestionSheet mode="create">
-            <Button variant="secondary" className="w-fit">
+            <Button variant="default" className="w-fit">
               <PlusIcon className="mr-2 h-4 w-4" />
               Add Question
             </Button>

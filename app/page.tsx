@@ -24,7 +24,7 @@ export default function Page() {
   }, [user, router]);
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
+    <div className="bg-primary flex h-screen w-screen items-center justify-center">
       <AppLoader />
     </div>
   );

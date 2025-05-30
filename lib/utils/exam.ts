@@ -14,7 +14,7 @@ export const getStatusColor = (status: string) => {
 export const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
     case "Beginner":
-      return "bg-primary text-background";
+      return "bg-primary text-white";
     case "Intermediate":
       return "bg-orange-200 text-orange-800";
     case "Advanced":
