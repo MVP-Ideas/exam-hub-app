@@ -4,7 +4,6 @@ import ExamAddLinkDialog from "./exam-resources/exam-add-link-dialog";
 import ResourceCard from "../../resources/resource-card";
 import { ExamFormSchema } from "./exam-form";
 import { useFormContext } from "react-hook-form";
-import { Resource } from "@/lib/types/resource";
 
 type Props = {
   disabled?: boolean;
@@ -12,16 +11,18 @@ type Props = {
 
 export default function ExamStudyResources({ disabled = false }: Props) {
   const { setValue, getValues, watch } = useFormContext<ExamFormSchema>();
-  const resources = watch("resources") as Resource[] | undefined;
+  const resources = watch("resourceIds") as string[] | undefined;
 
   const handleDelete = (id: string) => {
-      const resources = getValues("resources");
+    const resources = getValues("resourceIds");
 
-      if (!resources) return;
+    if (!resources) return;
 
-      const newResources = resources.filter((resource) => resource.id !== id);
-      setValue("resources", newResources);
-    };
+    const newResources = resources.filter((resource) => resource !== id);
+    setValue("resourceIds", newResources);
+  };
+
+  console.log(resources);
 
   return (
     <div
@@ -67,10 +68,10 @@ export default function ExamStudyResources({ disabled = false }: Props) {
           resources?.length > 0 &&
           resources.map((resource) => (
             <ResourceCard
+              resourceId={resource}
               disabled={disabled}
-              key={resource.id}
-              resource={resource}
-              handleDelete={() => handleDelete(resource.id)}
+              key={resource}
+              handleDelete={() => handleDelete(resource)}
             />
           ))}
       </div>

@@ -22,6 +22,7 @@ export type Question = {
   choices: QuestionChoice[];
   resources: Resource[];
   aiHelpEnabled: boolean;
+  exams: QuestionExam[];
 };
 
 export type QuestionChoice = {
@@ -56,3 +57,11 @@ export interface ExamQuestion {
   reviewLater: boolean;
   leaveFeedback: boolean;
 }
+
+// For getting the exams that uses the question
+export type QuestionExam = {
+  id: string;
+  createdAt: Date;
+  title: string;
+  status: "Draft" | "Published" | "Archived";
+};

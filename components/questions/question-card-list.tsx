@@ -2,12 +2,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, PlusIcon, TagIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import QuestionSheet from "@/components/admin/question-bank/question-sheet";
 import { Question } from "@/lib/types/questions";
 import { cn } from "@/lib/utils";
 import { getQuestionTypeBadge } from "@/lib/constants/question";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatDate } from "date-fns";
 
 type Props = {
   questions: Question[];
@@ -22,96 +23,107 @@ export default function QuestionCardList({
   onSelect,
 }: Props) {
   return (
-    <>
+    <div>
       {questions.map((question) => {
         const isAdded = addedQuestionIds.includes(question.id);
 
         return (
-          <Card
+          <QuestionSheet
             key={question.id}
-            className={cn(
-              "bg-white p-4 transition-shadow hover:shadow-md",
-              onSelect && isAdded && "bg-muted opacity-75",
-            )}
+            mode="edit"
+            questionId={question.id}
+            showClose
           >
-            <CardContent className="p-0">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-x-2">
-                    <h3 className="text-primary text-sm font-medium">
+            <Card
+              className={cn(
+                "p-0",
+                "hover:border-primary/30 cursor-pointer bg-white transition-all hover:shadow-md",
+                onSelect && isAdded && "bg-muted/50 opacity-75",
+              )}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col gap-4 md:grid md:grid-cols-14 md:items-center">
+                  <div className="col-span-3">
+                    <h3 className="text-primary line-clamp-2 text-sm font-medium">
                       {question.text}
                     </h3>
+                    {question.exams.length > 0 && (
+                      <p className="text-muted-foreground mt-1 line-clamp-1 text-xs">
+                        Used in {question.exams.length} exam(s)
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="col-span-2">
                     {getQuestionTypeBadge(question.type)}
                   </div>
 
-                  <div className="text-muted-foreground mt-1 flex items-center gap-x-4 text-sm">
-                    <p className="text-muted-foreground truncate text-xs">
-                      {question.description}
+                  <div
+                    className={cn(
+                      "col-span-5 flex flex-wrap items-center",
+                      !onSelect && "col-span-7",
+                    )}
+                  >
+                    {question.categories && question.categories.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 truncate">
+                        {question.categories.slice(0, 2).map((category) => (
+                          <Badge
+                            key={category.id}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {category.name}
+                          </Badge>
+                        ))}
+                        {question.categories.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{question.categories.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">
+                        No category
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Created at */}
+
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground text-sm font-bold">
+                      Created on:{" "}
+                      {formatDate(question.createdAt, "MMM d, yyyy")}
                     </p>
                   </div>
 
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {question.categories && question.categories.length > 0 ? (
-                      question.categories.map((category) => (
-                        <Badge
-                          key={category.id}
-                          variant="outline"
-                          className="text-xs"
+                  {/* Action */}
+                  {onSelect && (
+                    <div className="col-span-2 flex items-center justify-center">
+                      {!isAdded && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect(question.id);
+                          }}
                         >
-                          <TagIcon size={12} className="mr-1 shrink-0" />
-                          {category.name}
-                        </Badge>
-                      ))
-                    ) : (
-                      <div className="flex items-center">
-                        <TagIcon size={12} className="mr-1 shrink-0" />
-                        <span className="text-muted-foreground text-xs">
-                          No category
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                          <PlusIcon size={14} className="mr-1" />
+                          Add
+                        </Button>
+                      )}
 
-                <div className="flex items-center gap-2">
-                  <QuestionSheet mode="edit" questionId={question.id} showClose>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      type="button"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </QuestionSheet>
-
-                  {onSelect && !isAdded && (
-                    <Button
-                      variant="default"
-                      size="icon"
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelect(question.id);
-                      }}
-                      className="rounded-full"
-                    >
-                      <PlusIcon className="text-background" size={16} />
-                    </Button>
-                  )}
-
-                  {onSelect && isAdded && (
-                    <Badge className="bg-muted text-muted-foreground">
-                      <p>Added</p>
-                    </Badge>
+                      {isAdded && <Badge variant="secondary">Added</Badge>}
+                    </div>
                   )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </QuestionSheet>
         );
       })}
-    </>
+    </div>
   );
 }

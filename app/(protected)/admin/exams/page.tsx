@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ExamCard from "@/components/admin/exams/list/exam-card";
 import ExamCardHorizontal from "@/components/admin/exams/list/exam-card-horizontal";
 import ExamCategoryMultiselect from "@/components/categories/exam-category-multiselect";
+import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 
 export default function Page() {
   const [search, setSearch] = useState<string>("");
@@ -29,17 +30,18 @@ export default function Page() {
   const [status, setStatus] = useState<string>("");
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState("grid");
+  const debouncedSearch = useDebouncedValue(search, 500);
 
   const queryParams = useMemo(
     () => ({
-      search,
+      search: debouncedSearch,
       page,
       pageSize: 10,
-      difficulty,
+      difficulty: difficulty === "" ? null : difficulty,
       category: categories.join(","),
-      status,
+      status: status === "" ? null : status,
     }),
-    [search, page, difficulty, categories, status],
+    [debouncedSearch, page, difficulty, categories, status],
   );
 
   const { exams, isLoading, isFetching, isError, fetchNextPage, hasNextPage } =

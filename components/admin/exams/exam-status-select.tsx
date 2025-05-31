@@ -24,9 +24,9 @@ export default function ExamStatusSelect({
   return (
     <Select
       disabled={disabled}
-      onValueChange={onChange}
-      value={value ?? "null"}
-      defaultValue={"null"}
+      onValueChange={(v) => onChange(v === "null" ? "" : v)}
+      value={value || "null"}
+      defaultValue={value || "null"}
     >
       <SelectTrigger className="bg-background w-full justify-between">
         <div className="flex items-center gap-2">

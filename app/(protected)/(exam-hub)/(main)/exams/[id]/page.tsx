@@ -230,7 +230,10 @@ export default function Page() {
                 <CardContent className="space-y-4">
                   {resources ? (
                     resources.map((resource) => (
-                      <ResourceCard resource={resource} key={resource.id} />
+                      <ResourceCard
+                        resourceId={resource.id}
+                        key={resource.id}
+                      />
                     ))
                   ) : (
                     <div className="bg-muted flex h-full w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg p-10">

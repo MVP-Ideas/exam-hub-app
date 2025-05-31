@@ -25,7 +25,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Edit, Link, Trash2Icon, UploadIcon } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Edit, Trash2Icon, UploadIcon, ExternalLink } from "lucide-react";
 
 import useQuestionById from "@/hooks/questions/useQuestionById";
 import DragAndDropEditor from "./choices/question-drag-and-drop-editor";
@@ -48,6 +50,7 @@ import useDeleteQuestion from "@/hooks/questions/useDeleteQuestion";
 import ConfirmDeleteDialog from "@/components/common/dialogs/confirm-delete-dialog";
 import useCreateQuestion from "@/hooks/questions/useCreateQuestion";
 import { Resource } from "@/lib/types/resource";
+import Link from "next/link";
 
 const choiceSchema = z.object({
   text: z.string().min(1, "Choice text is required"),
@@ -108,6 +111,7 @@ export default function QuestionSheet({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("edit");
   const { question, isLoading } = useQuestionById(questionId || "", open);
   const { createQuestion, isPending: isCreating } = useCreateQuestion();
   const { updateQuestion, isPending: isUpdating } = useUpdateQuestion(
@@ -129,6 +133,7 @@ export default function QuestionSheet({
     if (!open) {
       setOpen(false);
       setDeleteOpen(false);
+      setActiveTab("edit"); // Reset to edit tab when closing
       reset();
     } else {
       setOpen(true);
@@ -247,48 +252,39 @@ export default function QuestionSheet({
     );
   }
 
-  return (
-    <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetTrigger asChild>{triggerButton}</SheetTrigger>
+  if (mode === "create") {
+    return (
+      <>
+        <Sheet open={open} onOpenChange={onOpenChange}>
+          <SheetTrigger asChild>{triggerButton}</SheetTrigger>
 
-        <SheetContent
-          hidden={isLoading}
-          showClose={showClose}
-          side="right"
-          className="flex min-w-screen flex-col overflow-y-auto p-0 pt-4 md:min-w-[80vw] lg:min-w-[50vw]"
-        >
-          <FormProvider {...form}>
-            <Form {...form}>
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="flex-1 space-y-6 overflow-y-auto p-6"
-              >
-                <SheetHeader className="mb-6 flex flex-row items-center justify-between gap-4 p-0">
-                  <SheetTitle>
-                    <p className="text-lg font-medium">
-                      {mode === "edit" ? "Edit Question" : "Create Question"}
-                    </p>
-                    <SheetDescription className="text-muted-foreground text-sm">
-                      {mode === "edit"
-                        ? "Edit the question and its properties."
-                        : "Create a new question to use in your exams."}
-                    </SheetDescription>
-                  </SheetTitle>
+          <SheetContent
+            hidden={isLoading}
+            showClose={showClose}
+            side="right"
+            className="flex min-w-screen flex-col overflow-y-auto p-0 pt-8 md:min-w-[80vw] lg:min-w-[50vw]"
+          >
+            <FormProvider {...form}>
+              <Form {...form}>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSubmit(onSubmit)();
+                  }}
+                  className="flex-1 space-y-6 overflow-y-auto p-6"
+                >
+                  <SheetHeader className="mb-6 flex flex-row items-center justify-between gap-4 p-0">
+                    <SheetTitle>
+                      <p className="text-lg font-medium">Create Question</p>
+                      <SheetDescription className="text-muted-foreground text-sm">
+                        Create a new question to use in your exams.
+                      </SheetDescription>
+                    </SheetTitle>
+                  </SheetHeader>
 
-                  {mode === "edit" && (
-                    <Button
-                      variant="ghost"
-                      type="button"
-                      onClick={() => setDeleteOpen(true)}
-                    >
-                      <Trash2Icon className="text-destructive" size={20} />
-                    </Button>
-                  )}
-                </SheetHeader>
-
-                <div className="flex w-full flex-col justify-start gap-4">
-                  {mode === "create" || questionType !== undefined ? (
+                  {/* Create mode form content */}
+                  <div className="flex w-full flex-col justify-start gap-4">
                     <FormField
                       control={control}
                       name="type"
@@ -303,175 +299,483 @@ export default function QuestionSheet({
                         </FormItem>
                       )}
                     />
-                  ) : null}
-                  {questionType != undefined && (
-                    <FormField
-                      control={control}
-                      name="categoryIds"
-                      render={({ field }) => (
-                        <FormItem className="w-full">
-                          <FormLabel>Category (Optional)</FormLabel>
-                          <FormControl>
-                            {isLoading ? (
-                              <p className="text-muted-foreground text-sm">
-                                Loading categories...
-                              </p>
-                            ) : (
+                    {questionType != undefined && (
+                      <FormField
+                        control={control}
+                        name="categoryIds"
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel>Category (Optional)</FormLabel>
+                            <FormControl>
                               <QuestionCategoryMultiselect
                                 value={field.value}
                                 onChange={field.onChange}
                               />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+
+                  {questionType != undefined && (
+                    <>
+                      <FormField
+                        control={control}
+                        name="text"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Question Text (Required)</FormLabel>
+                            <FormControl>
+                              <Textarea className="min-h-24" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={control}
+                        name="choices"
+                        render={() => (
+                          <FormItem>
+                            {questionType ===
+                              QuestionType.MultipleChoiceSingle && (
+                              <MultipleChoiceSingleEditor
+                                control={control}
+                                setValue={setValue}
+                              />
                             )}
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
 
-                {questionType != undefined && (
-                  <>
-                    <FormField
-                      control={control}
-                      name="text"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Question Text (Required)</FormLabel>
-                          <FormControl>
-                            <Textarea className="min-h-24" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            {questionType ===
+                              QuestionType.MultipleChoiceMultiple && (
+                              <MultipleChoiceMultipleEditor
+                                control={control}
+                                setValue={setValue}
+                              />
+                            )}
 
-                    <FormField
-                      control={control}
-                      name="choices"
-                      render={() => (
-                        <FormItem>
-                          {questionType ===
-                            QuestionType.MultipleChoiceSingle && (
-                            <MultipleChoiceSingleEditor
-                              control={control}
-                              setValue={setValue}
-                            />
-                          )}
+                            {questionType === QuestionType.DragAndDrop && (
+                              <DragAndDropEditor
+                                control={control}
+                                setValue={setValue}
+                              />
+                            )}
 
-                          {questionType ===
-                            QuestionType.MultipleChoiceMultiple && (
-                            <MultipleChoiceMultipleEditor
-                              control={control}
-                              setValue={setValue}
-                            />
-                          )}
+                            {questionType === QuestionType.TrueFalse && (
+                              <TrueFalseEditor
+                                control={control}
+                                setValue={setValue}
+                              />
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                          {questionType === QuestionType.DragAndDrop && (
-                            <DragAndDropEditor
-                              control={control}
-                              setValue={setValue}
-                            />
-                          )}
+                      <FormField
+                        control={control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description (Optional)</FormLabel>
+                            <FormControl>
+                              <Textarea className="min-h-24" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                          {questionType === QuestionType.TrueFalse && (
-                            <TrueFalseEditor
-                              control={control}
-                              setValue={setValue}
-                            />
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description (Optional)</FormLabel>
-                          <FormControl>
-                            <Textarea className="min-h-24" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="space-y-2">
-                      <h3 className="font-medium">Question Resources</h3>
-                      <div className="space-y-4 rounded-md border p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="rounded bg-gray-100 p-2">
-                              <UploadIcon size={16} />
+                      <div className="space-y-2">
+                        <h3 className="font-medium">Question Resources</h3>
+                        <div className="space-y-4 rounded-md border p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="rounded bg-gray-100 p-2">
+                                <UploadIcon size={16} />
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium">
+                                  Upload Study Materials
+                                </h4>
+                                <p className="text-xs text-gray-500">
+                                  Image, PDFs, slides, documents (max 50MB)
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="text-sm font-medium">
-                                Upload Study Materials
-                              </h4>
-                              <p className="text-xs text-gray-500">
-                                Image, PDFs, slides, documents (max 50MB)
-                              </p>
-                            </div>
+                            <QuestionUploadFileDialog />
                           </div>
-                          <QuestionUploadFileDialog />
-                        </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="rounded bg-gray-100 p-2">
-                              <Link size={16} />
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="rounded bg-gray-100 p-2">
+                                <ExternalLink size={16} />
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium">
+                                  Add External Links
+                                </h4>
+                                <p className="text-xs text-gray-500">
+                                  Reference websites, videos, articles
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="text-sm font-medium">
-                                Add External Links
-                              </h4>
-                              <p className="text-xs text-gray-500">
-                                Reference websites, videos, articles
-                              </p>
-                            </div>
+                            <QuestionAddLinkDialog />
                           </div>
-                          <QuestionAddLinkDialog />
                         </div>
                       </div>
+
+                      <div className="flex flex-col items-center gap-2">
+                        {resources &&
+                          resources?.length > 0 &&
+                          resources.map((resource) => (
+                            <ResourceCard
+                              key={resource.id}
+                              resourceId={resource.id}
+                              handleDelete={() => {
+                                const newResources = resources.filter(
+                                  (r) => r.id !== resource.id,
+                                );
+                                setValue("resources", newResources);
+                              }}
+                            />
+                          ))}
+                      </div>
+
+                      <SheetFooter className="mt-6 flex flex-row justify-between p-0">
+                        <Button
+                          variant="outline"
+                          type="reset"
+                          onClick={handleReset}
+                        >
+                          Reset
+                        </Button>
+                        <Button type="submit" disabled={isCreating}>
+                          Save Question
+                        </Button>
+                      </SheetFooter>
+                    </>
+                  )}
+                </form>
+              </Form>
+            </FormProvider>
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetTrigger asChild>{triggerButton}</SheetTrigger>
+
+        <SheetContent
+          hidden={isLoading}
+          showClose={showClose}
+          side="right"
+          className="flex min-w-screen flex-col overflow-y-auto p-0 pt-8 md:min-w-[80vw] lg:min-w-[50vw]"
+        >
+          <div className="px-6">
+            <SheetHeader className="mb-6 flex flex-row items-center justify-between gap-4 p-0">
+              <SheetTitle>
+                <p className="text-lg font-medium">Edit Question</p>
+                <SheetDescription className="text-muted-foreground text-sm">
+                  Edit the question and view its usage in exams.
+                </SheetDescription>
+              </SheetTitle>
+
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2Icon className="text-destructive" size={20} />
+              </Button>
+            </SheetHeader>
+          </div>
+
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex flex-1 flex-col"
+          >
+            <div className="px-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="edit">Edit</TabsTrigger>
+                <TabsTrigger value="usage">
+                  Usage ({question?.exams.length})
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent
+              value="edit"
+              className="mt-0 flex-1 overflow-y-auto p-6"
+            >
+              <FormProvider {...form}>
+                <Form {...form}>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSubmit(onSubmit)();
+                    }}
+                    className="space-y-6"
+                  >
+                    <div className="flex w-full flex-col justify-start gap-4">
+                      {questionType !== undefined && (
+                        <FormField
+                          control={control}
+                          name="type"
+                          render={({ field }) => (
+                            <FormItem className="w-full">
+                              <FormLabel>Type (Required)</FormLabel>
+                              <QuestionTypeSelect
+                                value={field.value}
+                                onChange={field.onChange}
+                                includeNull={false}
+                              />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                      {questionType != undefined && (
+                        <FormField
+                          control={control}
+                          name="categoryIds"
+                          render={({ field }) => (
+                            <FormItem className="w-full">
+                              <FormLabel>Category (Optional)</FormLabel>
+                              <FormControl>
+                                <QuestionCategoryMultiselect
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
                     </div>
 
-                    <div className="flex flex-col items-center gap-2">
-                      {resources &&
-                        resources?.length > 0 &&
-                        resources.map((resource) => (
-                          <ResourceCard
-                            key={resource.id}
-                            resource={resource}
-                            handleDelete={() => {
-                              const newResources = resources.filter(
-                                (r) => r.id !== resource.id,
-                              );
-                              setValue("resources", newResources);
-                            }}
-                          />
-                        ))}
-                    </div>
+                    {questionType != undefined && (
+                      <>
+                        <FormField
+                          control={control}
+                          name="text"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Question Text (Required)</FormLabel>
+                              <FormControl>
+                                <Textarea className="min-h-24" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <SheetFooter className="mt-6 flex flex-row justify-between p-0">
-                      <Button
-                        variant="outline"
-                        type="reset"
-                        onClick={handleReset}
+                        <FormField
+                          control={control}
+                          name="choices"
+                          render={() => (
+                            <FormItem>
+                              {questionType ===
+                                QuestionType.MultipleChoiceSingle && (
+                                <MultipleChoiceSingleEditor
+                                  control={control}
+                                  setValue={setValue}
+                                />
+                              )}
+
+                              {questionType ===
+                                QuestionType.MultipleChoiceMultiple && (
+                                <MultipleChoiceMultipleEditor
+                                  control={control}
+                                  setValue={setValue}
+                                />
+                              )}
+
+                              {questionType === QuestionType.DragAndDrop && (
+                                <DragAndDropEditor
+                                  control={control}
+                                  setValue={setValue}
+                                />
+                              )}
+
+                              {questionType === QuestionType.TrueFalse && (
+                                <TrueFalseEditor
+                                  control={control}
+                                  setValue={setValue}
+                                />
+                              )}
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description (Optional)</FormLabel>
+                              <FormControl>
+                                <Textarea className="min-h-24" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="space-y-2">
+                          <h3 className="font-medium">Question Resources</h3>
+                          <div className="space-y-4 rounded-md border p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="rounded bg-gray-100 p-2">
+                                  <UploadIcon size={16} />
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-medium">
+                                    Upload Study Materials
+                                  </h4>
+                                  <p className="text-xs text-gray-500">
+                                    Image, PDFs, slides, documents (max 50MB)
+                                  </p>
+                                </div>
+                              </div>
+                              <QuestionUploadFileDialog />
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="rounded bg-gray-100 p-2">
+                                  <ExternalLink size={16} />
+                                </div>
+                                <div>
+                                  <h4 className="text-sm font-medium">
+                                    Add External Links
+                                  </h4>
+                                  <p className="text-xs text-gray-500">
+                                    Reference websites, videos, articles
+                                  </p>
+                                </div>
+                              </div>
+                              <QuestionAddLinkDialog />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-2">
+                          {resources &&
+                            resources?.length > 0 &&
+                            resources.map((resource) => (
+                              <ResourceCard
+                                key={resource.id}
+                                resourceId={resource.id}
+                                handleDelete={() => {
+                                  const newResources = resources.filter(
+                                    (r) => r.id !== resource.id,
+                                  );
+                                  setValue("resources", newResources);
+                                }}
+                              />
+                            ))}
+                        </div>
+
+                        <SheetFooter className="mt-6 flex flex-row justify-between p-0">
+                          <Button
+                            variant="outline"
+                            type="reset"
+                            onClick={handleReset}
+                          >
+                            Reset
+                          </Button>
+                          <Button type="submit" disabled={isUpdating}>
+                            Save Question
+                          </Button>
+                        </SheetFooter>
+                      </>
+                    )}
+                  </form>
+                </Form>
+              </FormProvider>
+            </TabsContent>
+
+            <TabsContent
+              value="usage"
+              className="mt-0 flex-1 overflow-y-auto p-6"
+            >
+              <div className="space-y-4">
+                <div>
+                  <h3 className="mb-2 text-base font-medium">
+                    Exams Using This Question
+                  </h3>
+                  <p className="text-muted-foreground mb-4 text-sm">
+                    This question is currently used in {question?.exams.length}{" "}
+                    exam(s).
+                  </p>
+                </div>
+
+                {question?.exams.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <p className="text-muted-foreground">
+                      This question is not used in any exams yet.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {question?.exams.map((exam) => (
+                      <div
+                        key={exam.id}
+                        className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors"
                       >
-                        Reset
-                      </Button>
-                      <Button type="submit" disabled={isUpdating || isCreating}>
-                        Save Question
-                      </Button>
-                    </SheetFooter>
-                  </>
+                        <div className="flex-1">
+                          <div className="mb-2 flex items-center gap-3">
+                            <h4 className="font-medium">{exam.title}</h4>
+                            <Badge
+                              variant={
+                                exam.status === "Published"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
+                              {exam.status}
+                            </Badge>
+                          </div>
+                          <p className="text-muted-foreground text-sm">
+                            Created on{" "}
+                            {new Date(exam.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Link href={`/admin/exams/${exam.id}`} target="_blank">
+                          <Button variant="ghost" size="sm">
+                            <ExternalLink size={16} className="mr-2" />
+                            View Exam
+                          </Button>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </form>
-            </Form>
-          </FormProvider>
+
+                {question?.exams.length && question?.exams.length > 0 && (
+                  <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <p className="text-sm text-amber-800">
+                      <strong>Note:</strong> Deleting this question will remove
+                      it from all {question?.exams.length} exam(s) listed above.
+                      Make sure to review each exam before proceeding with
+                      deletion.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </SheetContent>
       </Sheet>
 
@@ -479,7 +783,11 @@ export default function QuestionSheet({
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         title="Delete Question"
-        description="Are you sure you want to delete this question? This action cannot be undone."
+        description={
+          question?.exams.length && question?.exams.length > 0
+            ? `Are you sure you want to delete this question? This will remove it from ${question?.exams.length} exam(s). This action cannot be undone.`
+            : "Are you sure you want to delete this question? This action cannot be undone."
+        }
         onConfirm={handleDelete}
         isPending={isUpdating}
       />
