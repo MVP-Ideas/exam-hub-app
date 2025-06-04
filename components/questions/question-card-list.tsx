@@ -23,7 +23,7 @@ export default function QuestionCardList({
   onSelect,
 }: Props) {
   return (
-    <div>
+    <div className="flex flex-col gap-y-4">
       {questions.map((question) => {
         const isAdded = addedQuestionIds.includes(question.id);
 
@@ -91,8 +91,8 @@ export default function QuestionCardList({
                   {/* Created at */}
 
                   <div className="col-span-2">
-                    <p className="text-muted-foreground text-sm font-bold">
-                      Created on:{" "}
+                    <p className="text-muted-foreground text-xs font-light">
+                      Created on: <br />
                       {formatDate(question.createdAt, "MMM d, yyyy")}
                     </p>
                   </div>

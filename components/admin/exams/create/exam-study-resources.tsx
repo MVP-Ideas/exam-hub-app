@@ -22,8 +22,6 @@ export default function ExamStudyResources({ disabled = false }: Props) {
     setValue("resourceIds", newResources);
   };
 
-  console.log(resources);
-
   return (
     <div
       id="exam-study-resources"

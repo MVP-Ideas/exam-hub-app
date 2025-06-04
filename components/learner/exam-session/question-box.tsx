@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { BeatLoader } from "react-spinners";
+import { useState, useEffect } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -26,15 +25,16 @@ import {
   ArrowRight,
   RefreshCcw,
   Flag,
+  Loader2,
 } from "lucide-react";
 import { QuestionType } from "@/lib/types/questions";
-import useExamSessionQuestionByQuestionId from "@/hooks/exam-sessions/useExamSessionQuestionByQuestionId";
-import useAnswerQuestion from "@/hooks/exam-sessions/useAnswerQuestion";
 import useTimer from "@/hooks/timer/useTimer";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ExamSessionAnswerCreate } from "@/lib/types/exam-session";
-import useResetAnswer from "@/hooks/exam-sessions/useResetAnswer";
+import {
+  ExamSessionAnswerCreate,
+  ExamSessionQuestion,
+} from "@/lib/types/exam-session";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import { cn } from "@/lib/utils";
 import {
@@ -43,103 +43,87 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { toast } from "sonner";
-import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 
 type QuestionBoxProps = {
-  examSessionId: string;
-  questionId: string;
+  question: ExamSessionQuestion;
   currentQuestionIndex: number;
   setCurrentQuestionIndex: (index: number) => void;
   disabledNextButton: boolean;
+  answer: ExamSessionAnswerCreate;
+  setAnswer: (answer: ExamSessionAnswerCreate) => void;
+  isUpdatingProgress: boolean;
+  isReadyToSubmit: boolean;
+  showSubmitDialog: () => void;
+  isPaused: boolean;
 };
 
 export default function QuestionBox({
-  examSessionId,
-  questionId,
+  question,
   currentQuestionIndex,
   setCurrentQuestionIndex,
   disabledNextButton,
+  answer,
+  setAnswer,
+  isUpdatingProgress,
+  isReadyToSubmit,
+  showSubmitDialog, // Updated prop name
+  isPaused,
 }: QuestionBoxProps) {
-  const { flaggedQuestions, addFlaggedQuestion, removeFlaggedQuestion } =
-    useExamSessionStore();
+  const {
+    flaggedQuestions,
+    addFlaggedQuestion,
+    removeFlaggedQuestion,
+    lastSavedTime,
+  } = useExamSessionStore();
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
   const [choiceOrder, setChoiceOrder] = useState<string[]>([]);
 
-  const { answerQuestion, isPending: isSubmitting } = useAnswerQuestion();
-  const { resetAnswer } = useResetAnswer(examSessionId, questionId);
-  const [answerData, setAnswerData] = useState<ExamSessionAnswerCreate | null>(
-    null,
-  );
-
-  const debouncedAnswerData = useDebouncedValue(answerData, 500);
-
-  const { question, isLoading, isError } = useExamSessionQuestionByQuestionId(
-    examSessionId,
-    questionId,
-  );
-
-  const initialSeconds = question?.timeSpentSeconds || 0;
+  const initialSeconds = answer?.timeSpentSeconds || 0;
 
   const { seconds, formatTime, resetTimer } = useTimer({
     initialSeconds,
+    isRunning: !isPaused,
+    onTimeUpdate: (currentSeconds) => {
+      if (
+        question.type === QuestionType.DragAndDrop &&
+        answer.choices.length === 0
+      ) {
+        return;
+      }
+
+      setAnswer({
+        ...answer,
+        examSessionQuestionId: question.id,
+        timeSpentSeconds: currentSeconds,
+      });
+    },
   });
 
-  const getAnswerChoices = useCallback(() => {
-    if (!question?.type) {
-      return [];
-    }
+  const handleResetAnswer = () => {
+    setSelectedChoices([]);
+    setChoiceOrder([]);
 
-    switch (question.type) {
-      case QuestionType.MultipleChoiceSingle:
-      case QuestionType.TrueFalse:
-        return selectedChoices.map((choiceId) => ({
-          questionChoiceId: choiceId,
-        }));
+    if (question.type === QuestionType.DragAndDrop) {
+      const defaultOrder = question.choices.map((c) => c.id);
+      setChoiceOrder(defaultOrder);
+      setSelectedChoices(defaultOrder);
 
-      case QuestionType.MultipleChoiceMultiple:
-        return selectedChoices.map((choiceId) => ({
-          questionChoiceId: choiceId,
-        }));
-
-      case QuestionType.DragAndDrop:
-        return choiceOrder.map((choiceId, index) => ({
-          questionChoiceId: choiceId,
+      setAnswer({
+        ...answer,
+        examSessionQuestionId: question.id,
+        choices: question.choices.map((choice, index) => ({
+          questionChoiceId: choice.id,
           order: index,
-        }));
-
-      default:
-        return [];
-    }
-  }, [question, selectedChoices, choiceOrder]);
-
-  const submitAnswer = useCallback(async () => {
-    if (!question || isSubmitting) return;
-
-    try {
-      await answerQuestion({
-        examSessionId: examSessionId,
-        questionId: questionId,
-        answer: {
-          choices: getAnswerChoices(),
-          aiAssitanceUsed: false,
-          timeSpentSeconds: seconds,
-          toBeReviewed: false,
-        },
+        })),
       });
-    } catch (error) {
-      toast.error("Failed to submit answer");
-      console.error("Failed to submit answer:", error);
+    } else {
+      setAnswer({
+        ...answer,
+        examSessionQuestionId: question.id,
+        choices: [],
+      });
     }
-  }, [
-    examSessionId,
-    isSubmitting,
-    question,
-    questionId,
-    answerQuestion,
-    seconds,
-    getAnswerChoices,
-  ]);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -147,60 +131,58 @@ export default function QuestionBox({
     }),
   );
 
-  // Reset selections and timer when question changes
   useEffect(() => {
     setSelectedChoices([]);
-    if (question) {
-      const choiceIds = question.choices.map((c) => c.id);
-      setChoiceOrder(choiceIds);
+    setChoiceOrder([]);
+  }, [question.id]);
 
-      if (question.answer && question.answer.timeSpentSeconds > 0) {
-        resetTimer(question.answer.timeSpentSeconds);
-      } else if (seconds === 0) {
-        resetTimer(0);
-      }
+  // Reset selections and timer when question changes
+  useEffect(() => {
+    const isCorrectAnswer = answer?.examSessionQuestionId === question.id;
+    const currentChoices = isCorrectAnswer ? answer?.choices || [] : [];
 
-      if (!question.answer && question.type === QuestionType.DragAndDrop) {
-        setChoiceOrder(choiceIds);
-        setAnswerData({
-          choices: choiceIds.map((choiceId) => ({
-            questionChoiceId: choiceId,
-          })),
-          aiAssitanceUsed: false,
-          toBeReviewed: false,
-          timeSpentSeconds: seconds - initialSeconds,
-        });
-      }
+    // Check if this is a valid existing answer with choices
+    const hasValidChoices =
+      currentChoices.length > 0 &&
+      currentChoices.every((choice) => choice.questionChoiceId);
 
-      if (question.answer && question.answer.choices.length > 0) {
-        if (question.type === QuestionType.DragAndDrop) {
-          // Sort the choice IDs based on the order from the answer
-          const sortedChoices = [...question.answer.choices]
-            .sort((a, b) => (a.order || 0) - (b.order || 0))
-            .map((c) => c.questionChoiceId);
-
-          if (sortedChoices.length > 0) {
-            setChoiceOrder(sortedChoices);
-          }
-        } else {
-          // For other question types, set the selected choices
-          setSelectedChoices(
-            question.answer.choices.map((c) => c.questionChoiceId),
-          );
-        }
+    if (hasValidChoices) {
+      setSelectedChoices(currentChoices.map((c) => c.questionChoiceId));
+      if (question.type === QuestionType.DragAndDrop) {
+        const orderedChoices = currentChoices
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((c) => c.questionChoiceId);
+        setChoiceOrder(orderedChoices);
       }
     } else {
-      setChoiceOrder([]);
+      setSelectedChoices([]);
+
+      if (question.type === QuestionType.DragAndDrop) {
+        const defaultOrder = question.choices.map((c) => c.id);
+        setChoiceOrder(defaultOrder);
+        setSelectedChoices(defaultOrder);
+
+        setAnswer({
+          ...answer,
+          examSessionQuestionId: question.id,
+          choices: question.choices.map((choice, index) => ({
+            questionChoiceId: choice.id,
+            order: index,
+          })),
+        });
+      } else {
+        setChoiceOrder([]);
+      }
     }
-  }, [question]);
+  }, [question.id, answer?.examSessionQuestionId]);
 
   const handleSingleChoiceSelection = (value: string) => {
     setSelectedChoices([value]);
-    setAnswerData({
+    setAnswer({
+      ...answer,
+      examSessionQuestionId: question.id,
+      timeSpentSeconds: seconds,
       choices: [{ questionChoiceId: value }],
-      aiAssitanceUsed: false,
-      toBeReviewed: false,
-      timeSpentSeconds: seconds - initialSeconds,
     });
   };
 
@@ -213,11 +195,13 @@ export default function QuestionBox({
       newChoices = selectedChoices.filter((id) => id !== value);
       setSelectedChoices(newChoices);
     }
-    setAnswerData({
-      choices: newChoices.map((choiceId) => ({ questionChoiceId: choiceId })),
-      aiAssitanceUsed: false,
-      toBeReviewed: false,
-      timeSpentSeconds: seconds - initialSeconds,
+    setAnswer({
+      ...answer,
+      examSessionQuestionId: question.id,
+      timeSpentSeconds: seconds,
+      choices: newChoices.map((choiceId) => ({
+        questionChoiceId: choiceId,
+      })),
     });
   };
 
@@ -231,49 +215,26 @@ export default function QuestionBox({
       // Use arrayMove helper from dnd-kit
       const newOrder = arrayMove(choiceOrder, oldIndex, newIndex);
       setChoiceOrder(newOrder);
-      setAnswerData({
+      setAnswer({
+        ...answer,
+        examSessionQuestionId: question.id,
+        timeSpentSeconds: seconds,
         choices: newOrder.map((choiceId, index) => ({
           questionChoiceId: choiceId,
           order: index,
         })),
-        aiAssitanceUsed: false,
-        timeSpentSeconds: seconds - initialSeconds,
-        toBeReviewed: false,
       });
     }
   };
 
-  const isFlagged = flaggedQuestions.includes(questionId);
-
   useEffect(() => {
-    if (!debouncedAnswerData || isSubmitting) return;
+    const timeSpent = answer?.timeSpentSeconds || 0;
+    resetTimer(timeSpent);
+  }, [question.id, answer?.timeSpentSeconds, resetTimer]);
 
-    const submit = async () => {
-      try {
-        await answerQuestion({
-          examSessionId,
-          questionId,
-          answer: debouncedAnswerData,
-        });
-        setAnswerData(null);
-      } catch (error) {
-        toast.error("Failed to submit answer");
-        console.error("Submit error:", error);
-      }
-    };
+  const isFlagged = flaggedQuestions.includes(question.id);
 
-    submit();
-  }, [debouncedAnswerData]);
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <BeatLoader />
-      </div>
-    );
-  }
-
-  if (isError || !question) {
+  if (!question) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center">
         <div className="flex w-full max-w-md flex-col items-center justify-center gap-y-2 text-center">
@@ -287,6 +248,10 @@ export default function QuestionBox({
   }
 
   const renderQuestionContent = () => {
+    if (!question) {
+      return null;
+    }
+
     switch (question.type) {
       case QuestionType.MultipleChoiceSingle:
         return (
@@ -407,9 +372,9 @@ export default function QuestionBox({
                     size="icon"
                     onClick={() => {
                       if (isFlagged) {
-                        removeFlaggedQuestion(questionId);
+                        removeFlaggedQuestion(question.id);
                       } else {
-                        addFlaggedQuestion(questionId);
+                        addFlaggedQuestion(question.id);
                       }
                     }}
                   >
@@ -434,7 +399,9 @@ export default function QuestionBox({
             <span className="text-muted-foreground hidden md:block">
               Time spent:
             </span>
-            <span className="font-mono">{formatTime()}</span>
+            <span className="font-mono">
+              {isPaused ? "Paused" : formatTime()}
+            </span>
           </div>
         </div>
         {question.description && (
@@ -451,12 +418,7 @@ export default function QuestionBox({
             <Button
               variant="outline"
               className="w-fit"
-              onClick={() => {
-                // Reset selected choices and order
-                setSelectedChoices([]);
-                setChoiceOrder([]);
-                resetAnswer();
-              }}
+              onClick={handleResetAnswer}
             >
               <RefreshCcw className="mr-2 h-4 w-4" />
               Reset question
@@ -471,7 +433,7 @@ export default function QuestionBox({
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             {question.resources.map((resource) => (
               <div
-                key={`${questionId}-${resource.id}`}
+                key={`${question.id}-${resource.id}`}
                 className="rounded-md border p-3"
               >
                 <p className="font-medium">{resource.title}</p>
@@ -481,13 +443,12 @@ export default function QuestionBox({
           </div>
         </div>
       )}
+
       {/* Footer */}
       <footer className="flex w-full flex-row items-center justify-between p-4">
         <Button
-          variant="outline"
           className="px-4 font-semibold"
           onClick={() => {
-            submitAnswer();
             setCurrentQuestionIndex(currentQuestionIndex - 1);
           }}
           disabled={currentQuestionIndex === 1}
@@ -495,18 +456,49 @@ export default function QuestionBox({
           <ArrowLeft className="mr-2 h-4 w-4" />
           Previous
         </Button>
-        <Button
-          variant="secondary"
-          className="px-4 font-semibold"
-          onClick={() => {
-            submitAnswer();
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-          }}
-          disabled={disabledNextButton}
-        >
-          Next
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex flex-row items-center gap-2">
+          {lastSavedTime && !isUpdatingProgress && (
+            <>
+              <div className="flex flex-col items-center gap-1 text-xs">
+                <div className="flex flex-row items-center gap-1">
+                  <Clock className="text-muted-foreground h-3 w-3" />
+                  <span className="text-muted-foreground text-xs">
+                    Last saved:
+                  </span>
+                </div>
+                <span className="text-muted-foreground text-xs">
+                  {lastSavedTime?.toLocaleString()}
+                </span>
+              </div>
+            </>
+          )}
+          {isUpdatingProgress && (
+            <>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span className="text-muted-foreground text-xs">
+                Updating progress...
+              </span>
+            </>
+          )}
+        </div>
+        {isReadyToSubmit && disabledNextButton && (
+          <Button className="px-4 font-semibold" onClick={showSubmitDialog}>
+            Submit Exam
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        )}
+        {!disabledNextButton && (
+          <Button
+            className="px-4 font-semibold"
+            onClick={() => {
+              setCurrentQuestionIndex(currentQuestionIndex + 1);
+            }}
+            disabled={disabledNextButton}
+          >
+            Next
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        )}
       </footer>
     </div>
   );

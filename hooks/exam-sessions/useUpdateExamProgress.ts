@@ -1,16 +1,18 @@
-import ExamSessionService from "@/lib/services/exam-session";
+import ExamSessionService, {
+  UpdateExamProgressRequest,
+} from "@/lib/services/exam-session";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 
 const updateProgressRequest = async (
   examSessionId: string,
-  timeSpentSeconds: number,
+  request: UpdateExamProgressRequest,
 ) => {
   try {
     const response = await ExamSessionService.updateProgress(
       examSessionId,
-      timeSpentSeconds,
+      request,
     );
     if (response) {
       return response;
@@ -26,8 +28,8 @@ const useUpdateExamProgress = (examSessionId: string) => {
   const [isPending, startTransition] = useTransition();
 
   const { mutateAsync: updateProgress } = useMutation({
-    mutationFn: (timeSpentSeconds: number) =>
-      updateProgressRequest(examSessionId, timeSpentSeconds),
+    mutationFn: (request: UpdateExamProgressRequest) =>
+      updateProgressRequest(examSessionId, request),
     onSuccess: () => {
       startTransition(() => {
         queryClient.invalidateQueries({

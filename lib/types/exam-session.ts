@@ -49,6 +49,7 @@ export type ExamSessionAnswerChoice = {
 };
 
 export type ExamSessionAnswerCreate = {
+  examSessionQuestionId: string;
   aiAssitanceUsed: boolean;
   timeSpentSeconds: number;
   toBeReviewed: boolean;

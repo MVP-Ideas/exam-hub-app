@@ -747,7 +747,7 @@ export default function QuestionSheet({
                               {exam.status}
                             </Badge>
                           </div>
-                          <p className="text-muted-foreground text-sm">
+                          <p className="text-muted-foreground text-sm font-light">
                             Created on{" "}
                             {new Date(exam.createdAt).toLocaleDateString()}
                           </p>

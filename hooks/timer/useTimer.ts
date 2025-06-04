@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface UseTimerOptions {
   initialSeconds?: number;
@@ -12,29 +12,85 @@ export default function useTimer({
   onTimeUpdate,
 }: UseTimerOptions = {}) {
   const [seconds, setSeconds] = useState(initialSeconds);
+  const [isPaused, setIsPaused] = useState(false);
+  const onTimeUpdateRef = useRef(onTimeUpdate);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const initialSecondsRef = useRef(initialSeconds);
 
+  // Keep the ref updated with the latest callback
   useEffect(() => {
-    setSeconds(initialSeconds);
+    onTimeUpdateRef.current = onTimeUpdate;
+  }, [onTimeUpdate]);
+
+  // Reset timer when initialSeconds changes - this is the key fix
+  useEffect(() => {
+    if (initialSecondsRef.current !== initialSeconds) {
+      console.log(
+        `Timer reset: ${initialSecondsRef.current} -> ${initialSeconds}`,
+      );
+      setSeconds(initialSeconds);
+      initialSecondsRef.current = initialSeconds;
+
+      // Call onTimeUpdate immediately with the new initial seconds
+      if (onTimeUpdateRef.current) {
+        onTimeUpdateRef.current(initialSeconds);
+      }
+    }
   }, [initialSeconds]);
 
-  useEffect(() => {
-    if (!isRunning) return;
+  // Timer should run when isRunning is true AND not paused
+  const shouldRun = isRunning && !isPaused;
 
-    const interval = setInterval(() => {
-      setSeconds((prevSeconds) => {
-        const newSeconds = prevSeconds + 1;
-        if (onTimeUpdate) {
-          onTimeUpdate(newSeconds);
+  // Timer loop
+  useEffect(() => {
+    // Clear existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (!shouldRun) return;
+
+    timerRef.current = setInterval(() => {
+      setSeconds((prev) => {
+        const newValue = prev + 1;
+        // Call onTimeUpdate synchronously within the state update
+        if (onTimeUpdateRef.current) {
+          onTimeUpdateRef.current(newValue);
         }
-        return newSeconds;
+        return newValue;
       });
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [isRunning, onTimeUpdate]);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [shouldRun]);
 
-  const resetTimer = useCallback((newValue = 0) => {
+  const pause = useCallback(() => {
+    setIsPaused(true);
+  }, []);
+
+  const resume = useCallback(() => {
+    setIsPaused(false);
+  }, []);
+
+  const togglePause = useCallback(() => {
+    setIsPaused((prev) => !prev);
+  }, []);
+
+  const resetTimer = useCallback((newValue: number = 0) => {
     setSeconds(newValue);
+    setIsPaused(false);
+    initialSecondsRef.current = newValue;
+
+    // Call onTimeUpdate immediately after reset
+    if (onTimeUpdateRef.current) {
+      onTimeUpdateRef.current(newValue);
+    }
   }, []);
 
   const formatTime = useCallback(
@@ -43,13 +99,20 @@ export default function useTimer({
       const minutes = Math.floor((totalSeconds % 3600) / 60);
       const secs = totalSeconds % 60;
 
-      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+      return `${hours.toString().padStart(2, "0")}:${minutes
+        .toString()
+        .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     },
     [seconds],
   );
 
   return {
     seconds,
+    isPaused,
+    isRunning: shouldRun,
+    pause,
+    resume,
+    togglePause,
     resetTimer,
     formatTime,
   };
