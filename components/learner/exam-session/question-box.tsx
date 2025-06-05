@@ -399,7 +399,7 @@ export default function QuestionBox({
             <span className="text-muted-foreground hidden md:block">
               Time spent:
             </span>
-            <span className="font-mono">
+            <span className="text-sm">
               {isPaused ? "Paused" : formatTime()}
             </span>
           </div>
@@ -487,7 +487,7 @@ export default function QuestionBox({
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         )}
-        {!disabledNextButton && (
+        {!isReadyToSubmit && (
           <Button
             className="px-4 font-semibold"
             onClick={() => {
@@ -524,7 +524,7 @@ function SortableItem({ id, text }: { id: string; text: string }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 rounded-md border bg-white p-3"
+      className="bg-background flex items-center gap-2 rounded-md border p-3"
       {...attributes}
     >
       <Button

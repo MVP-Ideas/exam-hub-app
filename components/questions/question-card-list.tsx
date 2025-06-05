@@ -37,7 +37,7 @@ export default function QuestionCardList({
             <Card
               className={cn(
                 "p-0",
-                "hover:border-primary/30 cursor-pointer bg-white transition-all hover:shadow-md",
+                "hover:border-primary/30 dark:bg-background cursor-pointer transition-all hover:shadow-md",
                 onSelect && isAdded && "bg-muted/50 opacity-75",
               )}
             >

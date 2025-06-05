@@ -393,7 +393,7 @@ export default function QuestionSheet({
                         <div className="space-y-4 rounded-md border p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="rounded bg-gray-100 p-2">
+                              <div className="rounded bg-gray-100 p-2 dark:bg-gray-900">
                                 <UploadIcon size={16} />
                               </div>
                               <div>
@@ -410,7 +410,7 @@ export default function QuestionSheet({
 
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="rounded bg-gray-100 p-2">
+                              <div className="rounded bg-gray-100 p-2 dark:bg-gray-900">
                                 <ExternalLink size={16} />
                               </div>
                               <div>
@@ -636,7 +636,7 @@ export default function QuestionSheet({
                           <div className="space-y-4 rounded-md border p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="rounded bg-gray-100 p-2">
+                                <div className="rounded bg-gray-100 p-2 dark:bg-gray-900">
                                   <UploadIcon size={16} />
                                 </div>
                                 <div>
@@ -653,7 +653,7 @@ export default function QuestionSheet({
 
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="rounded bg-gray-100 p-2">
+                                <div className="rounded bg-gray-100 p-2 dark:bg-gray-900">
                                   <ExternalLink size={16} />
                                 </div>
                                 <div>

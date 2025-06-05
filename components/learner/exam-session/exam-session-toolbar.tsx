@@ -37,6 +37,7 @@ import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import useCreateQuestionFeedback from "@/hooks/question-feedback/useCreateQuestionFeedback";
+import { ThemeDropdown } from "@/components/common/theme-dropdown";
 
 type Props = {
   examId: string;
@@ -150,7 +151,7 @@ export default function ExamSessionToolbar({
                           a.choices.length > 0,
                       ) &&
                         index !== currentQuestionIndex &&
-                        "bg-green-300 text-black",
+                        "bg-green-300 text-black dark:bg-green-900 dark:text-green-300",
                     )}
                     onClick={() => {
                       setCurrentQuestionIndex(index + 1);
@@ -185,7 +186,7 @@ export default function ExamSessionToolbar({
                           a.choices.length > 0,
                       ) &&
                         index !== currentQuestionIndex &&
-                        "text-foreground bg-green-300 hover:bg-green-400",
+                        "text-foreground bg-green-300 hover:bg-green-400 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800",
                     )}
                     onClick={() => {
                       setCurrentQuestionIndex(index + 1);
@@ -261,6 +262,7 @@ export default function ExamSessionToolbar({
         </div>
       </SidebarContent>
       <SidebarFooter>
+        <ThemeDropdown />
         <Button
           variant="ghost"
           className="hover:bg-destructive hover:text-background w-full font-bold"

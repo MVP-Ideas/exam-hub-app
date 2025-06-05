@@ -30,7 +30,6 @@ const useSubmitExamSession = (examSessionId: string) => {
         queryClient.invalidateQueries({ queryKey: ["examSessions"] });
         queryClient.invalidateQueries({ queryKey: ["exams"] });
       });
-      toast.success("Exam submitted successfully");
     },
     onError: (error) => {
       const message = extractAxiosErrorMessage(error);

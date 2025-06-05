@@ -91,7 +91,7 @@ export default function Page() {
       {/* Hero */}
       <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-900">
         <div className="absolute inset-0 bg-black opacity-30" />
-        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6 text-white">
+        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6">
           <div className="mb-2 flex space-x-2 text-sm">
             <Badge
               variant="secondary"
@@ -100,13 +100,15 @@ export default function Page() {
               {exam.difficulty}
             </Badge>
             {exam.categories?.length > 0 && (
-              <Badge variant="secondary" className="bg-indigo-600">
+              <Badge variant="default" className="bg-indigo-600">
                 {exam.categories?.length} Competencies
               </Badge>
             )}
           </div>
-          <h1 className="mb-2 text-3xl font-bold">{exam.title}</h1>
-          <div className="flex items-center space-x-4 text-sm">
+          <h1 className="text-primary-foreground mb-2 text-3xl font-bold">
+            {exam.title}
+          </h1>
+          <div className="text-primary-foreground flex items-center space-x-4 text-sm">
             <div className="flex items-center">
               <Users size={16} className="mr-1" />
               <span>1,293 Students</span>

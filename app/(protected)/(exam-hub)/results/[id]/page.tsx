@@ -59,9 +59,9 @@ export default function Page() {
         <div className="border-primary/20 flex flex-col items-start rounded-lg border">
           <div
             className={cn(
-              "flex w-full flex-col items-center justify-center gap-y-4 bg-lime-50 py-6",
-              isPassed && "bg-lime-50",
-              !isPassed && "bg-red-50",
+              "flex w-full flex-col items-center justify-center gap-y-4 bg-lime-50 py-6 dark:bg-lime-900",
+              isPassed && "bg-lime-50 dark:bg-lime-900",
+              !isPassed && "bg-red-50 dark:bg-red-900",
             )}
           >
             <div className="flex flex-col items-center justify-center gap-y-2">
@@ -104,10 +104,13 @@ export default function Page() {
             <div className="flex w-full flex-row items-center justify-between">
               <p className="text-muted-foreground">Completion Time</p>
               <p className="font-bold">
-                {examSessionResult?.timeSpentSeconds
-                  ? Math.floor(examSessionResult?.timeSpentSeconds / 60)
-                  : 0}{" "}
-                minutes
+                {(() => {
+                  const totalSeconds = examSessionResult?.timeSpentSeconds || 0;
+                  const hours = Math.floor(totalSeconds / 3600);
+                  const minutes = Math.floor((totalSeconds % 3600) / 60);
+                  const seconds = totalSeconds % 60;
+                  return `${hours}h ${minutes} min ${seconds} sec`;
+                })()}
               </p>
             </div>
             <div className="flex w-full flex-row items-center justify-between">
@@ -174,7 +177,9 @@ function QuestionResult({
       <p
         className={cn(
           `text-start text-lg font-bold`,
-          isCorrect ? "text-green-500" : "text-red-500",
+          isCorrect
+            ? "text-green-500 dark:text-green-300"
+            : "text-red-500 dark:text-red-300",
         )}
       >
         {text}
@@ -302,12 +307,16 @@ function QuestionResult({
           )}
 
           {/* Explanation */}
-          <div className="flex flex-col items-start gap-y-2">
-            <p className="text-muted-foreground text-sm">Explanation</p>
-            <div className="border-primary/20 flex flex-col items-start rounded-lg border bg-blue-50 p-2">
-              <p className="text-primary text-sm">{question.explanation}</p>
+          {question.explanation && (
+            <div className="flex flex-col items-start gap-y-2">
+              <p className="text-muted-foreground text-sm">Explanation</p>
+              <div className="border-primary/20 flex flex-col items-start rounded-lg border bg-blue-50 p-2 dark:bg-blue-900">
+                <p className="text-primary dark:text-primary-foreground text-sm">
+                  {question.explanation}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </AccordionContent>
 

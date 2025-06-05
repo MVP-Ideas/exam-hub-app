@@ -105,7 +105,7 @@ export default function Page() {
     },
     [
       examSession?.maxTimeSeconds,
-
+      examSession?.finishedAt,
       answers,
       updateProgress,
       setLastSavedTime,
@@ -189,6 +189,7 @@ export default function Page() {
         answers.push({
           examSessionQuestionId: question.id,
           choices: question.answer?.choices || [],
+          timeSpentSeconds: question.answer?.timeSpentSeconds || 0,
         });
       }
 
@@ -225,7 +226,10 @@ export default function Page() {
     setAnswers(newAnswers);
   };
 
-  if ((isLoading || !examSession || isSubmitting || isSubmittingExam) && !isError) {
+  if (
+    (isLoading || !examSession || isSubmitting || isSubmittingExam) &&
+    !isError
+  ) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <AppLoader />
@@ -318,10 +322,12 @@ export default function Page() {
               </p>
             </div>
           </div>
-          <div className="flex flex-row items-center gap-x-2">
-            <TimerIcon className="h-4 w-4" />
+          <div className="flex flex-row items-center justify-center gap-x-2">
             <div className="flex flex-col items-end">
-              <p className="text-muted-foreground text-xs">Time Remaining</p>
+              <div className="flex flex-row items-center gap-x-1">
+                <TimerIcon className="h-3 w-3" />
+                <p className="text-muted-foreground text-xs">Time Remaining</p>
+              </div>
               <p className="text-lg font-bold">{formatTime()}</p>
             </div>
           </div>
@@ -376,8 +382,8 @@ export default function Page() {
               you&apos;re ready to continue, click the button below.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-center py-6">
-            <div className="text-center">
+          <div className="flex items-center justify-center py-6">
+            <div className="flex flex-col items-center">
               <p className="text-muted-foreground mb-2">Time Remaining</p>
               <p className="text-2xl font-bold">{formatTime()}</p>
             </div>
@@ -405,23 +411,27 @@ export default function Page() {
 
           {/* Overview */}
           <div className="mt-4 grid w-full grid-cols-3 gap-4 text-center">
-            <div className="rounded-lg border bg-blue-50 p-4">
-              <p className="text-sm font-semibold text-blue-700">
+            <div className="rounded-lg border bg-blue-50 p-4 dark:bg-blue-900">
+              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
                 Total Questions
               </p>
-              <p className="text-xl font-bold text-blue-900">
+              <p className="text-xl font-bold text-blue-900 dark:text-blue-300">
                 {questions.length}
               </p>
             </div>
-            <div className="rounded-lg border bg-green-50 p-4">
-              <p className="text-sm font-semibold text-green-700">Answered</p>
-              <p className="text-xl font-bold text-green-900">
+            <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-900">
+              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
+                Answered
+              </p>
+              <p className="text-xl font-bold text-green-900 dark:text-green-300">
                 {answeredQuestions}
               </p>
             </div>
-            <div className="rounded-lg border bg-yellow-50 p-4">
-              <p className="text-sm font-semibold text-yellow-700">Flagged</p>
-              <p className="text-xl font-bold text-yellow-900">
+            <div className="rounded-lg border bg-yellow-50 p-4 dark:bg-yellow-900">
+              <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
+                Flagged
+              </p>
+              <p className="text-xl font-bold text-yellow-900 dark:text-yellow-300">
                 {
                   questions.filter((q) => flaggedQuestions.includes(q.id))
                     .length
@@ -450,8 +460,8 @@ export default function Page() {
                     className={cn(
                       "flex items-center justify-between rounded border p-2 text-sm",
                       isAnswered
-                        ? "border-green-200 bg-green-50"
-                        : "border-red-200 bg-red-50",
+                        ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-900"
+                        : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900",
                     )}
                   >
                     <div className="flex items-center gap-2">

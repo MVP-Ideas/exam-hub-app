@@ -10,6 +10,9 @@ import {
   Settings,
   LogOut,
   User,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +24,8 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useTheme } from "next-themes";
+import { ThemeDropdown } from "../common/theme-dropdown";
 
 export function AdminSidebar({
   ...props
@@ -116,6 +121,16 @@ export function AdminSidebar({
       </SidebarContent>
 
       <SidebarFooter className="p-0 pb-4">
+        {/* Theme Selector */}
+        <div>
+          <Separator className="my-2" />
+          <div className="text-muted-foreground px-4 py-2 text-sm font-medium">
+            Appearance
+          </div>
+          <div className="px-4">
+            <ThemeDropdown />
+          </div>
+        </div>
         {/* Account Navigation */}
         <div className="py-2">
           <Separator className="my-2" />
