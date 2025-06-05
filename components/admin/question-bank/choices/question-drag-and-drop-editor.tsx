@@ -81,7 +81,7 @@ export default function DragAndDropEditor({ control, setValue }: Props) {
 
   const handleAddChoice = () => {
     const newChoice: QuestionChoiceCreateUpdate = {
-      text: "New choice",
+      text: "",
       isCorrect: false,
     };
     setValue("choices", [...choices, newChoice]);

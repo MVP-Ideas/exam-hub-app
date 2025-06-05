@@ -66,7 +66,7 @@ export default function MultipleChoiceMultipleEditor({
         type="button"
         onClick={() => {
           const newChoice: QuestionChoiceCreateUpdate = {
-            text: "New choice",
+            text: "",
             isCorrect: false,
           };
           setValue("choices", [...choices, newChoice]);

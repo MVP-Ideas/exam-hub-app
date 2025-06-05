@@ -45,7 +45,7 @@ export const createExamSchema = z.object({
     .number({ invalid_type_error: "Time Limit must be a number" })
     .min(1, "Time Limit must be at least 1 minute"),
   passingScore: z.number().min(0, "Passing Score must be at least 0%"),
-  resources: z.array(resourceSchema).optional(),
+  resourceIds: z.array(z.string()).optional(),
   questions: z.array(questionSchema).optional(),
   settings: settingsSchema,
 });
@@ -65,6 +65,7 @@ export default function ExamForm({ type, exam }: Props) {
   );
   const [isDraft, setIsDraft] = useState(true);
   const isPending = type === "edit" ? isUpdatePending : isCreatePending;
+  console.log(exam);
 
   const form = useForm<ExamFormSchema>({
     resolver: zodResolver(createExamSchema),
@@ -75,7 +76,7 @@ export default function ExamForm({ type, exam }: Props) {
       difficulty: "",
       timeLimit: 60,
       passingScore: 70,
-      resources: [],
+      resourceIds: [],
       questions: [],
       settings: {
         timeLimitEnabled: false,
@@ -88,9 +89,6 @@ export default function ExamForm({ type, exam }: Props) {
   const { reset, handleSubmit, watch } = form;
 
   const questions = watch("questions");
-  const categoryIds = watch("categoryIds");
-
-  console.log(categoryIds);
 
   const onSubmit = async (
     isDraft: boolean,
@@ -104,7 +102,7 @@ export default function ExamForm({ type, exam }: Props) {
         difficulty: data.difficulty,
         durationSeconds: data.timeLimit * 60,
         passingScore: data.passingScore,
-        resources: data.resources?.map((resource) => resource.id) ?? [],
+        resourceIds: data.resourceIds ?? [],
         questions:
           data.questions !== undefined
             ? data.questions.map((q) => ({
@@ -148,7 +146,7 @@ export default function ExamForm({ type, exam }: Props) {
         difficulty: exam.difficulty,
         timeLimit: Math.floor(exam.durationSeconds / 60),
         passingScore: exam.passingScore,
-        resources: exam.resources ?? [],
+        resourceIds: exam.resources.map((resource) => resource.id),
         questions: exam.questions ?? [],
         settings: {
           timeLimitEnabled: exam.settings?.timeLimitEnabled ?? false,

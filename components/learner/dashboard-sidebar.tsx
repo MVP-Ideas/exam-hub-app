@@ -26,6 +26,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useUserStore } from "@/lib/stores/user-store";
 import { UserState } from "@/lib/stores/user-store";
+import { ThemeDropdown } from "../common/theme-dropdown";
 
 export function DashboardSidebar({
   ...props
@@ -212,8 +213,19 @@ export function DashboardSidebar({
       </SidebarContent>
 
       <SidebarFooter className="p-0 pb-4">
+        {/* Theme Selector */}
+        <div>
+          <Separator className="my-2" />
+          <div className="text-muted-foreground px-4 py-2 text-sm font-medium">
+            Appearance
+          </div>
+          <div className="px-4">
+            <ThemeDropdown />
+          </div>
+        </div>
+
         {/* Other Navigation */}
-        <div className="py-2">
+        <div>
           <Separator className="my-2" />
           <div className="text-muted-foreground px-4 py-2 text-sm font-medium">
             Account
@@ -224,7 +236,7 @@ export function DashboardSidebar({
                 variant="ghost"
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent"
+                className="relative flex w-full items-center gap-2"
                 asChild
                 hidden={!item.visible}
                 disabled={item.disabled}

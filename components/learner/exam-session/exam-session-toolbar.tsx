@@ -19,7 +19,10 @@ import {
   PauseCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ExamSessionQuestion } from "@/lib/types/exam-session";
+import {
+  ExamSessionAnswerCreate,
+  ExamSessionQuestion,
+} from "@/lib/types/exam-session";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -34,11 +37,13 @@ import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import useCreateQuestionFeedback from "@/hooks/question-feedback/useCreateQuestionFeedback";
+import { ThemeDropdown } from "@/components/common/theme-dropdown";
 
 type Props = {
   examId: string;
   endable: boolean;
   questions: ExamSessionQuestion[];
+  answers: ExamSessionAnswerCreate[];
   currentQuestionIndex: number;
   setCurrentQuestionIndex: (index: number) => void;
   navMode: "numbers" | "questions";
@@ -46,25 +51,24 @@ type Props = {
   isPaused?: boolean;
   setPaused?: (paused: boolean) => void;
   isSubmitting?: boolean;
-  submitExamSession?: () => void;
+  showSubmitDialog: () => void; // Changed from submitExamSession to showSubmitDialog
 };
 
 export default function ExamSessionToolbar({
   examId,
   endable,
   questions,
+  answers,
   currentQuestionIndex,
   setCurrentQuestionIndex,
   navMode,
   setNavMode,
   isPaused,
   setPaused,
-  isSubmitting,
-  submitExamSession,
+  showSubmitDialog, // Updated prop name
 }: Props) {
   const router = useRouter();
   const { flaggedQuestions } = useExamSessionStore();
-  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const { createQuestionFeedback, isPending: isSubmittingFeedback } =
@@ -124,7 +128,6 @@ export default function ExamSessionToolbar({
               </Button>
             </div>
           </div>
-
           {navMode === "numbers" ? (
             <div className="grid grid-cols-6 gap-2">
               {questions.map((question, index) => (
@@ -140,9 +143,15 @@ export default function ExamSessionToolbar({
                     }
                     className={cn(
                       "h-8 w-8 p-0 text-sm font-semibold",
-                      question.answer &&
+                      answers.find(
+                        (a) =>
+                          a &&
+                          a.examSessionQuestionId === question.id &&
+                          a.choices &&
+                          a.choices.length > 0,
+                      ) &&
                         index !== currentQuestionIndex &&
-                        "bg-green-300 text-black",
+                        "bg-green-300 text-black dark:bg-green-900 dark:text-green-300",
                     )}
                     onClick={() => {
                       setCurrentQuestionIndex(index + 1);
@@ -169,15 +178,21 @@ export default function ExamSessionToolbar({
                     }
                     className={cn(
                       "mb-1 h-auto w-full justify-start p-1 text-left text-xs font-medium",
-                      question.answer &&
+                      answers.find(
+                        (a) =>
+                          a &&
+                          a.choices &&
+                          a.examSessionQuestionId === question.id &&
+                          a.choices.length > 0,
+                      ) &&
                         index !== currentQuestionIndex &&
-                        "text-foreground bg-green-300 hover:bg-green-400",
+                        "text-foreground bg-green-300 hover:bg-green-400 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800",
                     )}
                     onClick={() => {
                       setCurrentQuestionIndex(index + 1);
                     }}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 overflow-hidden">
                       <span className="bg-muted text-muted-foreground flex h-4 w-4 items-center justify-center rounded-full text-xs font-semibold">
                         {index + 1}
                       </span>
@@ -237,7 +252,7 @@ export default function ExamSessionToolbar({
                 </Button>
               )}
               {endable && (
-                <Button onClick={() => setShowSubmitDialog(true)}>
+                <Button onClick={showSubmitDialog}>
                   <ArrowRightToLine className="h-4 w-4" />
                   Submit Exam
                 </Button>
@@ -247,6 +262,7 @@ export default function ExamSessionToolbar({
         </div>
       </SidebarContent>
       <SidebarFooter>
+        <ThemeDropdown />
         <Button
           variant="ghost"
           className="hover:bg-destructive hover:text-background w-full font-bold"
@@ -260,127 +276,7 @@ export default function ExamSessionToolbar({
       </SidebarFooter>
       <SidebarRail />
 
-      {/* Submit Exam Dialog */}
-      <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
-        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Exam Summary</DialogTitle>
-            <DialogDescription>
-              Review your answers before submitting the exam.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Overview */}
-          <div className="mt-4 grid w-full grid-cols-3 gap-4 text-center">
-            <div className="rounded-lg border bg-blue-50 p-4">
-              <p className="text-sm font-semibold text-blue-700">
-                Total Questions
-              </p>
-              <p className="text-xl font-bold text-blue-900">
-                {questions.length}
-              </p>
-            </div>
-            <div className="rounded-lg border bg-green-50 p-4">
-              <p className="text-sm font-semibold text-green-700">Answered</p>
-              <p className="text-xl font-bold text-green-900">
-                {questions.filter((q) => q.answer).length}
-              </p>
-            </div>
-            <div className="rounded-lg border bg-yellow-50 p-4">
-              <p className="text-sm font-semibold text-yellow-700">Flagged</p>
-              <p className="text-xl font-bold text-yellow-900">
-                {
-                  questions.filter((q) => flaggedQuestions.includes(q.id))
-                    .length
-                }
-              </p>
-            </div>
-          </div>
-
-          {/* Question List */}
-          <div className="mt-6">
-            <p className="text-primary mb-2 text-sm font-semibold">Questions</p>
-            <div className="custom-scrollbar flex max-h-60 flex-col gap-2 overflow-y-auto pr-2">
-              {questions.map((q, index) => {
-                const isAnswered = !!q.answer;
-                const isFlagged = flaggedQuestions.includes(q.id);
-
-                return (
-                  <div
-                    key={q.id}
-                    className={cn(
-                      "flex items-center justify-between rounded border p-2 text-sm",
-                      isAnswered
-                        ? "border-green-200 bg-green-50"
-                        : "border-red-200 bg-red-50",
-                    )}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
-                        {index + 1}
-                      </div>
-                      <div className="max-w-[12rem] truncate">{q.text}</div>
-                      <div className="flex gap-1">
-                        {isAnswered && (
-                          <span className="rounded border border-green-500 px-1 text-xs font-medium text-green-700">
-                            Answered
-                          </span>
-                        )}
-                        {isFlagged && (
-                          <span className="rounded border border-yellow-500 px-1 text-xs font-medium text-yellow-700">
-                            Flagged
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setCurrentQuestionIndex(index + 1);
-                        setShowSubmitDialog(false);
-                      }}
-                    >
-                      Review
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Warning */}
-          {questions.some((q) => !q.answer) && (
-            <div className="mt-4 rounded border border-orange-300 bg-orange-50 p-4 text-sm text-orange-700">
-              You have unanswered questions. You can go back to complete them or
-              submit the exam as is.
-            </div>
-          )}
-
-          {/* Footer */}
-          <DialogFooter className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowSubmitDialog(false);
-              }}
-            >
-              Return to Exam
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => {
-                setShowSubmitDialog(false);
-                submitExamSession?.();
-              }}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Exam"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Question Feedback Dialog */}
+      {/* Question Feedback Dialog - Only dialog remaining in this component */}
       <Dialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
         <DialogContent>
           <DialogHeader>

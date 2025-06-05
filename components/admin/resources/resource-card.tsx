@@ -3,19 +3,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link, TrashIcon, UploadIcon } from "lucide-react";
 import NextLink from "next/link";
-import { Resource } from "@/lib/types/resource";
+import useResourceById from "@/hooks/resources/useResourceById";
 
 type Props = {
-  resource: Resource;
+  resourceId: string;
   disabled?: boolean;
   handleDelete?: (id: string) => void;
 };
 
 export default function ResourceCard({
-  resource,
+  resourceId,
   handleDelete,
   disabled = false,
 }: Props) {
+  const { resource } = useResourceById(resourceId);
+
   if (!resource) {
     return (
       <Card className="w-full p-4">

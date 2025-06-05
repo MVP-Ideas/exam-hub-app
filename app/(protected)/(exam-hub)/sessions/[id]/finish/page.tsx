@@ -43,9 +43,9 @@ export default function Page() {
     <div className="flex h-full w-full items-center justify-center py-10 md:h-screen">
       <div className="mx-5 flex w-full max-w-2xl flex-col items-center justify-center gap-y-2 overflow-hidden rounded-lg border text-center md:mx-0">
         {/* Success */}
-        <div className="flex w-full flex-col items-center justify-center gap-y-5 bg-lime-50 py-20">
-          <div className="flex items-center justify-center rounded-full bg-green-200 p-2">
-            <CheckCircleIcon className="h-10 w-10 text-green-500" />
+        <div className="flex w-full flex-col items-center justify-center gap-y-5 bg-lime-50 py-20 dark:bg-lime-900">
+          <div className="flex items-center justify-center rounded-full bg-green-200 p-2 dark:bg-green-900">
+            <CheckCircleIcon className="h-10 w-10 text-green-500 dark:text-green-300" />
           </div>
           <h2 className="text-2xl font-bold text-green-500">
             Exam submitted successfully!
@@ -76,10 +76,13 @@ export default function Page() {
               <div className="flex flex-col items-start justify-center">
                 <p className="text-sm font-light">Time Spent</p>
                 <p className="text-base font-bold">
-                  {examSession?.timeSpentSeconds
-                    ? Math.floor(examSession?.timeSpentSeconds / 60)
-                    : 0}{" "}
-                  min
+                  {(() => {
+                    const totalSeconds = examSession?.timeSpentSeconds || 0;
+                    const hours = Math.floor(totalSeconds / 3600);
+                    const minutes = Math.floor((totalSeconds % 3600) / 60);
+                    const seconds = totalSeconds % 60;
+                    return `${hours}h ${minutes} min ${seconds} sec`;
+                  })()}
                 </p>
               </div>
             </div>

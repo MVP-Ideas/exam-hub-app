@@ -8,6 +8,11 @@ import {
 
 const BASE_URL = "exam-sessions";
 
+export type UpdateExamProgressRequest = {
+  answers: ExamSessionAnswerCreate[];
+  timeRemainingSeconds: number;
+};
+
 const ExamSessionService = {
   get: async (id: string) => {
     const response = await api.get<ExamSession>(`${BASE_URL}/${id}`);
@@ -40,8 +45,14 @@ const ExamSessionService = {
 
     return response.data;
   },
-  updateProgress: async (examSessionId: string, timeSpentSeconds: number) => {
-    const payload = { timeSpentSeconds };
+  updateProgress: async (
+    examSessionId: string,
+    request: UpdateExamProgressRequest,
+  ) => {
+    const payload = {
+      answers: request.answers,
+      timeRemainingSeconds: request.timeRemainingSeconds,
+    };
     const response = await api.post<ExamSession>(
       `${BASE_URL}/${examSessionId}/progress`,
       payload,

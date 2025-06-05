@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ExamSessionAnswerCreate } from "../types/exam-session";
 
 type NavigationMode = "numbers" | "questions";
 
@@ -13,12 +14,18 @@ interface ExamSessionState {
   removeFlaggedQuestion: (questionId: string) => void;
 
   // Any potential session progress state we might want to track
-  lastVisitedExamId: string | null;
-  setLastVisitedExamId: (examId: string | null) => void;
+  lastVisitedExamSessionId: string | null;
+  setLastVisitedExamSessionId: (examSessionId: string | null) => void;
 
   // Session info
-  examSessionProgress: Record<string, number>; // examSessionId -> progress
-  updateExamSessionProgress: (sessionId: string, progress: number) => void;
+  lastSavedTime: Date | null;
+  setLastSavedTime: (time: Date | null) => void;
+
+  answers: ExamSessionAnswerCreate[];
+  setAnswers: (answers: ExamSessionAnswerCreate[]) => void;
+  resetAnswers: () => void;
+
+  clearData: () => void;
 }
 
 export const useExamSessionStore = create<ExamSessionState>()(
@@ -40,17 +47,24 @@ export const useExamSessionStore = create<ExamSessionState>()(
           ),
         })),
 
-      lastVisitedExamId: null,
-      setLastVisitedExamId: (examId) => set({ lastVisitedExamId: examId }),
+      lastSavedTime: null,
+      setLastSavedTime: (time) => set({ lastSavedTime: time }),
 
-      examSessionProgress: {},
-      updateExamSessionProgress: (sessionId, progress) =>
-        set((state) => ({
-          examSessionProgress: {
-            ...state.examSessionProgress,
-            [sessionId]: progress,
-          },
-        })),
+      lastVisitedExamSessionId: null,
+      setLastVisitedExamSessionId: (examSessionId) =>
+        set({ lastVisitedExamSessionId: examSessionId }),
+
+      answers: [],
+      setAnswers: (answers) => set({ answers }),
+      resetAnswers: () => set({ answers: [] }),
+
+      clearData: () => set({
+        navMode: "numbers",
+        flaggedQuestions: [],
+        lastSavedTime: null,
+        lastVisitedExamSessionId: null,
+        answers: [],
+      }),
     }),
     {
       name: "exam-session-storage",
@@ -58,8 +72,9 @@ export const useExamSessionStore = create<ExamSessionState>()(
       partialize: (state) => ({
         navMode: state.navMode,
         flaggedQuestions: state.flaggedQuestions,
-        lastVisitedExamId: state.lastVisitedExamId,
-        examSessionProgress: state.examSessionProgress,
+        lastSavedTime: state.lastSavedTime,
+        lastVisitedExamSessionId: state.lastVisitedExamSessionId,
+        answers: state.answers,
       }),
     },
   ),

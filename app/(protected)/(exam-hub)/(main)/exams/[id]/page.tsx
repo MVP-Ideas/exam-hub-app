@@ -61,7 +61,7 @@ export default function Page() {
     const response = await startExamSession();
 
     if (response) {
-      router.push(`/sessions/${response.id}/1`);
+      router.push(`/sessions/${response.id}`);
     } else {
       toast.error("Failed to start exam session");
     }
@@ -91,7 +91,7 @@ export default function Page() {
       {/* Hero */}
       <div className="relative overflow-hidden bg-gradient-to-r from-indigo-700 to-purple-900">
         <div className="absolute inset-0 bg-black opacity-30" />
-        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6 text-white">
+        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end p-6">
           <div className="mb-2 flex space-x-2 text-sm">
             <Badge
               variant="secondary"
@@ -100,13 +100,15 @@ export default function Page() {
               {exam.difficulty}
             </Badge>
             {exam.categories?.length > 0 && (
-              <Badge variant="secondary" className="bg-indigo-600">
+              <Badge variant="default" className="bg-indigo-600">
                 {exam.categories?.length} Competencies
               </Badge>
             )}
           </div>
-          <h1 className="mb-2 text-3xl font-bold">{exam.title}</h1>
-          <div className="flex items-center space-x-4 text-sm">
+          <h1 className="text-primary-foreground mb-2 text-3xl font-bold">
+            {exam.title}
+          </h1>
+          <div className="text-primary-foreground flex items-center space-x-4 text-sm">
             <div className="flex items-center">
               <Users size={16} className="mr-1" />
               <span>1,293 Students</span>
@@ -230,7 +232,10 @@ export default function Page() {
                 <CardContent className="space-y-4">
                   {resources ? (
                     resources.map((resource) => (
-                      <ResourceCard resource={resource} key={resource.id} />
+                      <ResourceCard
+                        resourceId={resource.id}
+                        key={resource.id}
+                      />
                     ))
                   ) : (
                     <div className="bg-muted flex h-full w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg p-10">
@@ -258,65 +263,56 @@ export default function Page() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {displayedSessions
-                    .sort((a, b) => {
-                      return (
-                        new Date(b.finishedAt).getTime() -
-                        new Date(a.finishedAt).getTime()
-                      );
-                    })
-                    .map((session) => (
-                      <div
-                        key={session.examSessionId}
-                        className="bg-card hover:bg-accent/50 flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors"
-                        onClick={() => {
-                          router.push(`/results/${session.examSessionId}`);
-                        }}
-                      >
-                        <div className="flex items-center gap-3">
-                          {session.passingFlag === "Passed" ? (
-                            <div className="flex items-center gap-2">
-                              <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                              <span className="font-medium text-green-700">
-                                Passed
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <XCircleIcon className="h-5 w-5 text-red-600" />
-                              <span className="font-medium text-red-700">
-                                Failed
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                  {displayedSessions.map((session) => (
+                    <div
+                      key={session.examSessionId}
+                      className="bg-card hover:bg-accent/50 flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors"
+                      onClick={() => {
+                        router.push(`/results/${session.examSessionId}`);
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        {session.passingFlag === "Passed" ? (
+                          <div className="flex items-center gap-2">
+                            <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                            <span className="font-medium text-green-700">
+                              Passed
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <XCircleIcon className="h-5 w-5 text-red-600" />
+                            <span className="font-medium text-red-700">
+                              Failed
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
-                        <div className="text-muted-foreground flex items-center gap-6 text-sm">
-                          <div className="text-right">
-                            <p className="text-foreground font-medium">
-                              {session.scorePercentage}%
-                            </p>
-                            <p className="text-xs">Score</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-foreground font-medium">
-                              {new Date(
-                                session.finishedAt,
-                              ).toLocaleDateString()}
-                            </p>
-                            <p className="text-xs">
-                              {new Date(session.finishedAt).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )}
-                            </p>
-                          </div>
+                      <div className="text-muted-foreground flex items-center gap-6 text-sm">
+                        <div className="text-right">
+                          <p className="text-foreground font-medium">
+                            {session.scorePercentage}%
+                          </p>
+                          <p className="text-xs">Score</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-foreground font-medium">
+                            {new Date(session.finishedAt).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs">
+                            {new Date(session.finishedAt).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </p>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
 
                   {hasMoreSessions && (
                     <div className="flex justify-center pt-2">
@@ -361,7 +357,7 @@ export default function Page() {
                   disabled={isPending}
                   onClick={() => {
                     router.push(
-                      `/sessions/${exam.existingOngoingSession.existingExamSessionId}/1`,
+                      `/sessions/${exam.existingOngoingSession.existingExamSessionId}`,
                     );
                   }}
                 >

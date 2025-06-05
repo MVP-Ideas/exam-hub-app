@@ -49,8 +49,8 @@ export default function ExamUploadFileDialog({ disabled = false }: Props) {
       const resource = await createFileResource(resourceData);
       if (!resource) return;
 
-      const prev = form.getValues("resources") ?? [];
-      form.setValue("resources", [...prev, resource]);
+      const prev = form.getValues("resourceIds") ?? [];
+      form.setValue("resourceIds", [...prev, resource.id]);
 
       setOpen(false);
       localForm.reset();

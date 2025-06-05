@@ -95,7 +95,7 @@ export default function Page() {
             Manage learners, track progress, and organize groups
           </p>
         </div>
-        <div className="bg-background border-primary/20 flex w-full flex-col gap-4 rounded-lg border p-6">
+        <div className="bg-background border-primary/20 dark:border-primary/50 flex w-full flex-col gap-4 rounded-lg border p-6">
           <div className="border-primary/50 bg-primary/5 flex w-full flex-col gap-2 rounded-lg border px-6 py-4">
             <p className="text-primary text-xs font-bold">Total Learners</p>
             {isLoading && <Skeleton className="h-4 w-full" />}
@@ -103,14 +103,14 @@ export default function Page() {
               <p className="text-xl font-bold">{learners?.totalItems || 0}</p>
             )}
           </div>
-          <div className="flex w-full flex-col gap-2 rounded-lg border border-green-500 bg-green-50 px-6 py-4">
+          <div className="flex w-full flex-col gap-2 rounded-lg border border-green-500 bg-green-50 px-6 py-4 dark:border-green-500 dark:bg-green-900">
             <p className="text-xs font-bold text-green-500">Active This Week</p>
             {isLoading && <Skeleton className="h-4 w-full" />}
             {!isLoading && (
               <p className="text-xl font-bold">{activeThisWeek}</p>
             )}
           </div>
-          <div className="flex w-full flex-col gap-2 rounded-lg border border-fuchsia-500 bg-fuchsia-50 px-6 py-4">
+          <div className="flex w-full flex-col gap-2 rounded-lg border border-fuchsia-500 bg-fuchsia-50 px-6 py-4 dark:border-fuchsia-500 dark:bg-fuchsia-900">
             <p className="text-xs font-bold text-fuchsia-500">
               Average Completion Rate
             </p>

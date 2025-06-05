@@ -47,9 +47,9 @@ export default function ExamAddLinkDialog({ disabled = false }: Props) {
     const resource = await createUrlResource(resourceData);
     if (!resource) return;
 
-    const prev = form.getValues("resources") ?? [];
-    const updated = [...prev, resource];
-    form.setValue("resources", updated);
+    const prev = form.getValues("resourceIds") ?? [];
+    const updated = [...prev, resource.id];
+    form.setValue("resourceIds", updated);
 
     setOpen(false);
     localForm.reset();

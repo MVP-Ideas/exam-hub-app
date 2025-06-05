@@ -26,7 +26,7 @@ export type ExamCreateUpdate = {
   difficulty: string;
   durationSeconds: number;
   passingScore: number;
-  resources: string[];
+  resourceIds: string[];
   isDraft: boolean;
   questions: ExamQuestionCreateReadUpdate[];
   settings: ExamSettingsCreateReadUpdate;

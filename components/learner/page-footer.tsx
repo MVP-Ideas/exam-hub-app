@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function PageFooter() {
   return (
-    <footer className="border-muted border-t bg-white">
+    <footer className="border-muted border-t">
       <div className="mx-auto max-w-7xl px-6 py-6">
         <div className="flex flex-wrap items-center justify-center gap-y-4 lg:justify-between">
           <div className="text-muted-foreground flex space-x-4 text-sm">

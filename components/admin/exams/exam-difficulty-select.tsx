@@ -23,10 +23,8 @@ export default function ExamDifficultySelect({
   disabled = false,
 }: Props) {
   useEffect(() => {
-    if (value === null) {
-      onChange("null");
-    } else if (value === undefined) {
-      onChange("null");
+    if (value === null || value === undefined) {
+      onChange("");
     } else {
       onChange(value);
     }
@@ -35,9 +33,9 @@ export default function ExamDifficultySelect({
   return (
     <Select
       disabled={disabled}
-      onValueChange={onChange}
-      value={value ?? "null"}
-      defaultValue={value ?? "null"}
+      onValueChange={(v) => onChange(v === "null" ? "" : v)}
+      value={value || "null"}
+      defaultValue={value || "null"}
     >
       <SelectTrigger className="bg-background w-full justify-between">
         <div className="flex items-center gap-2">
