@@ -10,7 +10,7 @@ import { Menu, TimerIcon } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import QuestionBox from "@/components/learner/exam-session/question-box";
-import useCountdown from "@/hooks/timer/useCountdown";
+import useExamTimer from "@/hooks/exam-sessions/useExamTimer";
 import useUpdateExamProgress from "@/hooks/exam-sessions/useUpdateExamProgress";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import {
@@ -37,6 +37,7 @@ export default function Page() {
     id as string,
   );
   const questions = useMemo(() => examSession?.questions || [], [examSession]);
+  const questionIds = useMemo(() => questions.map((q) => q.id), [questions]);
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
 
   const questionFromUrl = parseInt(searchParams.get("question") || "1");
@@ -48,7 +49,7 @@ export default function Page() {
     if (questionFromUrl !== currentQuestionIndex) {
       setCurrentQuestionIndex(questionFromUrl);
     }
-  }, [searchParams]);
+  }, [searchParams, currentQuestionIndex]);
 
   const {
     navMode,
@@ -69,15 +70,13 @@ export default function Page() {
   const lastUpdateTimeRef = useRef(0);
 
   const handleTimeUpdate = useCallback(
-    async (seconds: number) => {
+    async (timeSpentSeconds: number) => {
       if (
         isSubmitting ||
         isSubmittingExam ||
         examSession?.finishedAt !== null ||
         isUpdatingRef.current ||
-        !examSession?.maxTimeSeconds ||
-        seconds <= 0 ||
-        seconds === examSession?.maxTimeSeconds
+        timeSpentSeconds <= 0
       ) {
         return;
       }
@@ -92,8 +91,13 @@ export default function Page() {
         lastUpdateTimeRef.current = now;
 
         await updateProgress({
-          answers: answers.filter((a) => a && a.timeSpentSeconds > 0),
-          timeRemainingSeconds: seconds,
+          answers: answers.filter(
+            (a) =>
+              a &&
+              a.timeSpentSeconds > 0 &&
+              questionIds.includes(a.examSessionQuestionId),
+          ),
+          timeSpentSeconds: timeSpentSeconds,
         });
 
         setLastSavedTime(new Date());
@@ -104,51 +108,24 @@ export default function Page() {
       }
     },
     [
-      examSession?.maxTimeSeconds,
       examSession?.finishedAt,
       answers,
       updateProgress,
       setLastSavedTime,
       isSubmitting,
+      isSubmittingExam,
+      questionIds,
     ],
   );
-
-  const handleTimerComplete = useCallback(async () => {
-    if (!examSession?.id || isUpdatingRef.current) {
-      return;
-    }
-
-    try {
-      isUpdatingRef.current = true;
-
-      await updateProgress({
-        answers: answers.filter((a) => a && a.timeSpentSeconds > 0),
-        timeRemainingSeconds: 0,
-      });
-
-      await handleSubmitExamSession();
-    } catch (error) {
-      console.error("Failed to handle timer completion:", error);
-    } finally {
-      isUpdatingRef.current = false;
-    }
-  }, [examSession?.id, answers, updateProgress]);
-
-  const { formatTime, isPaused, setPaused, seconds } = useCountdown({
-    initialSeconds: examSession?.maxTimeSeconds
-      ? examSession.maxTimeSeconds - (examSession.timeSpentSeconds || 0)
-      : undefined,
-    updateInterval: 10,
-    onComplete: handleTimerComplete,
-    onTimeUpdate: handleTimeUpdate,
-  });
 
   const handleSubmitExamSession = async () => {
     try {
       setIsSubmittingExam(true);
       await updateProgress({
-        answers: answers,
-        timeRemainingSeconds: seconds,
+        answers: answers.filter((a) =>
+          questionIds.includes(a.examSessionQuestionId),
+        ),
+        timeSpentSeconds: timeSpentSeconds,
       });
       await submitExamSession();
       clearData();
@@ -159,6 +136,41 @@ export default function Page() {
       setIsSubmittingExam(false);
     }
   };
+
+  const handleTimerComplete = async () => {
+    if (!examSession?.id || isUpdatingRef.current) {
+      return;
+    }
+
+    try {
+      isUpdatingRef.current = true;
+
+      await updateProgress({
+        answers: answers.filter((a) => a && a.timeSpentSeconds > 0),
+        timeSpentSeconds: examSession?.maxTimeSeconds || 0,
+      });
+
+      await handleSubmitExamSession();
+    } catch (error) {
+      console.error("Failed to handle timer completion:", error);
+    } finally {
+      isUpdatingRef.current = false;
+    }
+  };
+
+  const {
+    formatTimeRemaining,
+    isPaused,
+    setPaused,
+    timeSpentSeconds,
+    getTimerLabel,
+  } = useExamTimer({
+    maxTimeSeconds: examSession?.maxTimeSeconds || undefined,
+    initialTimeSpentSeconds: examSession?.timeSpentSeconds || 0,
+    updateInterval: 10,
+    onComplete: handleTimerComplete,
+    onTimeUpdate: handleTimeUpdate,
+  });
 
   // Function to show submit dialog
   const showSubmitExamDialog = () => {
@@ -180,7 +192,12 @@ export default function Page() {
       clearData();
       setLastVisitedExamSessionId(examSession.id);
     }
-  }, [examSession?.id, lastVisitedExamSessionId]);
+  }, [
+    examSession,
+    lastVisitedExamSessionId,
+    clearData,
+    setLastVisitedExamSessionId,
+  ]);
 
   useEffect(() => {
     if (examSession?.id && questions.length > 0) {
@@ -195,7 +212,7 @@ export default function Page() {
 
       setAnswers(answers as ExamSessionAnswerCreate[]);
     }
-  }, [examSession?.id, questions.length]);
+  }, [examSession?.id, questions, setAnswers]);
 
   const getCurrentAnswer = (
     questionId: string,
@@ -210,7 +227,6 @@ export default function Page() {
       return;
     }
 
-    console.log("updateAnswerByQuestionId", updatedAnswer);
     const newAnswers = [...answers] as ExamSessionAnswerCreate[];
     const existingIndex = newAnswers.findIndex(
       (answer) =>
@@ -326,9 +342,11 @@ export default function Page() {
             <div className="flex flex-col items-end">
               <div className="flex flex-row items-center gap-x-1">
                 <TimerIcon className="h-3 w-3" />
-                <p className="text-muted-foreground text-xs">Time Remaining</p>
+                <p className="text-muted-foreground text-xs">
+                  {getTimerLabel()}
+                </p>
               </div>
-              <p className="text-lg font-bold">{formatTime()}</p>
+              <p className="text-lg font-bold">{formatTimeRemaining()}</p>
             </div>
           </div>
         </header>
@@ -384,8 +402,8 @@ export default function Page() {
           </DialogHeader>
           <div className="flex items-center justify-center py-6">
             <div className="flex flex-col items-center">
-              <p className="text-muted-foreground mb-2">Time Remaining</p>
-              <p className="text-2xl font-bold">{formatTime()}</p>
+              <p className="text-muted-foreground mb-2">{getTimerLabel()}</p>
+              <p className="text-2xl font-bold">{formatTimeRemaining()}</p>
             </div>
           </div>
           <DialogFooter className="sm:justify-center">

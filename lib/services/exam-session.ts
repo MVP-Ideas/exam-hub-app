@@ -10,7 +10,7 @@ const BASE_URL = "exam-sessions";
 
 export type UpdateExamProgressRequest = {
   answers: ExamSessionAnswerCreate[];
-  timeRemainingSeconds: number;
+  timeSpentSeconds: number;
 };
 
 const ExamSessionService = {
@@ -51,7 +51,7 @@ const ExamSessionService = {
   ) => {
     const payload = {
       answers: request.answers,
-      timeRemainingSeconds: request.timeRemainingSeconds,
+      timeSpentSeconds: request.timeSpentSeconds,
     };
     const response = await api.post<ExamSession>(
       `${BASE_URL}/${examSessionId}/progress`,
