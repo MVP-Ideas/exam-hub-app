@@ -101,7 +101,8 @@ export default function Page() {
             </Badge>
             {exam.categories?.length > 0 && (
               <Badge variant="default" className="bg-indigo-600">
-                {exam.categories?.length} Competencies
+                {exam.categories?.length}{" "}
+                {exam.categories.length === 1 ? "Competency" : "Competencies"}
               </Badge>
             )}
           </div>

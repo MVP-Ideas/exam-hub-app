@@ -56,8 +56,10 @@ export default function Page() {
               {exam.difficulty}
             </Badge>
             {exam.categories.length > 0 && (
-              <Badge variant="secondary" className="bg-indigo-600">
-                {exam.categories.length} Categories
+              <Badge variant="default" className="bg-indigo-600">
+                {exam.categories.length}
+                {"  "}
+                {exam.categories.length > 1 ? "Categories" : "Category"}
               </Badge>
             )}
           </div>
