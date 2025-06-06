@@ -123,7 +123,10 @@ export default function ExamCategoryMultiselect({
               {value.length === 0 ? (
                 <span className="text-muted-foreground">Select categories</span>
               ) : (
-                <span>{value.length} categories selected</span>
+                <span>
+                  {value.length} {value.length > 1 ? "categories" : "category"}{" "}
+                  selected
+                </span>
               )}
             </div>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
