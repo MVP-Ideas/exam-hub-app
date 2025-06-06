@@ -7,7 +7,7 @@ export type ExamSession = {
   exam: Exam;
   startedAt: string;
   finishedAt: string;
-  timeSpentSeconds: number;
+  timeSpentSeconds?: number;
   maxTimeSeconds: number;
   questions: ExamSessionQuestion[];
   totalScore?: number;

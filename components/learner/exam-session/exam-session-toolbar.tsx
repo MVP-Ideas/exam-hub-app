@@ -38,6 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import useCreateQuestionFeedback from "@/hooks/question-feedback/useCreateQuestionFeedback";
 import { ThemeDropdown } from "@/components/common/theme-dropdown";
+import { Calculator } from "./calculator";
 
 type Props = {
   examId: string;
@@ -89,6 +90,8 @@ export default function ExamSessionToolbar({
       console.error("Error submitting feedback:", error);
     }
   };
+
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   return (
     <Sidebar
@@ -211,10 +214,10 @@ export default function ExamSessionToolbar({
               <Button
                 variant="outline"
                 className="w-full font-semibold"
-                disabled
+                onClick={() => setCalculatorOpen(!calculatorOpen)}
               >
                 <CalculatorIcon className="h-4 w-4" />
-                Calculator (Ongoing)
+                Calculator
               </Button>
               <Button
                 variant="outline"
@@ -318,6 +321,9 @@ export default function ExamSessionToolbar({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Calculator Dialog */}
+      <Calculator open={calculatorOpen} onOpenChange={setCalculatorOpen} />
     </Sidebar>
   );
 }
