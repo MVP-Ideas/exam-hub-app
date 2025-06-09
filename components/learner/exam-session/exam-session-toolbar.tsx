@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
+  ExamSession,
   ExamSessionAnswerCreate,
   ExamSessionQuestion,
 } from "@/lib/types/exam-session";
@@ -39,9 +40,10 @@ import { Label } from "@/components/ui/label";
 import useCreateQuestionFeedback from "@/hooks/question-feedback/useCreateQuestionFeedback";
 import { ThemeDropdown } from "@/components/common/theme-dropdown";
 import { Calculator } from "./calculator";
+import ExamSessionResourcesModal from "./exam-session-resources-modal";
 
 type Props = {
-  examId: string;
+  examSession: ExamSession;
   endable: boolean;
   questions: ExamSessionQuestion[];
   answers: ExamSessionAnswerCreate[];
@@ -56,7 +58,7 @@ type Props = {
 };
 
 export default function ExamSessionToolbar({
-  examId,
+  examSession,
   endable,
   questions,
   answers,
@@ -91,7 +93,10 @@ export default function ExamSessionToolbar({
     }
   };
 
+  const settings = examSession.settings || {};
+
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
 
   return (
     <Sidebar
@@ -100,10 +105,12 @@ export default function ExamSessionToolbar({
     >
       <SidebarHeader className="bg-muted mb-2 flex items-start gap-y-1 rounded-lg p-4">
         <p className="text-sm font-bold">Question {currentQuestionIndex + 1}</p>
-        <p className="text-primary text-xs font-bold">
-          {questions[currentQuestionIndex].points} point
-          {questions[currentQuestionIndex].points > 1 ? "s" : ""}
-        </p>
+        {settings.showQuestionPoints && (
+          <p className="text-primary text-xs font-bold">
+            {questions[currentQuestionIndex].points} point
+            {questions[currentQuestionIndex].points > 1 ? "s" : ""}
+          </p>
+        )}
       </SidebarHeader>
 
       <SidebarContent className="bg-background rounded-lg p-4">
@@ -211,22 +218,26 @@ export default function ExamSessionToolbar({
           <div className="flex flex-col gap-y-2">
             <p className="text-primary text-sm font-semibold">Exam Tools</p>
             <div className="flex flex-col gap-y-2">
-              <Button
-                variant="outline"
-                className="w-full font-semibold"
-                onClick={() => setCalculatorOpen(!calculatorOpen)}
-              >
-                <CalculatorIcon className="h-4 w-4" />
-                Calculator
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full font-semibold"
-                disabled
-              >
-                <BookIcon className="h-4 w-4" />
-                Resources (Ongoing)
-              </Button>
+              {settings.showCalculator && (
+                <Button
+                  variant="outline"
+                  className="w-full font-semibold"
+                  onClick={() => setCalculatorOpen(!calculatorOpen)}
+                >
+                  <CalculatorIcon className="h-4 w-4" />
+                  Calculator
+                </Button>
+              )}
+              {settings.showExamResourcesDuringSession && (
+                <Button
+                  variant="outline"
+                  className="w-full font-semibold"
+                  onClick={() => setResourcesOpen(true)}
+                >
+                  <BookIcon className="h-4 w-4" />
+                  Resources
+                </Button>
+              )}
               <Button
                 variant="outline"
                 className="w-full font-semibold"
@@ -270,7 +281,7 @@ export default function ExamSessionToolbar({
           variant="ghost"
           className="hover:bg-destructive hover:text-background w-full font-bold"
           onClick={() => {
-            router.push(`/exams/${examId}`);
+            router.push(`/exams/${examSession.exam.id}`);
           }}
         >
           <ArrowLeftToLine />
@@ -324,6 +335,13 @@ export default function ExamSessionToolbar({
 
       {/* Calculator Dialog */}
       <Calculator open={calculatorOpen} onOpenChange={setCalculatorOpen} />
+
+      {/* Resources Modal */}
+      <ExamSessionResourcesModal
+        open={resourcesOpen}
+        onOpenChange={setResourcesOpen}
+        examSession={examSession}
+      />
     </Sidebar>
   );
 }

@@ -122,7 +122,7 @@ export default function Page() {
                     {
                       Icon: Clock3,
                       label: "Time Limit",
-                      value: `${exam.durationSeconds / 60} minutes`,
+                      value: `${exam.durationSeconds ? `${exam.durationSeconds / 60} minutes` : "None"}`,
                     },
                     {
                       Icon: FileText,
@@ -214,7 +214,7 @@ export default function Page() {
                   {
                     label: "Duration",
                     icon: Clock,
-                    value: `${exam.durationSeconds / 60} minutes`,
+                    value: `${exam.durationSeconds ? `${exam.durationSeconds / 60} minutes` : "No Time Limit"}`,
                   },
                   {
                     label: "Passing Score",

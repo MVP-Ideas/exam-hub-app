@@ -9,18 +9,28 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useFormContext } from "react-hook-form";
 import ExamCategoryMultiselect from "@/components/categories/exam-category-multiselect";
 import { ExamFormSchema } from "./exam-form";
 import ExamDifficultySelect from "../exam-difficulty-select";
+import { useState, useEffect } from "react";
 
 type Props = {
   disabled: boolean;
 };
 
 export default function ExamDetails({ disabled }: Props) {
-  const { control } = useFormContext<ExamFormSchema>();
+  const { control, watch, setValue } = useFormContext<ExamFormSchema>();
+  const timeLimit = watch("timeLimit");
+  const [timeLimitEnabled, setTimeLimitEnabled] = useState(timeLimit !== null);
+
+  // Sync the switch state with the form value when form changes (e.g., during edit)
+  useEffect(() => {
+    setTimeLimitEnabled(timeLimit !== null);
+  }, [timeLimit]);
 
   return (
     <div
@@ -67,6 +77,77 @@ export default function ExamDetails({ disabled }: Props) {
         )}
       />
 
+      <div className="w-full space-y-3">
+        <div className="flex flex-row items-center justify-between rounded-lg border p-2">
+          <div className="space-y-0.5">
+            <FormLabel className="text-sm">Enable Time Limit</FormLabel>
+            <div className="text-muted-foreground text-xs">
+              Set a time limit for this exam
+            </div>
+          </div>
+          <Switch
+            disabled={disabled}
+            checked={timeLimitEnabled}
+            onCheckedChange={(checked) => {
+              setTimeLimitEnabled(checked);
+              if (!checked) {
+                setValue("timeLimit", null);
+              } else {
+                setValue("timeLimit", 60); // Default to 60 minutes
+              }
+            }}
+          />
+        </div>
+
+        <AnimatePresence>
+          {timeLimitEnabled && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <FormField
+                control={control}
+                name="timeLimit"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Time Limit (minutes)</FormLabel>
+                    <FormControl>
+                      <Input
+                        disabled={disabled || !timeLimitEnabled}
+                        type="text"
+                        placeholder={
+                          timeLimitEnabled
+                            ? "e.g. 60"
+                            : "Enable time limit to set duration"
+                        }
+                        value={timeLimitEnabled ? field.value || "" : ""}
+                        onChange={(e) => {
+                          if (!timeLimitEnabled) return;
+
+                          // Check if number
+                          if (isNaN(Number(e.target.value))) {
+                            return;
+                          }
+
+                          field.onChange(
+                            e.target.value === ""
+                              ? null
+                              : Number(e.target.value),
+                          );
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       <div className="flex w-full flex-row items-start justify-between gap-4">
         <FormField
           control={control}
@@ -80,36 +161,6 @@ export default function ExamDetails({ disabled }: Props) {
                   value={field.value}
                   onChange={field.onChange}
                   includeNull={false}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="timeLimit"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>Time Limit (minutes)</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={disabled}
-                  type="text"
-                  placeholder="e.g. 60"
-                  onChange={(e) => {
-                    // Check if number
-
-                    if (isNaN(Number(e.target.value))) {
-                      return;
-                    }
-
-                    field.onChange(
-                      e.target.value === "" ? "" : Number(e.target.value),
-                    );
-                  }}
                 />
               </FormControl>
               <FormMessage />

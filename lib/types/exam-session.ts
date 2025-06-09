@@ -1,4 +1,4 @@
-import { Exam } from "./exam";
+import { Exam, ExamSettingsCreateReadUpdate } from "./exam";
 import { QuestionChoice } from "./questions";
 import { Resource } from "./resource";
 
@@ -11,6 +11,7 @@ export type ExamSession = {
   maxTimeSeconds: number;
   questions: ExamSessionQuestion[];
   totalScore?: number;
+  settings: ExamSettingsCreateReadUpdate;
 };
 
 export type ExamSessionQuestion = {

@@ -10,8 +10,8 @@ const useExamSessionById = (examSessionId: string) => {
     queryKey: ["examSession", examSessionId],
     queryFn: async () => await ExamSessionService.get(examSessionId),
     select: (data) => data,
-    staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!examSessionId,
+    staleTime: 0,
   });
 
   return {

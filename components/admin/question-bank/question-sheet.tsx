@@ -763,11 +763,11 @@ export default function QuestionSheet({
                   </div>
                 )}
 
-                {question?.exams.length && question?.exams.length > 0 && (
+                {question?.exams && question.exams.length > 0 && (
                   <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
                     <p className="text-sm text-amber-800">
                       <strong>Note:</strong> Deleting this question will remove
-                      it from all {question?.exams.length} exam(s) listed above.
+                      it from all {question.exams.length} exam(s) listed above.
                       Make sure to review each exam before proceeding with
                       deletion.
                     </p>

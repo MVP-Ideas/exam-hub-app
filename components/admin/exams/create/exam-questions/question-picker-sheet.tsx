@@ -75,7 +75,7 @@ export default function QuestionPickerSheet({
             className="mb-2 w-fit cursor-pointer"
             onClick={() => setOpen(false)}
           >
-            <div className="bg-primary w-full rounded-lg p-2">
+            <div className="bg-primary text-primary-foreground w-full rounded-lg p-2">
               <div className="flex items-center gap-2">
                 <MoveLeftIcon size={16} className="text-background" />
                 <span className="text-background text-sm font-bold">

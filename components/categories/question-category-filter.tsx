@@ -57,7 +57,7 @@ export default function QuestionCategoryFilter({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="flex w-full justify-between bg-white"
+          className="bg-background flex w-full justify-between"
         >
           <div className="text-muted-foreground flex items-center">
             <Tag className="mr-2 h-4 w-4" />
