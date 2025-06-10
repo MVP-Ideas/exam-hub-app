@@ -379,7 +379,7 @@ export default function Page() {
                       <DialogTitle>Ready to start the exam?</DialogTitle>
                       <DialogDescription>
                         {exam.durationSeconds
-                          ? `You have {exam.durationSeconds / 60} minutes to complete
+                          ? `You have ${exam.durationSeconds / 60} minutes to complete
                         this exam.`
                           : "No time limit."}{" "}
                         Make sure you&apos;re in a quiet environment with a
@@ -492,7 +492,7 @@ export default function Page() {
               <CardTitle className="text-sm">This exam includes:</CardTitle>
               <ul className="mt-3 space-y-2">
                 {[
-                  `${exam.questions.length} assessment questions`,
+                  `${exam.questions.length} assessment question(s)`,
                   "Downloadable resources",
                   "Full lifetime access",
                   "Completion certificate",
