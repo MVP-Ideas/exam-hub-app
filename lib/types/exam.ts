@@ -24,7 +24,7 @@ export type ExamCreateUpdate = {
   description: string;
   categoryIds: string[];
   difficulty: string;
-  durationSeconds: number;
+  durationSeconds?: number;
   passingScore: number;
   resourceIds: string[];
   isDraft: boolean;
@@ -33,9 +33,16 @@ export type ExamCreateUpdate = {
 };
 
 export type ExamSettingsCreateReadUpdate = {
-  timeLimitEnabled: boolean;
   resultsImmediately: boolean;
   randomizeQuestions: boolean;
+  showCalculator: boolean;
+  showExamResourcesDuringSession: boolean;
+  showQuestionResourcesDuringSession: boolean;
+  showQuestionPoints: boolean;
+  showQuestionExplanations: boolean;
+  enableAiPoweredExplanations: boolean;
+  enableAiRewriteQuestions: boolean;
+  enableHints: boolean;
 };
 
 export type ExamQuestionCreateReadUpdate = {

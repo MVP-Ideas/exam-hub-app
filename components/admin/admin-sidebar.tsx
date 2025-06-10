@@ -10,9 +10,6 @@ import {
   Settings,
   LogOut,
   User,
-  Sun,
-  Moon,
-  Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -24,7 +21,6 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { ThemeDropdown } from "../common/theme-dropdown";
 
 export function AdminSidebar({

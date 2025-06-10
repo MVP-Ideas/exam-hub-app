@@ -101,7 +101,8 @@ export default function Page() {
             </Badge>
             {exam.categories?.length > 0 && (
               <Badge variant="default" className="bg-indigo-600">
-                {exam.categories?.length} Competencies
+                {exam.categories?.length}{" "}
+                {exam.categories.length === 1 ? "Competency" : "Competencies"}
               </Badge>
             )}
           </div>
@@ -166,7 +167,11 @@ export default function Page() {
                     {
                       Icon: Clock3,
                       label: "Time Limit",
-                      value: `${exam.durationSeconds / 60} minutes`,
+                      value: `${
+                        exam.durationSeconds
+                          ? `${exam.durationSeconds / 60} minutes`
+                          : "None"
+                      }`,
                     },
                     {
                       Icon: FileText,
@@ -373,9 +378,12 @@ export default function Page() {
                     <DialogHeader>
                       <DialogTitle>Ready to start the exam?</DialogTitle>
                       <DialogDescription>
-                        You have {exam.durationSeconds / 60} minutes to complete
-                        this exam. Make sure you&apos;re in a quiet environment
-                        with a stable internet connection.
+                        {exam.durationSeconds
+                          ? `You have {exam.durationSeconds / 60} minutes to complete
+                        this exam.`
+                          : "No time limit."}{" "}
+                        Make sure you&apos;re in a quiet environment with a
+                        stable internet connection.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="mb-6 space-y-4">
@@ -383,7 +391,11 @@ export default function Page() {
                         {
                           Icon: Clock,
                           label: "Time limit",
-                          value: `${exam.durationSeconds / 60} minutes`,
+                          value: `${
+                            exam.durationSeconds
+                              ? `${exam.durationSeconds / 60} minutes`
+                              : "None"
+                          }`,
                         },
                         {
                           Icon: FileText,
@@ -439,7 +451,11 @@ export default function Page() {
                   {
                     label: "Duration",
                     icon: Clock,
-                    value: `${exam.durationSeconds / 60} minutes`,
+                    value: `${
+                      exam.durationSeconds
+                        ? `${exam.durationSeconds / 60} minutes`
+                        : "No Time Limit"
+                    }`,
                   },
                   {
                     label: "Passing Score",

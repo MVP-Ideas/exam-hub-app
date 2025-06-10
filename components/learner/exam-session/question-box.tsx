@@ -27,6 +27,7 @@ import {
   Flag,
   Loader2,
 } from "lucide-react";
+import ResourceCard from "@/components/admin/resources/resource-card";
 import { QuestionType } from "@/lib/types/questions";
 import useTimer from "@/hooks/timer/useTimer";
 import { Label } from "@/components/ui/label";
@@ -80,7 +81,7 @@ export default function QuestionBox({
 
   const initialSeconds = answer?.timeSpentSeconds || 0;
 
-  const { seconds, formatTime, resetTimer } = useTimer({
+  const { seconds, resetTimer } = useTimer({
     initialSeconds,
     isRunning: !isPaused,
     onTimeUpdate: (currentSeconds) => {
@@ -394,15 +395,6 @@ export default function QuestionBox({
               </Tooltip>
             </TooltipProvider>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="text-muted-foreground h-4 w-4" />
-            <span className="text-muted-foreground hidden md:block">
-              Time spent:
-            </span>
-            <span className="text-sm">
-              {isPaused ? "Paused" : formatTime()}
-            </span>
-          </div>
         </div>
         {question.description && (
           <p className="text-muted-foreground text-xs md:text-sm">
@@ -432,13 +424,10 @@ export default function QuestionBox({
           <h3 className="mb-2 font-medium">Resources</h3>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             {question.resources.map((resource) => (
-              <div
+              <ResourceCard
                 key={`${question.id}-${resource.id}`}
-                className="rounded-md border p-3"
-              >
-                <p className="font-medium">{resource.title}</p>
-                <p className="text-muted-foreground text-sm">{resource.type}</p>
-              </div>
+                resourceId={resource.id}
+              />
             ))}
           </div>
         </div>
@@ -487,7 +476,7 @@ export default function QuestionBox({
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         )}
-        {!isReadyToSubmit && (
+        {!disabledNextButton && (
           <Button
             className="px-4 font-semibold"
             onClick={() => {

@@ -1,4 +1,4 @@
-import { Exam } from "./exam";
+import { Exam, ExamSettingsCreateReadUpdate } from "./exam";
 import { QuestionChoice } from "./questions";
 import { Resource } from "./resource";
 
@@ -7,10 +7,11 @@ export type ExamSession = {
   exam: Exam;
   startedAt: string;
   finishedAt: string;
-  timeSpentSeconds: number;
+  timeSpentSeconds?: number;
   maxTimeSeconds: number;
   questions: ExamSessionQuestion[];
   totalScore?: number;
+  settings: ExamSettingsCreateReadUpdate;
 };
 
 export type ExamSessionQuestion = {
@@ -63,6 +64,7 @@ export type ExamSessionQuestionResultResponse = {
   explanation: string;
   answer?: ExamSessionAnswer;
   correctChoices: QuestionChoice[];
+  resources: Resource[];
 };
 
 export type ExamSessionResult = {

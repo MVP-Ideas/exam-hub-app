@@ -26,6 +26,9 @@ interface ExamSessionState {
   resetAnswers: () => void;
 
   clearData: () => void;
+
+  calculatorIsOpened: boolean;
+  setCalculatorIsOpened: (isOpened: boolean) => void;
 }
 
 export const useExamSessionStore = create<ExamSessionState>()(
@@ -64,7 +67,12 @@ export const useExamSessionStore = create<ExamSessionState>()(
         lastSavedTime: null,
         lastVisitedExamSessionId: null,
         answers: [],
+        calculatorIsOpened: undefined,
       }),
+
+      calculatorIsOpened: false,
+      setCalculatorIsOpened: (isOpened) =>
+        set({ calculatorIsOpened: isOpened }),
     }),
     {
       name: "exam-session-storage",
@@ -75,6 +83,7 @@ export const useExamSessionStore = create<ExamSessionState>()(
         lastSavedTime: state.lastSavedTime,
         lastVisitedExamSessionId: state.lastVisitedExamSessionId,
         answers: state.answers,
+        calculatorIsOpened: state.calculatorIsOpened,
       }),
     },
   ),

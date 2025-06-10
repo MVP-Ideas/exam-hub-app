@@ -56,8 +56,10 @@ export default function Page() {
               {exam.difficulty}
             </Badge>
             {exam.categories.length > 0 && (
-              <Badge variant="secondary" className="bg-indigo-600">
-                {exam.categories.length} Categories
+              <Badge variant="default" className="bg-indigo-600">
+                {exam.categories.length}
+                {"  "}
+                {exam.categories.length > 1 ? "Categories" : "Category"}
               </Badge>
             )}
           </div>
@@ -120,7 +122,7 @@ export default function Page() {
                     {
                       Icon: Clock3,
                       label: "Time Limit",
-                      value: `${exam.durationSeconds / 60} minutes`,
+                      value: `${exam.durationSeconds ? `${exam.durationSeconds / 60} minutes` : "None"}`,
                     },
                     {
                       Icon: FileText,
@@ -212,7 +214,7 @@ export default function Page() {
                   {
                     label: "Duration",
                     icon: Clock,
-                    value: `${exam.durationSeconds / 60} minutes`,
+                    value: `${exam.durationSeconds ? `${exam.durationSeconds / 60} minutes` : "No Time Limit"}`,
                   },
                   {
                     label: "Passing Score",

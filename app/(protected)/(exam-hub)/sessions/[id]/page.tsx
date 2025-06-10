@@ -10,7 +10,7 @@ import { Menu, TimerIcon } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import QuestionBox from "@/components/learner/exam-session/question-box";
-import useCountdown from "@/hooks/timer/useCountdown";
+import useExamTimer from "@/hooks/exam-sessions/useExamTimer";
 import useUpdateExamProgress from "@/hooks/exam-sessions/useUpdateExamProgress";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import {
@@ -24,7 +24,7 @@ import {
 import useSubmitExamSession from "@/hooks/exam-sessions/useSubmitExamSession";
 import AppLoader from "@/components/common/app-loader";
 import { ExamSessionAnswerCreate } from "@/lib/types/exam-session";
-import { cn } from "@/lib/utils";
+import ExamSessionSubmitModal from "@/components/learner/exam-session/exam-session-submit-modal";
 
 export default function Page() {
   const router = useRouter();
@@ -37,6 +37,7 @@ export default function Page() {
     id as string,
   );
   const questions = useMemo(() => examSession?.questions || [], [examSession]);
+  const questionIds = useMemo(() => questions.map((q) => q.id), [questions]);
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
 
   const questionFromUrl = parseInt(searchParams.get("question") || "1");
@@ -48,15 +49,13 @@ export default function Page() {
     if (questionFromUrl !== currentQuestionIndex) {
       setCurrentQuestionIndex(questionFromUrl);
     }
-  }, [searchParams]);
+  }, [searchParams, currentQuestionIndex]);
 
   const {
     navMode,
     setNavMode,
-    setLastVisitedExamSessionId,
     answers,
     setAnswers,
-    lastVisitedExamSessionId,
     setLastSavedTime,
     clearData,
     flaggedQuestions,
@@ -69,15 +68,14 @@ export default function Page() {
   const lastUpdateTimeRef = useRef(0);
 
   const handleTimeUpdate = useCallback(
-    async (seconds: number) => {
+    async (timeSpentSeconds: number) => {
       if (
+        isLoading ||
         isSubmitting ||
         isSubmittingExam ||
         examSession?.finishedAt !== null ||
         isUpdatingRef.current ||
-        !examSession?.maxTimeSeconds ||
-        seconds <= 0 ||
-        seconds === examSession?.maxTimeSeconds
+        timeSpentSeconds <= 0
       ) {
         return;
       }
@@ -92,8 +90,13 @@ export default function Page() {
         lastUpdateTimeRef.current = now;
 
         await updateProgress({
-          answers: answers.filter((a) => a && a.timeSpentSeconds > 0),
-          timeRemainingSeconds: seconds,
+          answers: answers.filter(
+            (a) =>
+              a &&
+              a.timeSpentSeconds > 0 &&
+              questionIds.includes(a.examSessionQuestionId),
+          ),
+          timeSpentSeconds: timeSpentSeconds,
         });
 
         setLastSavedTime(new Date());
@@ -104,51 +107,24 @@ export default function Page() {
       }
     },
     [
-      examSession?.maxTimeSeconds,
       examSession?.finishedAt,
       answers,
       updateProgress,
       setLastSavedTime,
       isSubmitting,
+      isSubmittingExam,
+      questionIds,
     ],
   );
-
-  const handleTimerComplete = useCallback(async () => {
-    if (!examSession?.id || isUpdatingRef.current) {
-      return;
-    }
-
-    try {
-      isUpdatingRef.current = true;
-
-      await updateProgress({
-        answers: answers.filter((a) => a && a.timeSpentSeconds > 0),
-        timeRemainingSeconds: 0,
-      });
-
-      await handleSubmitExamSession();
-    } catch (error) {
-      console.error("Failed to handle timer completion:", error);
-    } finally {
-      isUpdatingRef.current = false;
-    }
-  }, [examSession?.id, answers, updateProgress]);
-
-  const { formatTime, isPaused, setPaused, seconds } = useCountdown({
-    initialSeconds: examSession?.maxTimeSeconds
-      ? examSession.maxTimeSeconds - (examSession.timeSpentSeconds || 0)
-      : undefined,
-    updateInterval: 10,
-    onComplete: handleTimerComplete,
-    onTimeUpdate: handleTimeUpdate,
-  });
 
   const handleSubmitExamSession = async () => {
     try {
       setIsSubmittingExam(true);
       await updateProgress({
-        answers: answers,
-        timeRemainingSeconds: seconds,
+        answers: answers.filter((a) =>
+          questionIds.includes(a.examSessionQuestionId),
+        ),
+        timeSpentSeconds: timeSpentSeconds,
       });
       await submitExamSession();
       clearData();
@@ -159,6 +135,48 @@ export default function Page() {
       setIsSubmittingExam(false);
     }
   };
+
+  const handleTimerComplete = async () => {
+    if (!examSession?.id || isUpdatingRef.current) {
+      return;
+    }
+
+    try {
+      isUpdatingRef.current = true;
+
+      await updateProgress({
+        answers: answers.filter((a) => a && a.timeSpentSeconds > 0),
+        timeSpentSeconds: examSession?.maxTimeSeconds || 0,
+      });
+
+      await handleSubmitExamSession();
+    } catch (error) {
+      console.error("Failed to handle timer completion:", error);
+    } finally {
+      isUpdatingRef.current = false;
+    }
+  };
+
+  const initialTimeSpentSeconds = useMemo(() => {
+    if (examSession?.timeSpentSeconds) {
+      return examSession.timeSpentSeconds;
+    }
+    return 0;
+  }, [id, examSession?.timeSpentSeconds]);
+
+  const {
+    formatTimeRemaining,
+    isPaused,
+    setPaused,
+    timeSpentSeconds,
+    getTimerLabel,
+  } = useExamTimer({
+    maxTimeSeconds: examSession?.maxTimeSeconds || undefined,
+    initialTimeSpentSeconds: initialTimeSpentSeconds,
+    updateInterval: 10,
+    onComplete: handleTimerComplete,
+    onTimeUpdate: handleTimeUpdate,
+  });
 
   // Function to show submit dialog
   const showSubmitExamDialog = () => {
@@ -176,14 +194,8 @@ export default function Page() {
   );
 
   useEffect(() => {
-    if (examSession && examSession.id !== lastVisitedExamSessionId) {
-      clearData();
-      setLastVisitedExamSessionId(examSession.id);
-    }
-  }, [examSession?.id, lastVisitedExamSessionId]);
-
-  useEffect(() => {
     if (examSession?.id && questions.length > 0) {
+      setAnswers([]);
       const answers = [];
       for (const question of questions) {
         answers.push({
@@ -195,7 +207,7 @@ export default function Page() {
 
       setAnswers(answers as ExamSessionAnswerCreate[]);
     }
-  }, [examSession?.id, questions.length]);
+  }, [examSession?.id, questions, setAnswers]);
 
   const getCurrentAnswer = (
     questionId: string,
@@ -210,7 +222,6 @@ export default function Page() {
       return;
     }
 
-    console.log("updateAnswerByQuestionId", updatedAnswer);
     const newAnswers = [...answers] as ExamSessionAnswerCreate[];
     const existingIndex = newAnswers.findIndex(
       (answer) =>
@@ -299,7 +310,7 @@ export default function Page() {
     <div className="flex h-full w-full flex-row">
       <ExamSessionToolbar
         endable={answeredQuestions === questions.length}
-        examId={examSession.exam.id}
+        examSession={examSession}
         questions={questions}
         answers={answers}
         currentQuestionIndex={currentQuestionIndex - 1}
@@ -326,9 +337,11 @@ export default function Page() {
             <div className="flex flex-col items-end">
               <div className="flex flex-row items-center gap-x-1">
                 <TimerIcon className="h-3 w-3" />
-                <p className="text-muted-foreground text-xs">Time Remaining</p>
+                <p className="text-muted-foreground text-xs">
+                  {getTimerLabel()}
+                </p>
               </div>
-              <p className="text-lg font-bold">{formatTime()}</p>
+              <p className="text-lg font-bold">{formatTimeRemaining()}</p>
             </div>
           </div>
         </header>
@@ -384,8 +397,8 @@ export default function Page() {
           </DialogHeader>
           <div className="flex items-center justify-center py-6">
             <div className="flex flex-col items-center">
-              <p className="text-muted-foreground mb-2">Time Remaining</p>
-              <p className="text-2xl font-bold">{formatTime()}</p>
+              <p className="text-muted-foreground mb-2">{getTimerLabel()}</p>
+              <p className="text-2xl font-bold">{formatTimeRemaining()}</p>
             </div>
           </div>
           <DialogFooter className="sm:justify-center">
@@ -400,134 +413,17 @@ export default function Page() {
       </Dialog>
 
       {/* Submit Exam Dialog - Moved from ExamSessionToolbar */}
-      <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
-        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Exam Summary</DialogTitle>
-            <DialogDescription>
-              Review your answers before submitting the exam.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Overview */}
-          <div className="mt-4 grid w-full grid-cols-3 gap-4 text-center">
-            <div className="rounded-lg border bg-blue-50 p-4 dark:bg-blue-900">
-              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                Total Questions
-              </p>
-              <p className="text-xl font-bold text-blue-900 dark:text-blue-300">
-                {questions.length}
-              </p>
-            </div>
-            <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-900">
-              <p className="text-sm font-semibold text-green-700 dark:text-green-300">
-                Answered
-              </p>
-              <p className="text-xl font-bold text-green-900 dark:text-green-300">
-                {answeredQuestions}
-              </p>
-            </div>
-            <div className="rounded-lg border bg-yellow-50 p-4 dark:bg-yellow-900">
-              <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
-                Flagged
-              </p>
-              <p className="text-xl font-bold text-yellow-900 dark:text-yellow-300">
-                {
-                  questions.filter((q) => flaggedQuestions.includes(q.id))
-                    .length
-                }
-              </p>
-            </div>
-          </div>
-
-          {/* Question List */}
-          <div className="mt-6">
-            <p className="text-primary mb-2 text-sm font-semibold">Questions</p>
-            <div className="custom-scrollbar flex max-h-60 flex-col gap-2 overflow-y-auto pr-2">
-              {questions.map((q, index) => {
-                const isAnswered = !!answers.find(
-                  (a) =>
-                    a &&
-                    a.examSessionQuestionId === q.id &&
-                    a.choices &&
-                    a.choices.length > 0,
-                );
-                const isFlagged = flaggedQuestions.includes(q.id);
-
-                return (
-                  <div
-                    key={q.id}
-                    className={cn(
-                      "flex items-center justify-between rounded border p-2 text-sm",
-                      isAnswered
-                        ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-900"
-                        : "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-900",
-                    )}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
-                        {index + 1}
-                      </div>
-                      <div className="max-w-[12rem] truncate">{q.text}</div>
-                      <div className="flex gap-1">
-                        {isAnswered && (
-                          <span className="rounded border border-green-500 px-1 text-xs font-medium text-green-700">
-                            Answered
-                          </span>
-                        )}
-                        {isFlagged && (
-                          <span className="rounded border border-yellow-500 px-1 text-xs font-medium text-yellow-700">
-                            Flagged
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setCurrentQuestionIndex(index + 1);
-                        setShowSubmitDialog(false);
-                      }}
-                    >
-                      Review
-                    </Button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Warning */}
-          {answeredQuestions < questions.length && (
-            <div className="mt-4 rounded border border-orange-300 bg-orange-50 p-4 text-sm text-orange-700">
-              You have unanswered questions. You can go back to complete them or
-              submit the exam as is.
-            </div>
-          )}
-
-          {/* Footer */}
-          <DialogFooter className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowSubmitDialog(false);
-              }}
-            >
-              Return to Exam
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => {
-                setShowSubmitDialog(false);
-                handleSubmitExamSession();
-              }}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Exam"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ExamSessionSubmitModal
+        open={showSubmitDialog}
+        onOpenChange={setShowSubmitDialog}
+        questions={questions}
+        answers={answers}
+        answeredQuestions={answeredQuestions}
+        flaggedQuestions={flaggedQuestions}
+        setCurrentQuestionIndex={setCurrentQuestionIndex}
+        onSubmit={handleSubmitExamSession}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

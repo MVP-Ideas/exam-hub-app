@@ -30,9 +30,9 @@ export default function ResourceCard({
 
   return (
     <Card className="w-full p-4">
-      <CardContent className="flex flex-row items-center justify-between p-0">
-        <NextLink href={resource.value} target="_blank">
-          <div className="flex flex-row items-center gap-4">
+      <CardContent className="flex w-full flex-row items-center justify-between p-0">
+        <NextLink href={resource.value} target="_blank" className="flex-1">
+          <div className="flex w-full flex-row items-center gap-4">
             {resource.type.toLowerCase() === "file" && (
               <div className="bg-muted rounded p-2">
                 <UploadIcon size={16} className="text-primary" />
@@ -44,7 +44,7 @@ export default function ResourceCard({
               </div>
             )}
 
-            <div className="flex flex-col">
+            <div className="flex flex-col items-start">
               <p className="text-sm font-semibold">{resource.title}</p>
               <p className="text-muted-foreground text-xs">
                 {resource.description || resource.value}

@@ -123,7 +123,11 @@ export default function ExamCardHorizontal({
               </div>
               <div className="text-muted-foreground flex items-center text-sm">
                 <Clock className="mr-2 h-4 w-4" />
-                <span>{exam.durationSeconds / 60} minutes</span>
+                <span>
+                  {exam.durationSeconds
+                    ? `${exam.durationSeconds / 60} minutes`
+                    : "No Time Limit"}
+                </span>
               </div>
               <div className="text-muted-foreground flex items-center text-sm">
                 <Award className="mr-2 h-4 w-4" />

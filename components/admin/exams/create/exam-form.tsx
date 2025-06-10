@@ -23,9 +23,16 @@ export const questionSchema = z.object({
 });
 
 export const settingsSchema = z.object({
-  timeLimitEnabled: z.boolean(),
   resultsImmediately: z.boolean(),
   randomizeQuestions: z.boolean(),
+  showCalculator: z.boolean(),
+  showExamResourcesDuringSession: z.boolean(),
+  showQuestionResourcesDuringSession: z.boolean(),
+  showQuestionPoints: z.boolean(),
+  showQuestionExplanations: z.boolean(),
+  enableAiPoweredExplanations: z.boolean(),
+  enableAiRewriteQuestions: z.boolean(),
+  enableHints: z.boolean(),
 });
 
 export const resourceSchema = z.object({
@@ -43,7 +50,8 @@ export const createExamSchema = z.object({
   difficulty: z.string().nonempty("Difficulty is required"),
   timeLimit: z
     .number({ invalid_type_error: "Time Limit must be a number" })
-    .min(1, "Time Limit must be at least 1 minute"),
+    .min(1, "Time Limit must be at least 1 minute")
+    .nullable(),
   passingScore: z.number().min(0, "Passing Score must be at least 0%"),
   resourceIds: z.array(z.string()).optional(),
   questions: z.array(questionSchema).optional(),
@@ -73,15 +81,22 @@ export default function ExamForm({ type, exam }: Props) {
       title: "New Exam",
       description: "",
       categoryIds: [],
-      difficulty: "",
+      difficulty: "Beginner",
       timeLimit: 60,
       passingScore: 70,
       resourceIds: [],
       questions: [],
       settings: {
-        timeLimitEnabled: false,
-        resultsImmediately: false,
-        randomizeQuestions: false,
+        resultsImmediately: true,
+        randomizeQuestions: true,
+        showCalculator: false,
+        showQuestionPoints: true,
+        showQuestionExplanations: true,
+        showExamResourcesDuringSession: false,
+        showQuestionResourcesDuringSession: false,
+        enableAiPoweredExplanations: false,
+        enableAiRewriteQuestions: false,
+        enableHints: false,
       },
     },
   });
@@ -100,7 +115,7 @@ export default function ExamForm({ type, exam }: Props) {
         description: data.description,
         categoryIds: data.categoryIds ?? [],
         difficulty: data.difficulty,
-        durationSeconds: data.timeLimit * 60,
+        durationSeconds: data.timeLimit ? data.timeLimit * 60 : undefined,
         passingScore: data.passingScore,
         resourceIds: data.resourceIds ?? [],
         questions:
@@ -111,9 +126,19 @@ export default function ExamForm({ type, exam }: Props) {
               }))
             : [],
         settings: {
-          timeLimitEnabled: data.settings.timeLimitEnabled,
           resultsImmediately: data.settings.resultsImmediately,
           randomizeQuestions: data.settings.randomizeQuestions,
+          showCalculator: data.settings.showCalculator,
+          showExamResourcesDuringSession:
+            data.settings.showExamResourcesDuringSession,
+          showQuestionResourcesDuringSession:
+            data.settings.showQuestionResourcesDuringSession,
+          showQuestionPoints: data.settings.showQuestionPoints,
+          showQuestionExplanations: data.settings.showQuestionExplanations,
+          enableAiPoweredExplanations:
+            data.settings.enableAiPoweredExplanations,
+          enableAiRewriteQuestions: data.settings.enableAiRewriteQuestions,
+          enableHints: data.settings.enableHints,
         },
         isDraft: isDraft,
       };
@@ -144,14 +169,29 @@ export default function ExamForm({ type, exam }: Props) {
         description: exam.description,
         categoryIds: exam.categories.map((category) => category.id),
         difficulty: exam.difficulty,
-        timeLimit: Math.floor(exam.durationSeconds / 60),
+        timeLimit:
+          exam.durationSeconds > 0
+            ? Math.floor(exam.durationSeconds / 60)
+            : null,
         passingScore: exam.passingScore,
         resourceIds: exam.resources.map((resource) => resource.id),
         questions: exam.questions ?? [],
         settings: {
-          timeLimitEnabled: exam.settings?.timeLimitEnabled ?? false,
           resultsImmediately: exam.settings?.resultsImmediately ?? false,
           randomizeQuestions: exam.settings?.randomizeQuestions ?? false,
+          showCalculator: exam.settings?.showCalculator ?? false,
+          showExamResourcesDuringSession:
+            exam.settings?.showExamResourcesDuringSession ?? false,
+          showQuestionResourcesDuringSession:
+            exam.settings?.showQuestionResourcesDuringSession ?? false,
+          showQuestionPoints: exam.settings?.showQuestionPoints ?? false,
+          showQuestionExplanations:
+            exam.settings?.showQuestionExplanations ?? false,
+          enableAiPoweredExplanations:
+            exam.settings?.enableAiPoweredExplanations ?? false,
+          enableAiRewriteQuestions:
+            exam.settings?.enableAiRewriteQuestions ?? false,
+          enableHints: exam.settings?.enableHints ?? false,
         },
       });
     }
@@ -178,7 +218,7 @@ export default function ExamForm({ type, exam }: Props) {
 
           <div className="mt-6 flex flex-row items-center justify-between">
             <Button
-              type="submit"
+              type="button"
               variant="ghost"
               className="border-primary/20 border px-6"
               onClick={onCancel}

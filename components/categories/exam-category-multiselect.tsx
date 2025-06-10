@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tag, ChevronsUpDown, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import useExamCategories from "@/hooks/exam-categories/useExamCategories";
 import useCreateExamCategory from "@/hooks/exam-categories/useCreateExamCategory";
@@ -123,7 +124,10 @@ export default function ExamCategoryMultiselect({
               {value.length === 0 ? (
                 <span className="text-muted-foreground">Select categories</span>
               ) : (
-                <span>{value.length} categories selected</span>
+                <span>
+                  {value.length} {value.length > 1 ? "categories" : "category"}{" "}
+                  selected
+                </span>
               )}
             </div>
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -247,38 +251,62 @@ export default function ExamCategoryMultiselect({
       </Popover>
 
       {value.length > 0 && (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          {value.map((categoryId) => (
-            <Badge
-              key={categoryId}
-              variant="default"
-              className="flex items-center gap-1 border-none text-xs"
-            >
-              {getCategoryName(categoryId)}
-              {!disabled && (
-                <Button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveCategory(categoryId);
-                  }}
-                  variant="ghost"
-                  size="icon"
-                  className="size-4"
+        <motion.div
+          className="mt-4 flex flex-wrap items-center gap-2"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <AnimatePresence>
+            {value.map((categoryId) => (
+              <motion.div
+                key={categoryId}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+                layout
+              >
+                <Badge
+                  variant="default"
+                  className="flex items-center gap-1 border-none text-xs"
                 >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </Badge>
-          ))}
-          <Button
-            variant="ghost"
-            className="text-muted-foreground mx-2 size-4 text-xs hover:bg-transparent"
-            onClick={handleClearAll}
-          >
-            Clear All
-          </Button>
-        </div>
+                  {getCategoryName(categoryId)}
+                  {!disabled && (
+                    <Button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveCategory(categoryId);
+                      }}
+                      variant="ghost"
+                      size="icon"
+                      className="size-4"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </Badge>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {value.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.2, delay: 0.1 }}
+            >
+              <Button
+                variant="ghost"
+                className="text-muted-foreground mx-2 size-4 text-xs hover:bg-transparent"
+                onClick={handleClearAll}
+              >
+                Clear All
+              </Button>
+            </motion.div>
+          )}
+        </motion.div>
       )}
     </div>
   );
