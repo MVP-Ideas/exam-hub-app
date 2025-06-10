@@ -164,7 +164,7 @@ export default function useExamTimer({
   }, [hasTimeLimit, timeRemainingSeconds, timeSpentSeconds, formatTime]);
 
   const getTimerLabel = useCallback(() => {
-    return hasTimeLimit ? "Time Remaining" : "Tzime Spent";
+    return hasTimeLimit ? "Time Remaining" : "Time Spent";
   }, [hasTimeLimit]);
 
   return {

@@ -64,6 +64,7 @@ export type ExamSessionQuestionResultResponse = {
   explanation: string;
   answer?: ExamSessionAnswer;
   correctChoices: QuestionChoice[];
+  resources: Resource[];
 };
 
 export type ExamSessionResult = {

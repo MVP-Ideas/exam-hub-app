@@ -195,6 +195,7 @@ export default function Page() {
 
   useEffect(() => {
     if (examSession?.id && questions.length > 0) {
+      setAnswers([]);
       const answers = [];
       for (const question of questions) {
         answers.push({

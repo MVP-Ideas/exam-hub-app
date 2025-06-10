@@ -8,6 +8,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from "lucide-react";
+import ResourceCard from "@/components/admin/resources/resource-card";
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { formatUTCDate } from "@/lib/date-utils";
@@ -206,7 +207,7 @@ function QuestionResult({
         </div>
       </AccordionTrigger>
       <AccordionContent className="bg-accent flex w-full flex-col items-start px-8 py-4">
-        <div className="flex flex-col items-start gap-y-4 pl-10">
+        <div className="flex w-full flex-col items-start gap-y-4 pl-1">
           <div className="flex flex-col items-start">
             <p className="text-muted-foreground text-sm">Your Answer</p>
             {(() => {
@@ -314,6 +315,23 @@ function QuestionResult({
                 <p className="text-primary dark:text-primary-foreground text-sm">
                   {question.explanation}
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Resources */}
+          {question.resources && question.resources.length > 0 && (
+            <div className="flex w-full flex-col items-start gap-y-2">
+              <p className="text-muted-foreground text-sm">Resources</p>
+              <div className="flex w-full flex-col gap-y-2">
+                {question.resources.map((resource) => (
+                  <div className="w-full" key={resource.id}>
+                    <ResourceCard
+                      key={`${question.id}-${resource.id}`}
+                      resourceId={resource.id}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
