@@ -51,6 +51,7 @@ import ConfirmDeleteDialog from "@/components/common/dialogs/confirm-delete-dial
 import useCreateQuestion from "@/hooks/questions/useCreateQuestion";
 import { Resource } from "@/lib/types/resource";
 import Link from "next/link";
+import AppLoader from "@/components/common/app-loader";
 
 const choiceSchema = z.object({
   text: z.string().min(1, "Choice text is required"),
@@ -224,12 +225,15 @@ export default function QuestionSheet({
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetTrigger asChild>{triggerButton}</SheetTrigger>
-        <SheetContent side="right">
-          <SheetTitle>
-            <p className="text-lg font-medium">Loading Question...</p>
-            <SheetDescription className="text-muted-foreground text-sm">
-              Please wait while we load the question.
+        <SheetContent
+          side="right"
+          className="text-muted-foreground flex h-full min-h-screen w-full items-center justify-center text-sm"
+        >
+          <SheetTitle className="flex flex-col items-center">
+            <SheetDescription>
+              <p>Loading Question...</p>
             </SheetDescription>
+            <AppLoader />
           </SheetTitle>
         </SheetContent>
       </Sheet>

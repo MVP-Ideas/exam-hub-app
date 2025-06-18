@@ -5,7 +5,7 @@ export default function PageFooter() {
     <footer className="border-muted border-t">
       <div className="mx-auto max-w-7xl px-6 py-6">
         <div className="flex flex-wrap items-center justify-center gap-y-4 lg:justify-between">
-          <div className="text-muted-foreground flex space-x-4 text-sm">
+          <div className="text-muted-foreground flex space-x-4 text-center text-xs md:text-sm">
             <Link href="#" className="hover:text-foreground">
               Help Center
             </Link>
@@ -19,7 +19,7 @@ export default function PageFooter() {
               Account Settings
             </Link>
           </div>
-          <div className="text-muted-foreground text-sm">
+          <div className="text-muted-foreground text-center text-xs md:text-sm">
             © 2025 Exam Hub, Level Up Your Data. All rights reserved.
           </div>
         </div>

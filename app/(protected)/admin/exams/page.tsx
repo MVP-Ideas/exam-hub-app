@@ -11,26 +11,47 @@ import {
   List,
   PlusIcon,
   Search,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import ExamCard from "@/components/admin/exams/list/exam-card";
 import ExamCardHorizontal from "@/components/admin/exams/list/exam-card-horizontal";
-import ExamCategoryMultiselect from "@/components/categories/exam-category-multiselect";
+import ExamCategoryFilter from "@/components/categories/exam-category-filter";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
+import useExamCategories from "@/hooks/exam-categories/useExamCategories";
 
 export default function Page() {
-  const [search, setSearch] = useState<string>("");
-  const [difficulty, setDifficulty] = useState<string>("");
-  const [categories, setCategories] = useState<string[]>([]);
-  const [status, setStatus] = useState<string>("");
-  const [page, setPage] = useState(1);
-  const [viewMode, setViewMode] = useState("grid");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [search, setSearch] = useState<string>(
+    searchParams.get("search") ?? "",
+  );
+  const [difficulty, setDifficulty] = useState<string>(
+    searchParams.get("difficulty") ?? "",
+  );
+  const [categories, setCategories] = useState<string[]>(
+    searchParams.get("categories")
+      ? searchParams.get("categories")!.split(",")
+      : [],
+  );
+  const [status, setStatus] = useState<string>(
+    searchParams.get("status") ?? "",
+  );
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
+  const [viewMode, setViewMode] = useState(
+    searchParams.get("viewMode") ?? "grid",
+  );
   const debouncedSearch = useDebouncedValue(search, 500);
+
+  const { categories: examCategories } = useExamCategories();
 
   const queryParams = useMemo(
     () => ({
@@ -61,6 +82,38 @@ export default function Page() {
   useEffect(() => {
     setPage(1);
   }, [search, categories, difficulty, status]);
+
+  // Update URL with query params
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    }
+
+    if (difficulty) {
+      params.set("difficulty", difficulty);
+    }
+
+    if (categories.length > 0) {
+      params.set("categories", categories.join(","));
+    }
+
+    if (status) {
+      params.set("status", status);
+    }
+
+    if (page > 1) {
+      params.set("page", page.toString());
+    }
+
+    if (viewMode !== "grid") {
+      params.set("viewMode", viewMode);
+    }
+
+    const queryString = params.toString();
+    router.push(`?${queryString}`, { scroll: false });
+  }, [debouncedSearch, difficulty, categories, status, page, viewMode, router]);
 
   return (
     <div className="flex h-full min-h-screen w-full flex-col items-center p-10 md:pb-0">
@@ -102,11 +155,99 @@ export default function Page() {
             />
           </div>
           <div className="flex w-full flex-col items-center justify-between gap-2 md:flex-row">
-            <ExamCategoryMultiselect
-              value={categories}
+            <ExamCategoryFilter
+              selectedCategories={categories}
               onChange={(value: string[]) => setCategories(value)}
             />
           </div>
+
+          {(difficulty || status || categories.length > 0) && (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {difficulty && (
+                <Badge variant="default" className="flex items-center gap-1">
+                  {difficulty}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-4 rounded-md border-none p-0 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDifficulty("");
+                    }}
+                  >
+                    <X size={12} />
+                  </Button>
+                </Badge>
+              )}
+              {status && (
+                <Badge variant="default" className="flex items-center gap-1">
+                  {status}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-4 rounded-md border-none p-0 text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setStatus("");
+                    }}
+                  >
+                    <X size={12} />
+                  </Button>
+                </Badge>
+              )}
+              {categories.map((categoryId) => {
+                const category = examCategories?.find(
+                  (c) => c.id === categoryId,
+                );
+                return (
+                  <Badge
+                    key={categoryId}
+                    variant="default"
+                    className="flex items-center gap-1"
+                  >
+                    {category?.name || categoryId}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-4 rounded-md border-none p-0 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCategories((prev) =>
+                          prev.filter((c) => c !== categoryId),
+                        );
+                      }}
+                    >
+                      <X size={12} />
+                    </Button>
+                  </Badge>
+                );
+              })}
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setDifficulty("");
+                  setStatus("");
+                  setCategories([]);
+                  setPage(1);
+
+                  // Keep search and viewMode but remove filter params
+                  const params = new URLSearchParams();
+                  if (debouncedSearch) {
+                    params.set("search", debouncedSearch);
+                  }
+                  if (viewMode !== "grid") {
+                    params.set("viewMode", viewMode);
+                  }
+
+                  const queryString = params.toString();
+                  router.push(`?${queryString}`, { scroll: false });
+                }}
+                className="text-muted-foreground mx-2 size-4 text-xs hover:bg-transparent"
+              >
+                Clear all
+              </Button>
+            </div>
+          )}
         </div>
         <div className="flex h-full w-full flex-col gap-y-4">
           <div className="flex w-full flex-row items-center justify-end gap-1">
@@ -115,7 +256,21 @@ export default function Page() {
               variant={viewMode === "grid" ? "default" : "outline"}
               size="icon"
               className="h-10 w-10"
-              onClick={() => setViewMode("grid")}
+              onClick={() => {
+                setViewMode("grid");
+
+                // Update URL with current params but change viewMode
+                const params = new URLSearchParams();
+                if (debouncedSearch) params.set("search", debouncedSearch);
+                if (difficulty) params.set("difficulty", difficulty);
+                if (categories.length > 0)
+                  params.set("categories", categories.join(","));
+                if (status) params.set("status", status);
+                if (page > 1) params.set("page", page.toString());
+
+                const queryString = params.toString();
+                router.push(`?${queryString}`, { scroll: false });
+              }}
             >
               <LayoutGrid size={16} />
             </Button>
@@ -123,11 +278,39 @@ export default function Page() {
               variant={viewMode === "list" ? "default" : "outline"}
               size="icon"
               className="h-10 w-10"
-              onClick={() => setViewMode("list")}
+              onClick={() => {
+                setViewMode("list");
+
+                // Update URL with current params but change viewMode
+                const params = new URLSearchParams();
+                if (debouncedSearch) params.set("search", debouncedSearch);
+                if (difficulty) params.set("difficulty", difficulty);
+                if (categories.length > 0)
+                  params.set("categories", categories.join(","));
+                if (status) params.set("status", status);
+                if (page > 1) params.set("page", page.toString());
+                params.set("viewMode", "list");
+
+                const queryString = params.toString();
+                router.push(`?${queryString}`, { scroll: false });
+              }}
             >
               <List size={16} />
             </Button>
           </div>
+          {isLoading && (
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 gap-4 md:grid-cols-2"
+                  : "flex flex-col gap-4"
+              }
+            >
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-56 w-full" />
+              ))}
+            </div>
+          )}
           {!isLoading && (
             <div
               className={

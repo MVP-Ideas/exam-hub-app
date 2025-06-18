@@ -419,6 +419,7 @@ export default function QuestionBox({
         </div>
       </div>
 
+
       {question.resources && question.resources.length > 0 && (
         <div className="mt-4">
           <h3 className="mb-2 font-medium">Resources</h3>

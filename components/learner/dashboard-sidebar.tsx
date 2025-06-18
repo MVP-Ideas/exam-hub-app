@@ -127,7 +127,7 @@ export function DashboardSidebar({
                 variant="ghost"
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent"
+                className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent dark:hover:bg-transparent"
                 asChild
               >
                 <Link href={item.disabled ? "#" : item.path}>
@@ -166,7 +166,7 @@ export function DashboardSidebar({
                 variant="ghost"
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent"
+                className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent dark:hover:bg-transparent"
                 asChild
                 disabled={item.disabled}
               >
@@ -236,7 +236,7 @@ export function DashboardSidebar({
                 variant="ghost"
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className="relative flex w-full items-center gap-2"
+                className="relative flex w-full items-center gap-2 bg-transparent hover:bg-transparent dark:hover:bg-transparent"
                 asChild
                 hidden={!item.visible}
                 disabled={item.disabled}

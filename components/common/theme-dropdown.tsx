@@ -60,7 +60,7 @@ export function ThemeDropdown({
         <Button
           variant={variant}
           size={size}
-          className={`justify-start gap-2 ${className}`}
+          className={`w-full justify-start gap-2 ${className}`}
         >
           {createElement(getCurrentThemeIcon(), {
             className: "h-4 w-4",
@@ -68,7 +68,7 @@ export function ThemeDropdown({
           {showLabel && `Theme: ${getCurrentThemeLabel()}`}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="dropdown-menu-content">
         {themeOptions.map((option) => (
           <DropdownMenuItem
             key={option.value}

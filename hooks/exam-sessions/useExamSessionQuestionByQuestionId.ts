@@ -1,4 +1,4 @@
-import ExamSessionService from "@/lib/services/exam-session";
+import ExamSessionService from "@/lib/services/exam-session-service";
 import { useQuery } from "@tanstack/react-query";
 
 const useExamSessionQuestionByQuestionId = (

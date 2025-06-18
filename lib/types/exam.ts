@@ -61,9 +61,15 @@ export type ExamPreviousSession = {
   finishedAt: string;
   scorePercentage: number;
   passingFlag: string;
+  status: string;
 };
 
 export type ExamWithUserMetadata = Exam & {
   existingOngoingSession: ExamExistingSession;
   previousSessions: ExamPreviousSession[];
+};
+
+export type ExamList = {
+  id: string;
+  title: string;
 };
