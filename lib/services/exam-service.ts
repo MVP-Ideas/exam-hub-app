@@ -1,5 +1,10 @@
 import api from "../axios";
-import { Exam, ExamCreateUpdate, ExamWithUserMetadata } from "../types/exam";
+import {
+  Exam,
+  ExamCreateUpdate,
+  ExamList,
+  ExamWithUserMetadata,
+} from "../types/exam";
 import { PaginationResponse } from "../types/pagination";
 
 const BASE_URL = "exams";
@@ -25,6 +30,10 @@ const ExamService = {
         status: params.status,
       },
     });
+    return response.data;
+  },
+  getExamsList: async () => {
+    const response = await api.get<ExamList[]>(`${BASE_URL}/list`);
     return response.data;
   },
   get: async (id: string, showUserStats: boolean = false) => {

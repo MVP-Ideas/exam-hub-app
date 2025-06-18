@@ -55,3 +55,18 @@ export const formatUTCDate = (
     return iso;
   }
 };
+
+export const formatTime = (seconds: number): string => {
+  if (isNaN(seconds) || seconds < 0) return "0s";
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  const parts: string[] = [];
+  parts.push(`${hours}h`);
+  parts.push(`${minutes}m`);
+  parts.push(`${secs}s`);
+
+  return parts.join(" ");
+};

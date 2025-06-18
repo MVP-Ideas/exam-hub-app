@@ -42,7 +42,7 @@ export default function QuestionCardList({
               )}
             >
               <CardContent className="p-4">
-                <div className="flex flex-col gap-4 md:grid md:grid-cols-14 md:items-center">
+                <div className="flex flex-col gap-4 lg:grid lg:grid-cols-14 lg:items-center">
                   <div className="col-span-3">
                     <h3 className="text-primary line-clamp-2 text-sm font-medium">
                       {question.text}
@@ -54,14 +54,14 @@ export default function QuestionCardList({
                     )}
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="col-span-4">
                     {getQuestionTypeBadge(question.type)}
                   </div>
 
                   <div
                     className={cn(
                       "col-span-5 flex flex-wrap items-center",
-                      !onSelect && "col-span-7",
+                      !onSelect && "col-span-5",
                     )}
                   >
                     {question.categories && question.categories.length > 0 ? (

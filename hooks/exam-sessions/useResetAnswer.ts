@@ -1,4 +1,4 @@
-import ExamSessionService from "@/lib/services/exam-session";
+import ExamSessionService from "@/lib/services/exam-session-service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 import { toast } from "sonner";

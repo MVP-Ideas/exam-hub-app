@@ -10,7 +10,7 @@ export default function Page() {
   }));
 
   return (
-    <div className="flex h-full w-full flex-col items-center gap-6 p-10">
+    <div className="flex w-full flex-col items-center gap-6 p-10">
       <div className="flex h-full w-full flex-col gap-6">
         <div className="flex h-fit w-full flex-col items-center justify-between gap-4 md:flex-row md:items-start">
           <h1 className="text-center text-2xl font-bold">

@@ -14,12 +14,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <AuthenticationProvider>
       <AdminProvider>
         <SidebarProvider>
-          <div className="flex min-h-screen w-full">
+          <div className="bg-accent flex min-h-screen w-full">
             <AdminSidebar />
             <SidebarInset className="flex-1">
-              <main className="bg-accent min-h-screen w-full">
+              <main className="w-full">
                 <SidebarTrigger className="px-10 pt-10 md:hidden" />
-
                 {children}
               </main>
             </SidebarInset>

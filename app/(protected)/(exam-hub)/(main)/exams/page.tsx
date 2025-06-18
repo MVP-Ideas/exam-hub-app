@@ -17,10 +17,6 @@ export default function Page() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<string | null>(null);
 
-  console.log("activeCategory", activeCategory);
-  console.log("difficulty", difficulty);
-  console.log("search", search);
-
   const showOtherSections =
     debouncedSearch === "" && activeCategory === null && difficulty === null;
 
@@ -40,7 +36,7 @@ export default function Page() {
               placeholder="Search exams..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="placeholder:text-background text-background h-full w-full rounded-lg border border-white/10 bg-white/10 text-base backdrop-blur-sm focus:ring-1 focus:ring-white/10 focus:outline-none"
+              className="h-full w-full rounded-lg border border-white/10 bg-white/10 text-base text-white backdrop-blur-sm placeholder:text-white focus:ring-1 focus:ring-white/10 focus:outline-none"
             />
             <div className="flex w-full flex-col items-center justify-between gap-4 md:flex-row">
               <ExamCategorySelect

@@ -57,9 +57,10 @@ export type ExamSessionAnswerCreate = {
   choices: ExamSessionAnswerChoice[];
 };
 
-export type ExamSessionQuestionResultResponse = {
+export type ExamSessionQuestionResult = {
   id: string;
   text?: string;
+  points: number;
   type: string;
   explanation: string;
   answer?: ExamSessionAnswer;
@@ -69,6 +70,9 @@ export type ExamSessionQuestionResultResponse = {
 
 export type ExamSessionResult = {
   id: string;
+  userId: string;
+  userName: string;
+  status: string;
   examTitle: string;
   examId: string;
   score: number;
@@ -77,5 +81,27 @@ export type ExamSessionResult = {
   timeSpentSeconds: number;
   passingScore: number;
   passingFlag: string;
-  questions: ExamSessionQuestionResultResponse[];
+  questions: ExamSessionQuestionResult[];
+};
+
+export type UserExamSessionResponse = {
+  id: string;
+  email: string;
+  name: string;
+};
+
+export type ExamExamSessionResponse = {
+  id: string;
+  title: string;
+};
+
+export type ExamSessionPaginated = {
+  id: string;
+  user: UserExamSessionResponse;
+  exam: ExamExamSessionResponse;
+  startedAt: string;
+  timeSpentSeconds: number;
+  maxTimeSeconds?: number;
+  status: string;
+  finishedAt?: string;
 };

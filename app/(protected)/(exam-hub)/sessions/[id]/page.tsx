@@ -328,9 +328,6 @@ export default function Page() {
             <SidebarTrigger icon={<Menu />} />
             <div className="flex flex-col">
               <h2 className="truncate font-bold">{examSession.exam.title}</h2>
-              <p className="text-muted-foreground text-xs">
-                {examSession.exam.categories?.[0]?.name}
-              </p>
             </div>
           </div>
           <div className="flex flex-row items-center justify-center gap-x-2">

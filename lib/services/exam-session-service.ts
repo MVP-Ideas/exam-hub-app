@@ -1,7 +1,9 @@
 import api from "../axios";
+import { PaginationResponse } from "../types/pagination";
 import {
   ExamSession,
   ExamSessionAnswerCreate,
+  ExamSessionPaginated,
   ExamSessionQuestion,
   ExamSessionResult,
 } from "../types/exam-session";
@@ -11,6 +13,24 @@ const BASE_URL = "exam-sessions";
 export type UpdateExamProgressRequest = {
   answers: ExamSessionAnswerCreate[];
   timeSpentSeconds: number;
+};
+
+export type ExamSessionsQuery = {
+  status?: string;
+  userIds?: string;
+  examId?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type UpdateQuestionPointsRequest = {
+  examSessionId: string;
+  questions: UpdateQuestionPointsArgs[];
+};
+
+export type UpdateQuestionPointsArgs = {
+  examSessionQuestionId: string;
+  points: number;
 };
 
 const ExamSessionService = {
@@ -77,6 +97,37 @@ const ExamSessionService = {
   getResults: async (examSessionId: string) => {
     const response = await api.get<ExamSessionResult>(
       `${BASE_URL}/${examSessionId}/result`,
+    );
+    return response.data;
+  },
+  list: async (params: ExamSessionsQuery) => {
+    const response = await api.get<PaginationResponse<ExamSessionPaginated>>(
+      BASE_URL,
+      {
+        params: {
+          status: params.status,
+          userIds: params.userIds,
+          examId: params.examId,
+          page: params.page,
+          pageSize: params.pageSize,
+        },
+      },
+    );
+    return response.data;
+  },
+  updateQuestionPoints: async ({
+    examSessionId,
+    questions,
+  }: UpdateQuestionPointsRequest) => {
+    const response = await api.put(
+      `${BASE_URL}/${examSessionId}/result`,
+      questions,
+    );
+    return response.data;
+  },
+  completeReview: async (examSessionId: string) => {
+    const response = await api.post<ExamSessionResult>(
+      `${BASE_URL}/${examSessionId}/complete`,
     );
     return response.data;
   },

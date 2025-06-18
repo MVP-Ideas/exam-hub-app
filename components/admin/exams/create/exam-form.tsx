@@ -216,7 +216,39 @@ export default function ExamForm({ type, exam }: Props) {
           {/* Exam Settings */}
           <ExamSettings disabled={isPending} />
 
-          <div className="mt-6 flex flex-row items-center justify-between">
+          <div className="mt-6 flex w-full flex-col items-center justify-between gap-y-4 md:hidden">
+            <Button
+              type="button"
+              variant="ghost"
+              className="border-primary/20 w-full border px-6"
+              onClick={onCancel}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="ghost"
+              className="border-primary/20 w-full border px-6"
+              disabled={isPending}
+              onClick={() => setIsDraft(true)}
+            >
+              Save as Draft
+            </Button>
+            <Button
+              hidden={!questions || questions.length === 0}
+              type="submit"
+              variant="default"
+              className="border-primary/20 w-full border px-6"
+              disabled={isPending}
+              onClick={() => setIsDraft(false)}
+            >
+              <SaveIcon className="mr-2" />
+              Save and Publish
+            </Button>
+          </div>
+
+          <div className="mt-6 hidden flex-row items-center justify-between md:flex">
             <Button
               type="button"
               variant="ghost"

@@ -133,7 +133,7 @@ export default function Page() {
                 <CardTitle>About This Exam</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700">{exam.description}</p>
+                <p className="text-muted-foreground">{exam.description}</p>
                 <Separator className="my-6" />
                 <h3 className="mb-4 text-lg font-medium">
                   What You&apos;ll Learn
@@ -277,11 +277,19 @@ export default function Page() {
                       }}
                     >
                       <div className="flex items-center gap-3">
-                        {session.passingFlag === "Passed" ? (
+                        {session.passingFlag === "Passed" &&
+                        session.status === "Completed" ? (
                           <div className="flex items-center gap-2">
                             <CheckCircleIcon className="h-5 w-5 text-green-600" />
                             <span className="font-medium text-green-700">
                               Passed
+                            </span>
+                          </div>
+                        ) : session.status === "ToBeReviewed" ? (
+                          <div className="flex items-center gap-2">
+                            <CheckCircleIcon className="h-5 w-5 text-amber-600" />
+                            <span className="font-medium text-amber-700">
+                              To Be Reviewed
                             </span>
                           </div>
                         ) : (
@@ -474,10 +482,15 @@ export default function Page() {
                     key={label}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm text-gray-500">{label}</span>
+                    <span className="text-muted-foreground text-sm">
+                      {label}
+                    </span>
                     <span className="flex items-center font-medium">
                       {Icon && (
-                        <Icon size={16} className="mr-1 text-gray-400" />
+                        <Icon
+                          size={16}
+                          className="text-muted-foreground mr-1"
+                        />
                       )}
                       {value}
                     </span>

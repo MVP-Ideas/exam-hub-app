@@ -15,12 +15,24 @@ import { QuestionType } from "@/lib/types/questions";
 import { CloudOff, FileQuestion, PlusIcon, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Page() {
-  const [search, setSearch] = useState<string>("");
-  const [types, setTypes] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [search, setSearch] = useState<string>(
+    searchParams.get("search") ?? "",
+  );
+  const [types, setTypes] = useState<string[]>(
+    searchParams.get("types") ? searchParams.get("types")!.split(",") : [],
+  );
+  const [categories, setCategories] = useState<string[]>(
+    searchParams.get("categories")
+      ? searchParams.get("categories")!.split(",")
+      : [],
+  );
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
 
   const debouncedSearch = useDebouncedValue(search, 300);
 
@@ -61,12 +73,46 @@ export default function Page() {
   const handleClearFilters = () => {
     setCategories([]);
     setTypes([]);
+    setPage(1);
+
+    // Keep search but remove filter params
+    const params = new URLSearchParams();
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    }
+
+    const queryString = params.toString();
+    router.push(`?${queryString}`, { scroll: false });
   };
 
   // Reset page when search, category, type or pageSize changes
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, categories, types, pageSize]);
+
+  // Update URL with query params
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+    }
+
+    if (types.length > 0) {
+      params.set("types", types.join(","));
+    }
+
+    if (categories.length > 0) {
+      params.set("categories", categories.join(","));
+    }
+
+    if (page > 1) {
+      params.set("page", page.toString());
+    }
+
+    const queryString = params.toString();
+    router.push(`?${queryString}`, { scroll: false });
+  }, [debouncedSearch, categories, types, page, router]);
 
   return (
     <div className="flex h-full min-h-screen w-full flex-col items-center p-10 md:pb-0">
@@ -183,14 +229,9 @@ export default function Page() {
               <div className="flex h-full w-full flex-col items-center gap-4 rounded-lg">
                 {/* 4 skeletons */}
                 <div className="flex w-full flex-col gap-4">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-12 w-full" />
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton key={index} className="h-20 w-full" />
+                  ))}
                 </div>
               </div>
             )}

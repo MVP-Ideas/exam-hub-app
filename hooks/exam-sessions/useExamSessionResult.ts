@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import ExamSessionService from "@/lib/services/exam-session";
+import ExamSessionService from "@/lib/services/exam-session-service";
 
 const useExamSessionResult = (examSessionId: string) => {
   const {
     data: examSessionResult,
     isLoading,
     isError,
+    isFetching,
   } = useQuery({
     queryKey: ["examSessionResult", examSessionId],
     queryFn: () => ExamSessionService.getResults(examSessionId),
@@ -14,7 +15,7 @@ const useExamSessionResult = (examSessionId: string) => {
 
   return {
     examSessionResult,
-    isLoading,
+    isLoading: isLoading || isFetching,
     isError,
   };
 };
