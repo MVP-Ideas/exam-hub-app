@@ -16,7 +16,7 @@ const UserService = {
     const response = await api.get<User>(`${BASE_URL}/me`);
     return response.data;
   },
-  getLearners: async (params: SearchParams) => {
+  getUsers: async (params: SearchParams) => {
     const response = await api.get<PaginationResponse<User>>(`${BASE_URL}`, {
       params: {
         search: params.search,
