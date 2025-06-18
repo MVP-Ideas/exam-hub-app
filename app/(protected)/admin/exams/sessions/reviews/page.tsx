@@ -82,7 +82,6 @@ export default function Page() {
           <UserMultiSelect
             value={selectedUsers}
             onChange={setSelectedUsers}
-            role="Learner"
           />
         </div>
 

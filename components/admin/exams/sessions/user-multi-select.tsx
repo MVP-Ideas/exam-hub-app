@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronsUpDown, User as UserIcon, X, Search } from "lucide-react";
-import useGetLearners from "@/hooks/users/useGetLearners";
+import useGetUsers from "@/hooks/users/useGetLearners";
 
 type Props = {
   value?: string[];
@@ -25,18 +25,18 @@ export default function UserMultiSelect({
   value = [],
   onChange,
   disabled = false,
-  role = "Learner",
+  role,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
-  const { learners, isLoading } = useGetLearners({
+  const { learners, isLoading } = useGetUsers({
     search: searchQuery,
     page,
     pageSize,
-    role,
+    role: role ?? "",
   });
 
   const handleSelectUser = (userId: string) => {

@@ -84,11 +84,7 @@ export default function Page() {
           </div>
         </div>
         <div className="flex w-full flex-col items-start gap-4">
-          <UserMultiSelect
-            value={selectedUsers}
-            onChange={setSelectedUsers}
-            role="Learner"
-          />
+          <UserMultiSelect value={selectedUsers} onChange={setSelectedUsers} />
         </div>
 
         {/* Sessions List */}

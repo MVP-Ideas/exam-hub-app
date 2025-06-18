@@ -23,7 +23,7 @@ const useInfiniteUsers = ({ search, page, pageSize, role }: Props) => {
   } = useInfiniteQuery<PaginationResponse<User>>({
     queryKey: ["infiniteLearners", search, pageSize, role],
     queryFn: async ({ pageParam }) =>
-      await UserService.getLearners({
+      await UserService.getUsers({
         search: search || "",
         pageSize,
         page: (pageParam as number) || page,

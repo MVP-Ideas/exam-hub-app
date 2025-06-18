@@ -12,15 +12,15 @@ type Props = {
   role: string;
 };
 
-const useGetLearners = (params: Props) => {
+const useGetUsers = (params: Props) => {
   const {
     data: learners,
     isLoading,
     isFetching,
     isError,
   } = useQuery<PaginationResponse<User>>({
-    queryKey: ["learners", params],
-    queryFn: async () => await UserService.getLearners(params),
+    queryKey: ["users", params],
+    queryFn: async () => await UserService.getUsers(params),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -40,4 +40,4 @@ const useGetLearners = (params: Props) => {
   };
 };
 
-export default useGetLearners;
+export default useGetUsers;
