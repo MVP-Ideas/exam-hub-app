@@ -1,5 +1,6 @@
 import ExamSessionService from "@/lib/services/exam-session-service";
 import { ExamSessionPaginated } from "@/lib/types/exam-session";
+import { PaginationResponse } from "@/lib/types/pagination";
 import { useQuery } from "@tanstack/react-query";
 
 type Props = {
@@ -25,7 +26,7 @@ const useExamSessions = ({
     isLoading,
     isFetching,
     isError,
-  } = useQuery<ExamSessionPaginated[]>({
+  } = useQuery<PaginationResponse<ExamSessionPaginated>>({
     queryKey: ["examSessions", status, userIdsString, examId, page, pageSize],
     queryFn: async () =>
       await ExamSessionService.list({
