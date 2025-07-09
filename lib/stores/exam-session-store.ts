@@ -29,6 +29,10 @@ interface ExamSessionState {
 
   calculatorIsOpened: boolean;
   setCalculatorIsOpened: (isOpened: boolean) => void;
+
+  hints: { [questionId: string]: string };
+  setHint: (questionId: string, hint: string) => void;
+  resetHints: () => void;
 }
 
 export const useExamSessionStore = create<ExamSessionState>()(
@@ -73,6 +77,11 @@ export const useExamSessionStore = create<ExamSessionState>()(
       calculatorIsOpened: false,
       setCalculatorIsOpened: (isOpened) =>
         set({ calculatorIsOpened: isOpened }),
+
+      hints: {},
+      setHint: (questionId, hint) =>
+        set((state) => ({ hints: { ...state.hints, [questionId]: hint } })),
+      resetHints: () => set({ hints: {} }),
     }),
     {
       name: "exam-session-storage",

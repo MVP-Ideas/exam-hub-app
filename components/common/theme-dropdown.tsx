@@ -16,6 +16,7 @@ interface ThemeDropdownProps {
   size?: "default" | "sm" | "lg" | "icon";
   className?: string;
   showLabel?: boolean;
+  justify?: "start" | "end" | "center";
 }
 
 export function ThemeDropdown({
@@ -23,6 +24,7 @@ export function ThemeDropdown({
   size = "default",
   className = "",
   showLabel = true,
+  justify = "start",
 }: ThemeDropdownProps) {
   const { theme, setTheme } = useTheme();
 
@@ -60,7 +62,7 @@ export function ThemeDropdown({
         <Button
           variant={variant}
           size={size}
-          className={`w-full justify-start gap-2 ${className}`}
+          className={`w-full justify-${justify} gap-2 ${className}`}
         >
           {createElement(getCurrentThemeIcon(), {
             className: "h-4 w-4",

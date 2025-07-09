@@ -36,6 +36,7 @@ export default function Page() {
   const { submitExamSession, isPending: isSubmitting } = useSubmitExamSession(
     id as string,
   );
+
   const questions = useMemo(() => examSession?.questions || [], [examSession]);
   const questionIds = useMemo(() => questions.map((q) => q.id), [questions]);
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
@@ -357,6 +358,7 @@ export default function Page() {
         {/* Question */}
         <div className="flex flex-1 flex-col">
           <QuestionBox
+            examSession={examSession}
             question={questions[currentQuestionIndex - 1]}
             currentQuestionIndex={currentQuestionIndex}
             setCurrentQuestionIndex={navigateToQuestion}

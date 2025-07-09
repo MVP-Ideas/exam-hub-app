@@ -230,9 +230,7 @@ export default function QuestionSheet({
           className="text-muted-foreground flex h-full min-h-screen w-full items-center justify-center text-sm"
         >
           <SheetTitle className="flex flex-col items-center">
-            <SheetDescription>
-              <p>Loading Question...</p>
-            </SheetDescription>
+            <SheetDescription>Loading Question...</SheetDescription>
             <AppLoader />
           </SheetTitle>
         </SheetContent>

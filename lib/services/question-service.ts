@@ -1,5 +1,10 @@
 import api from "@/lib/axios";
-import { Question, QuestionCreateUpdate } from "@/lib/types/questions";
+import {
+  GeneratedQuestionResponse,
+  GenerateQuestionsRequest,
+  Question,
+  QuestionCreateUpdate,
+} from "@/lib/types/questions";
 
 import { PaginationResponse } from "@/lib/types/pagination";
 
@@ -41,6 +46,13 @@ const QuestionService = {
   },
   delete: async (id: string) => {
     const response = await api.delete<Question>(`${BASE_URL}/${id}`);
+    return response.data;
+  },
+  generateQuestions: async (data: GenerateQuestionsRequest) => {
+    const response = await api.post<GeneratedQuestionResponse[]>(
+      `${BASE_URL}/generate`,
+      data,
+    );
     return response.data;
   },
 };

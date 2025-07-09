@@ -30,7 +30,7 @@ export default function ResourceCard({
 
   return (
     <Card className="w-full p-4">
-      <CardContent className="flex w-full flex-row items-center justify-between p-0">
+      <CardContent className="flex flex-row items-center justify-between p-0">
         <NextLink href={resource.value} target="_blank" className="flex-1">
           <div className="flex w-full flex-row items-center gap-4">
             {resource.type.toLowerCase() === "file" && (
@@ -45,8 +45,8 @@ export default function ResourceCard({
             )}
 
             <div className="flex flex-col items-start">
-              <p className="text-sm font-semibold">{resource.title}</p>
-              <p className="text-muted-foreground text-xs">
+              <p className="truncate text-sm font-semibold">{resource.title}</p>
+              <p className="text-muted-foreground max-w-[250px] truncate text-xs xl:max-w-full">
                 {resource.description || resource.value}
               </p>
             </div>
@@ -57,10 +57,10 @@ export default function ResourceCard({
           hidden={!!handleDelete}
           href={resource.value}
           target="_blank"
-          className="text-muted-foreground hover:text-primary"
+          className="text-muted-foreground hover:text-primary hidden md:block"
         >
           <div className="text-primary rounded-lg p-2 font-bold">
-            <p className="text-sm">Open</p>
+            <p className="text-xs md:text-sm">Open</p>
           </div>
         </NextLink>
 
