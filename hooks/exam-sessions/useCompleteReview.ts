@@ -23,17 +23,14 @@ const useCompleteReview = (examSessionId: string) => {
     mutationFn: () => completeReviewRequest(examSessionId),
     onSuccess: () => {
       startTransition(() => {
-        // Invalidate the exam session result query to refetch with updated data
         queryClient.invalidateQueries({
           queryKey: ["examSessionResult", examSessionId],
         });
 
-        // Also invalidate the exam sessions list if it exists
         queryClient.invalidateQueries({
           queryKey: ["examSessions"],
         });
       });
-      toast.success("Review completed successfully");
     },
     onError: (error) => {
       toast.error("Failed to complete review");

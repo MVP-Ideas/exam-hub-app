@@ -8,6 +8,12 @@ export enum QuestionType {
   DragAndDrop = "DragAndDrop",
 }
 
+export enum QuestionSourceType {
+  Text = "text",
+  Link = "url",
+  Base64 = "base64",
+}
+
 export type Question = {
   id: string;
   createdById: string;
@@ -64,4 +70,23 @@ export type QuestionExam = {
   createdAt: Date;
   title: string;
   status: "Draft" | "Published" | "Archived";
+};
+
+export type GenerateQuestionsRequest = {
+  sourceType: QuestionSourceType;
+  content: string;
+  questionCount: number;
+  allowedQuestionTypes: QuestionType[];
+};
+
+export type GeneratedQuestionResponse = {
+  text: string;
+  type: QuestionType;
+  choices: GeneratedQuestionChoiceResponse[];
+};
+
+export type GeneratedQuestionChoiceResponse = {
+  text: string;
+  isCorrect: boolean;
+  order?: number;
 };

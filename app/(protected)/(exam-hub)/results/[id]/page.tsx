@@ -2,8 +2,14 @@
 
 import { Progress } from "@/components/ui/progress";
 import useExamSessionResult from "@/hooks/exam-sessions/useExamSessionResult";
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
-import { useParams } from "next/navigation";
+import useExamSessionPracticeOptions from "@/hooks/exam-sessions/useExamSessionPracticeOptions";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  RotateCcwIcon,
+  XIcon,
+} from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { formatUTCDate } from "@/lib/date-utils";
 import { Accordion } from "@/components/ui/accordion";
@@ -11,12 +17,29 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import AppLoader from "@/components/common/app-loader";
 import { QuestionResult } from "@/components/learner/results/question-result";
+import { LightBulbIcon } from "@heroicons/react/24/outline";
+import { RetakeOptions } from "@/lib/types/exam-session";
+import useRetakeExamSession from "@/hooks/exam-sessions/useRetakeExamSession";
+import { toast } from "sonner";
 
 export default function Page() {
   const { id } = useParams();
+  const router = useRouter();
   const { examSessionResult, isLoading, isError } = useExamSessionResult(
     id as string,
   );
+  const { practiceOptions } = useExamSessionPracticeOptions(id as string);
+  const { retakeExamSession, isPending } = useRetakeExamSession(id as string);
+
+  const handleRetakeExamSession = async (retakeOption: RetakeOptions) => {
+    const response = await retakeExamSession(retakeOption);
+    if (response) {
+      router.push(`/sessions/${response.id}`);
+      toast.success("Exam retake started successfully");
+    } else {
+      toast.error("Failed to start exam retake");
+    }
+  };
 
   if (isLoading || isError) {
     return (
@@ -198,6 +221,86 @@ export default function Page() {
             </div>
           </div>
         </div>
+
+        {/* Practice Options */}
+        {(practiceOptions?.isFullRetakeAvailable ||
+          practiceOptions?.isMissedQuestionsRetakeAvailable ||
+          practiceOptions?.isAssistedQuestionsRetakeAvailable) && (
+          <div className="border-primary/20 flex w-full flex-col gap-y-4 rounded-lg border p-0">
+            <div className="flex flex-col items-start px-8 py-4">
+              <h1 className="text-lg font-bold">Practice Options</h1>
+            </div>
+            <div className="flex w-full flex-col gap-y-4 px-8 pb-8">
+              {/* Retake Full Exam */}
+              {practiceOptions?.isFullRetakeAvailable && (
+                <Button
+                  variant="outline"
+                  className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-slate-400 p-6 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 md:flex-row dark:border-slate-600 dark:hover:bg-slate-900"
+                  onClick={() =>
+                    handleRetakeExamSession(RetakeOptions.FullRetake)
+                  }
+                  disabled={isPending}
+                >
+                  <div className="rounded-full bg-slate-800 p-2 dark:bg-slate-200">
+                    <RotateCcwIcon className="text-background h-6 w-6" />
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <h3 className="text-lg font-semibold">Retake Full Exam</h3>
+                    <p className="text-sm">Start fresh with all questions</p>
+                  </div>
+                </Button>
+              )}
+
+              {/* Practice Missed Questions */}
+              {practiceOptions?.isMissedQuestionsRetakeAvailable && (
+                <Button
+                  variant="outline"
+                  className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-orange-400 bg-white p-6 hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-50 md:flex-row dark:bg-slate-950 dark:hover:bg-orange-950/20"
+                  onClick={() =>
+                    handleRetakeExamSession(RetakeOptions.MissedQuestionsRetake)
+                  }
+                  disabled={isPending}
+                >
+                  <div className="rounded-full bg-orange-100 p-2 dark:bg-orange-900/30">
+                    <XIcon className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <h3 className="text-lg font-semibold text-orange-600 dark:text-orange-400">
+                      Practice Missed Questions
+                    </h3>
+                    <p className="text-sm text-orange-500 dark:text-orange-300">
+                      Focus on questions you answered incorrectly
+                    </p>
+                  </div>
+                </Button>
+              )}
+
+              {/* Practice Assisted Questions */}
+              {practiceOptions?.isAssistedQuestionsRetakeAvailable && (
+                <Button
+                  variant="outline"
+                  className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-purple-400 bg-white p-6 hover:bg-purple-50 disabled:cursor-not-allowed disabled:opacity-50 md:flex-row dark:bg-slate-950 dark:hover:bg-purple-950/20"
+                  onClick={() =>
+                    handleRetakeExamSession(RetakeOptions.AiAssistedRetake)
+                  }
+                  disabled={isPending}
+                >
+                  <div className="rounded-full bg-purple-100 p-2 dark:bg-purple-900/30">
+                    <LightBulbIcon className="h-6 w-6 text-purple-500" />
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <h3 className="text-lg font-semibold text-purple-600 dark:text-purple-400">
+                      Practice Assisted Questions
+                    </h3>
+                    <p className="text-sm text-purple-500 dark:text-purple-300">
+                      Review questions where you needed help
+                    </p>
+                  </div>
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Question Results */}
         <div className="border-primary/20 flex w-full flex-col gap-y-4 rounded-lg border p-0">

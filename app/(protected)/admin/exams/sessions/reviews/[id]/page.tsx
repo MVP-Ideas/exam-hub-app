@@ -46,7 +46,7 @@ export default function Page() {
       }));
       setQuestionPoints(points);
     }
-  }, [examSessionResult]);
+  }, [examSessionResult, id, router]);
 
   if (isLoading || isError || !examSessionResult) {
     return (
@@ -79,7 +79,8 @@ export default function Page() {
     }));
 
     const success = await updateQuestionPoints(updatedQuestions);
-    if (success && !isComplete) {
+
+    if (success) {
       toast.success("Scores updated successfully!");
     } else {
       toast.error("Failed to finalize review. Please try again.");
@@ -251,7 +252,7 @@ export default function Page() {
           </div>
         </div>
         <div className="flex w-full flex-col items-center justify-center gap-x-4 gap-y-2 pt-4 md:flex-row">
-          <Link href="/admin/sessions/reviews" className="w-full">
+          <Link href="/admin/exams/sessions/reviews" className="w-full">
             <Button variant="outline" className="w-full">
               <ArrowLeftIcon className="h-4 w-4" />
               Back to Pending Reviews

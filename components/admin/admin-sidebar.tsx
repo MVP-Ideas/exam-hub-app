@@ -51,7 +51,8 @@ export function AdminSidebar({
   const activePage = pathname.split("/").pop() || "admin";
   const [activeTab, setActiveTab] = useState(activePage);
   const [expandedGroups, setExpandedGroups] = useState<string[]>([
-    "exam-management", // Open by default
+    "exam-management",
+    "question-management",
   ]);
 
   // Navigation groups with collapsible structure
@@ -69,10 +70,21 @@ export function AdminSidebar({
       href: "/admin/learner-management",
     },
     {
-      id: "question-bank",
-      label: "Question Bank",
+      id: "question-management",
+      label: "Question Management",
       icon: FileQuestion,
-      href: "/admin/question-bank",
+      children: [
+        {
+          id: "question-bank",
+          label: "Question Bank",
+          href: "/admin/question-bank",
+        },
+        {
+          id: "generate-questions",
+          label: "Generate Questions",
+          href: "/admin/generate-questions",
+        },
+      ],
     },
     {
       id: "exam-management",

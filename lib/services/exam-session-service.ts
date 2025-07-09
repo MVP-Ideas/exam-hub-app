@@ -4,8 +4,10 @@ import {
   ExamSession,
   ExamSessionAnswerCreate,
   ExamSessionPaginated,
+  ExamSessionPracticeOptions,
   ExamSessionQuestion,
   ExamSessionResult,
+  RetakeOptions,
 } from "../types/exam-session";
 
 const BASE_URL = "exam-sessions";
@@ -128,6 +130,27 @@ const ExamSessionService = {
   completeReview: async (examSessionId: string) => {
     const response = await api.post<ExamSessionResult>(
       `${BASE_URL}/${examSessionId}/complete`,
+    );
+    return response.data;
+  },
+  getPracticeOptions: async (examSessionId: string) => {
+    const response = await api.get<ExamSessionPracticeOptions>(
+      `${BASE_URL}/${examSessionId}/result/options`,
+    );
+    return response.data;
+  },
+  retakeExam: async (examSessionId: string, retakeOption: RetakeOptions) => {
+    const response = await api.post<ExamSession>(
+      `${BASE_URL}/${examSessionId}/retake`,
+      {
+        retakeOption,
+      },
+    );
+    return response.data;
+  },
+  generateHint: async (examSessionId: string, questionId: string) => {
+    const response = await api.post<{ hint: string }>(
+      `${BASE_URL}/${examSessionId}/questions/${questionId}/generate-hint`,
     );
     return response.data;
   },

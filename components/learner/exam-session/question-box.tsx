@@ -33,6 +33,7 @@ import useTimer from "@/hooks/timer/useTimer";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
+  ExamSession,
   ExamSessionAnswerCreate,
   ExamSessionQuestion,
 } from "@/lib/types/exam-session";
@@ -44,9 +45,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useGenerateQuestionHint from "@/hooks/exam-sessions/useGenerateQuestionHint";
+import { LightBulbIcon } from "@heroicons/react/24/outline";
+import { toast } from "sonner";
 
 type QuestionBoxProps = {
   question: ExamSessionQuestion;
+  examSession: ExamSession;
   currentQuestionIndex: number;
   setCurrentQuestionIndex: (index: number) => void;
   disabledNextButton: boolean;
@@ -60,6 +65,7 @@ type QuestionBoxProps = {
 
 export default function QuestionBox({
   question,
+  examSession,
   currentQuestionIndex,
   setCurrentQuestionIndex,
   disabledNextButton,
@@ -75,7 +81,14 @@ export default function QuestionBox({
     addFlaggedQuestion,
     removeFlaggedQuestion,
     lastSavedTime,
+    hints,
+    setHint,
   } = useExamSessionStore();
+  const { generateHint, isPending: isGeneratingHint } =
+    useGenerateQuestionHint();
+  const enableHints = examSession?.settings.enableHints;
+  const currentHint = enableHints ? hints[question.id] : "";
+
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
   const [choiceOrder, setChoiceOrder] = useState<string[]>([]);
 
@@ -99,6 +112,26 @@ export default function QuestionBox({
       });
     },
   });
+
+  const handleGenerateHint = async () => {
+    if (!enableHints) {
+      toast.error("Hints are not enabled for this exam.");
+      return;
+    }
+
+    if (hints[question.id]) {
+      return;
+    }
+    try {
+      const hint = await generateHint({
+        examSessionId: examSession.id,
+        questionId: question.id,
+      });
+      setHint(question.id, hint);
+    } catch {
+      toast.error("Error generating hint. Please try again.");
+    }
+  };
 
   const handleResetAnswer = () => {
     setSelectedChoices([]);
@@ -135,6 +168,10 @@ export default function QuestionBox({
   useEffect(() => {
     setSelectedChoices([]);
     setChoiceOrder([]);
+  }, [question.id]);
+
+  useEffect(() => {
+    setHint(question.id, hints[question.id] || "");
   }, [question.id]);
 
   // Reset selections and timer when question changes
@@ -404,9 +441,11 @@ export default function QuestionBox({
       </div>
 
       <div className="flex-1">
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-6">
+          {/* Question */}
           <div className="flex flex-col gap-4">{renderQuestionContent()}</div>
-          <div className="flex flex-col gap-4">
+          {/* Actions */}
+          <div className="flex flex-row items-center gap-4">
             <Button
               variant="outline"
               className="w-fit"
@@ -415,15 +454,34 @@ export default function QuestionBox({
               <RefreshCcw className="mr-2 h-4 w-4" />
               Reset question
             </Button>
+            {enableHints && (
+              <Button
+                variant="outline"
+                className="w-fit"
+                onClick={handleGenerateHint}
+                disabled={isGeneratingHint || !!currentHint}
+              >
+                <LightBulbIcon className="mr-2 h-4 w-4" />
+                Generate hint
+              </Button>
+            )}
           </div>
+          {/* Hint */}
+          {enableHints && currentHint && (
+            <div className="flex flex-row rounded-md border bg-green-50 p-3">
+              <LightBulbIcon className="mr-2 h-4 w-4" />
+              <p className="text-muted-foreground text-xs md:text-sm">
+                {currentHint}
+              </p>
+            </div>
+          )}
         </div>
       </div>
-
 
       {question.resources && question.resources.length > 0 && (
         <div className="mt-4">
           <h3 className="mb-2 font-medium">Resources</h3>
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 xl:grid-cols-3">
             {question.resources.map((resource) => (
               <ResourceCard
                 key={`${question.id}-${resource.id}`}

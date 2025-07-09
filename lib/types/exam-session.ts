@@ -105,3 +105,15 @@ export type ExamSessionPaginated = {
   status: string;
   finishedAt?: string;
 };
+
+export type ExamSessionPracticeOptions = {
+  isFullRetakeAvailable: boolean;
+  isMissedQuestionsRetakeAvailable: boolean;
+  isAssistedQuestionsRetakeAvailable: boolean;
+};
+
+export enum RetakeOptions {
+  FullRetake = "FullRetake",
+  MissedQuestionsRetake = "MissedQuestionsRetake",
+  AiAssistedRetake = "AiAssistedRetake",
+}

@@ -276,7 +276,7 @@ export default function ExamSessionToolbar({
         </div>
       </SidebarContent>
       <SidebarFooter>
-        <ThemeDropdown />
+        <ThemeDropdown justify="center" />
         <Button
           variant="ghost"
           className="hover:bg-destructive hover:text-background w-full font-bold"
