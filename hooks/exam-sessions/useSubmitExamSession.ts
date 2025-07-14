@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 const submitExamSessionRequest = async (examSessionId: string) => {
   try {
-    const response = await ExamSessionService.submitExamSession(examSessionId);
+    const response = await ExamSessionService.submit(examSessionId);
     if (response) {
       return response;
     }

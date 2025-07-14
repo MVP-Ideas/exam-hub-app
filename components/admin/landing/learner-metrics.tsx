@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import useInfiniteUsers from "@/hooks/users/useInfiniteUsers";
-import { LearnerStatistics } from "@/lib/types/statistics";
+import { LearnerStatisticsResponse } from "@/lib/types/statistics";
 import { useMemo } from "react";
 
 export default function LearnerMetrics() {
@@ -39,7 +39,7 @@ export default function LearnerMetrics() {
     return users.length - activeThisWeek;
   }, [users, activeThisWeek]);
 
-  const statistics: LearnerStatistics = useMemo(
+  const statistics: LearnerStatisticsResponse = useMemo(
     () => ({
       totalLearners: totalItems || 0,
       activeLearners: activeThisWeek,

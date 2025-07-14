@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
-import { Question } from "@/lib/types/questions";
+import { QuestionResponse } from "@/lib/types/questions";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import QuestionSheet from "./question-sheet";
 
-const questionColumn = (): ColumnDef<Question>[] => [
+const questionColumn = (): ColumnDef<QuestionResponse>[] => [
   {
     accessorKey: "text",
     header: () => <span className="pl-2">Question</span>,

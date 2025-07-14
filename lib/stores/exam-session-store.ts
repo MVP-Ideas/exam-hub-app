@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ExamSessionAnswerCreate } from "../types/exam-session";
+import { CreateAnswerRequest } from "../types/answer";
 
 type NavigationMode = "numbers" | "questions";
 
@@ -21,8 +21,8 @@ interface ExamSessionState {
   lastSavedTime: Date | null;
   setLastSavedTime: (time: Date | null) => void;
 
-  answers: ExamSessionAnswerCreate[];
-  setAnswers: (answers: ExamSessionAnswerCreate[]) => void;
+  answers: CreateAnswerRequest[];
+  setAnswers: (answers: CreateAnswerRequest[]) => void;
   resetAnswers: () => void;
 
   clearData: () => void;

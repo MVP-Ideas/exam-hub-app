@@ -1,74 +1,74 @@
-import { Exam, ExamSettingsCreateReadUpdate } from "./exam";
-import { QuestionChoice } from "./questions";
-import { Resource } from "./resource";
+import { CreateAnswerRequest } from "./answer";
+import { ExamExamSessionResponse } from "./exam";
+import {
+  ExamSessionQuestionResponse,
+  ExamSessionQuestionResultResponse,
+} from "./exam-session-question";
+import { ExamSettingsResponse } from "./exam-settings";
+import { UserExamSessionResponse } from "./user";
 
-export type ExamSession = {
+// Query
+export type ExamSessionsQuery = {
+  status?: string;
+  userIds?: string;
+  examId?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+// Requests
+export type ExamSessionProgressRequest = {
+  timeSpentSeconds: number;
+  answers: CreateAnswerRequest[];
+};
+
+export enum RetakeOptions {
+  FullRetake = "FullRetake",
+  MissedQuestionsRetake = "MissedQuestionsRetake",
+  AiAssistedRetake = "AiAssistedRetake",
+}
+
+export type ExamSessionRetakeRequest = {
+  retakeOption: RetakeOptions;
+};
+
+export type ExamSessionStartRequest = {
+  examId: string;
+  questionIds: string[];
+};
+
+// Responses
+export type ExamSessionPaginatedResponse = {
   id: string;
-  exam: Exam;
+  user: UserExamSessionResponse;
+  exam: ExamExamSessionResponse;
   startedAt: string;
-  finishedAt: string;
-  timeSpentSeconds?: number;
-  maxTimeSeconds: number;
-  questions: ExamSessionQuestion[];
-  totalScore?: number;
-  settings: ExamSettingsCreateReadUpdate;
-};
-
-export type ExamSessionQuestion = {
-  id: string;
-  questionId: string;
-  text: string;
-  description: string;
-  type: string;
-  points: number;
-  choices: ExamSessionQuestionChoice[];
-  resources: Resource[];
-  answer?: ExamSessionAnswer;
   timeSpentSeconds: number;
+  maxTimeSeconds?: number;
+  status: string;
+  finishedAt?: string;
 };
 
-export type ExamSessionQuestionChoice = {
-  id: string;
-  text: string;
+export type ExamSessionPracticeOptionsResponse = {
+  isFullRetakeAvailable: boolean;
+  isMissedQuestionsRetakeAvailable: boolean;
+  isAssistedQuestionsRetakeAvailable: boolean;
 };
 
-export type ExamSessionAnswer = {
+export type ExamSessionResponse = {
   id: string;
-  answeredAt: string;
-  aiAssitanceUsed: boolean;
+  userId: string;
+  exam: ExamExamSessionResponse;
+  startedAt: string;
   timeSpentSeconds: number;
-  toBeReviewed: boolean;
-  choices: ExamSessionAnswerChoice[];
-  points?: number;
-  isCorrect?: boolean;
+  maxTimeSeconds?: number;
+  status: string;
+  finishedAt?: string;
+  questions: ExamSessionQuestionResponse[];
+  settings: ExamSettingsResponse;
 };
 
-export type ExamSessionAnswerChoice = {
-  questionChoiceId: string;
-  text?: string;
-  order?: number;
-};
-
-export type ExamSessionAnswerCreate = {
-  examSessionQuestionId: string;
-  aiAssitanceUsed: boolean;
-  timeSpentSeconds: number;
-  toBeReviewed: boolean;
-  choices: ExamSessionAnswerChoice[];
-};
-
-export type ExamSessionQuestionResult = {
-  id: string;
-  text?: string;
-  points: number;
-  type: string;
-  explanation: string;
-  answer?: ExamSessionAnswer;
-  correctChoices: QuestionChoice[];
-  resources: Resource[];
-};
-
-export type ExamSessionResult = {
+export type ExamSessionResultResponse = {
   id: string;
   userId: string;
   userName: string;
@@ -81,39 +81,5 @@ export type ExamSessionResult = {
   timeSpentSeconds: number;
   passingScore: number;
   passingFlag: string;
-  questions: ExamSessionQuestionResult[];
+  questions: ExamSessionQuestionResultResponse[];
 };
-
-export type UserExamSessionResponse = {
-  id: string;
-  email: string;
-  name: string;
-};
-
-export type ExamExamSessionResponse = {
-  id: string;
-  title: string;
-};
-
-export type ExamSessionPaginated = {
-  id: string;
-  user: UserExamSessionResponse;
-  exam: ExamExamSessionResponse;
-  startedAt: string;
-  timeSpentSeconds: number;
-  maxTimeSeconds?: number;
-  status: string;
-  finishedAt?: string;
-};
-
-export type ExamSessionPracticeOptions = {
-  isFullRetakeAvailable: boolean;
-  isMissedQuestionsRetakeAvailable: boolean;
-  isAssistedQuestionsRetakeAvailable: boolean;
-};
-
-export enum RetakeOptions {
-  FullRetake = "FullRetake",
-  MissedQuestionsRetake = "MissedQuestionsRetake",
-  AiAssistedRetake = "AiAssistedRetake",
-}

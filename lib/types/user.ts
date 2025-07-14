@@ -1,24 +1,35 @@
-export type User = {
+// Requests
+export type UpdateUserRequest = {
+  name?: string;
+  preferences?: UserPreferenceUpdate[];
+};
+
+// Responses
+export type UserAnalyticsResponse = {
+  completedExams: number;
+  totalExams: number;
+  averageScore: number;
+};
+
+export type UserExamSessionResponse = {
   id: string;
-  lastLoginAt: Date | null;
-  lastActiveAt: Date | null;
-  role: "Admin" | "Learner";
+  email: string;
+  name: string;
+};
+
+export type UserPaginatedResponse = {
+  id: string;
   email: string;
   name: string;
   accountType: string;
-  preferences: UserPreference[];
-  analytics: UserAnalytics;
+  lastLoginAt: Date | null;
+  lastActiveAt: Date | null;
+  analytics: UserAnalyticsResponse;
 };
 
-export type UserPreference = {
-  id: string;
+export type UserPreferenceResponse = {
   key: string;
   value: string;
-};
-
-export type UserUpdate = {
-  name?: string;
-  preferences?: UserPreferenceUpdate[];
 };
 
 export type UserPreferenceUpdate = {
@@ -27,8 +38,14 @@ export type UserPreferenceUpdate = {
   value: string;
 };
 
-export type UserAnalytics = {
-  completedExams: number;
-  totalExams: number;
-  averageScore: number;
-}
+export type UserResponse = {
+  id: string;
+  lastLoginAt: Date | null;
+  lastActiveAt: Date | null;
+  role: "Admin" | "Learner";
+  email: string;
+  name: string;
+  accountType: string;
+  preferences: UserPreferenceResponse[];
+  analytics: UserAnalyticsResponse;
+};

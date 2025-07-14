@@ -1,5 +1,5 @@
 import ExamService from "@/lib/services/exam-service";
-import { ExamList } from "@/lib/types/exam";
+import { ExamListResponse } from "@/lib/types/exam";
 import { useQuery } from "@tanstack/react-query";
 
 const useExamsList = () => {
@@ -8,7 +8,7 @@ const useExamsList = () => {
     isLoading,
     isFetching,
     isError,
-  } = useQuery<ExamList[]>({
+  } = useQuery<ExamListResponse[]>({
     queryKey: ["exams-list"],
     queryFn: async () => await ExamService.getExamsList(),
     staleTime: 1000 * 60 * 5, // 5 minutes

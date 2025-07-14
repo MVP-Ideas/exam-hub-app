@@ -1,5 +1,5 @@
 import AuthService from "@/lib/services/auth-service";
-import { UserB2CLoginRegister } from "@/lib/types/auth";
+import { RegisterOrLoginB2CRequest } from "@/lib/types/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const useSignUpOrLoginUserB2C = () => {
@@ -9,7 +9,7 @@ const useSignUpOrLoginUserB2C = () => {
       request,
       accessToken,
     }: {
-      request: UserB2CLoginRegister;
+      request: RegisterOrLoginB2CRequest;
       accessToken: string;
     }) => {
       const response = await AuthService.b2cLoginRegister(request, accessToken);

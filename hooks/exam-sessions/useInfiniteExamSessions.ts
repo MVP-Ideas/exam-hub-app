@@ -1,5 +1,5 @@
 import ExamSessionService from "@/lib/services/exam-session-service";
-import { ExamSessionPaginated } from "@/lib/types/exam-session";
+import { ExamSessionPaginatedResponse } from "@/lib/types/exam-session";
 import { PaginationResponse } from "@/lib/types/pagination";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 
@@ -27,7 +27,7 @@ const useInfiniteExamSessions = ({
     isLoading,
     isFetching,
     isError,
-  } = useInfiniteQuery<PaginationResponse<ExamSessionPaginated>>({
+  } = useInfiniteQuery<PaginationResponse<ExamSessionPaginatedResponse>>({
     queryKey: ["examSessions", status, userIds, examId, pageSize],
     queryFn: async ({ pageParam }) => {
       // Convert array of userIds to comma-separated string

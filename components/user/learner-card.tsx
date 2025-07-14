@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import {
   BookOpen,
   Calendar,
@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 
 type Props = {
-  learner: User;
-  onEdit: (user: User) => void;
-  onDelete: (user: User) => void;
+  learner: UserResponse;
+  onEdit: (user: UserResponse) => void;
+  onDelete: (user: UserResponse) => void;
 };
 
 export function LearnerCardHorizontal({ learner, onEdit, onDelete }: Props) {
@@ -132,9 +132,9 @@ export function LearnerCard({
   onEdit,
   onDelete,
 }: {
-  learner: User;
-  onEdit: (user: User) => void;
-  onDelete: (user: User) => void;
+  learner: UserResponse;
+  onEdit: (user: UserResponse) => void;
+  onDelete: (user: UserResponse) => void;
 }) {
   const getStatusColor = (isActive: boolean) => {
     return isActive

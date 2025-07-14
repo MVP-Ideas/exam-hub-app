@@ -1,13 +1,13 @@
 "use client";
 
 import { create } from "zustand";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 export type UserState = {
-  user: User | null;
+  user: UserResponse | null;
   lastUpdated: string | null;
-  setUser: (user: User) => void;
+  setUser: (user: UserResponse) => void;
   clearUser: () => void;
 };
 

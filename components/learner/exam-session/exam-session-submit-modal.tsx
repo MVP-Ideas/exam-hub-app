@@ -10,16 +10,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  ExamSessionAnswerCreate,
-  ExamSessionQuestion,
-} from "@/lib/types/exam-session";
+import { ExamSessionQuestionResponse } from "@/lib/types/exam-session-question";
+import { CreateAnswerRequest } from "@/lib/types/answer";
 
 type ExamSessionSubmitModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  questions: ExamSessionQuestion[];
-  answers: ExamSessionAnswerCreate[];
+  questions: ExamSessionQuestionResponse[];
+  answers: CreateAnswerRequest[];
   answeredQuestions: number;
   flaggedQuestions: string[];
   setCurrentQuestionIndex: (index: number) => void;
@@ -30,7 +28,7 @@ type ExamSessionSubmitModalProps = {
 export default function ExamSessionSubmitModal({
   open,
   onOpenChange,
-  questions,
+  questions: examSessionQuestions,
   answers,
   answeredQuestions,
   flaggedQuestions,
@@ -60,7 +58,7 @@ export default function ExamSessionSubmitModal({
               Total Questions
             </p>
             <p className="text-xl font-bold text-blue-900 dark:text-blue-300">
-              {questions.length}
+              {examSessionQuestions.length}
             </p>
           </div>
           <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-900">
@@ -76,7 +74,11 @@ export default function ExamSessionSubmitModal({
               Flagged
             </p>
             <p className="text-xl font-bold text-yellow-900 dark:text-yellow-300">
-              {questions.filter((q) => flaggedQuestions.includes(q.id)).length}
+              {
+                examSessionQuestions.filter((q) =>
+                  flaggedQuestions.includes(q.id),
+                ).length
+              }
             </p>
           </div>
         </div>
@@ -85,19 +87,21 @@ export default function ExamSessionSubmitModal({
         <div className="mt-6">
           <p className="text-primary mb-2 text-sm font-semibold">Questions</p>
           <div className="custom-scrollbar flex max-h-60 flex-col gap-2 overflow-y-auto pr-2">
-            {questions.map((q, index) => {
+            {examSessionQuestions.map((examSessionQuestion, index) => {
               const isAnswered = !!answers.find(
                 (a) =>
                   a &&
-                  a.examSessionQuestionId === q.id &&
+                  a.examSessionQuestionId === examSessionQuestion.id &&
                   a.choices &&
                   a.choices.length > 0,
               );
-              const isFlagged = flaggedQuestions.includes(q.id);
+              const isFlagged = flaggedQuestions.includes(
+                examSessionQuestion.id,
+              );
 
               return (
                 <div
-                  key={q.id}
+                  key={examSessionQuestion.id}
                   className={cn(
                     "flex items-center justify-between rounded border p-2 text-sm",
                     isAnswered
@@ -109,7 +113,9 @@ export default function ExamSessionSubmitModal({
                     <div className="bg-muted flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                       {index + 1}
                     </div>
-                    <div className="max-w-[12rem] truncate">{q.text}</div>
+                    <div className="max-w-[12rem] truncate">
+                      {examSessionQuestion.question.text}
+                    </div>
                     <div className="flex gap-1">
                       {isAnswered && (
                         <span className="rounded border border-green-500 px-1 text-xs font-medium text-green-700">
@@ -140,7 +146,7 @@ export default function ExamSessionSubmitModal({
         </div>
 
         {/* Warning */}
-        {answeredQuestions < questions.length && (
+        {answeredQuestions < examSessionQuestions.length && (
           <div className="mt-4 rounded border border-orange-300 bg-orange-50 p-4 text-sm text-orange-700">
             You have unanswered questions. You can go back to complete them or
             submit the exam as is.

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { QuestionFormSchema } from "../question-sheet";
-import { ResourceFileCreate } from "@/lib/types/resource";
+import { CreateFileResourceRequest } from "@/lib/types/resource";
 import useCreateFileResource from "@/hooks/resources/useCreateFileResource";
 import UploadFileDialog from "@/components/common/dialogs/upload-file-dialog";
 
@@ -35,7 +35,7 @@ export default function QuestionUploadFileDialog() {
   });
 
   const onSubmit = async (data: FileForm) => {
-    const resourceData: ResourceFileCreate = {
+    const resourceData: CreateFileResourceRequest = {
       title: data.title,
       description: data.description ?? "",
       file: data.file,

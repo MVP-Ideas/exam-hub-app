@@ -1,4 +1,5 @@
-export type Resource = {
+// Responses
+export type ResourceResponse = {
   id: string;
   title: string;
   description: string;
@@ -6,13 +7,14 @@ export type Resource = {
   type: "File" | "Url";
 };
 
-export type ResourceUrlCreate = {
+// Requests
+export type CreateUrlResourceRequest = {
   title: string;
   description: string;
   url: string;
 };
 
-export type ResourceFileCreate = {
+export type CreateFileResourceRequest = {
   title: string;
   description: string;
   file: File;

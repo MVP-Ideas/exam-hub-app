@@ -5,12 +5,12 @@ import { useMsal } from "@azure/msal-react";
 import { useRouter } from "next/navigation";
 import UserService from "@/lib/services/user-service";
 import AuthService from "@/lib/services/auth-service";
-import { UserB2CLoginRegister } from "@/lib/types/auth";
 import { toast } from "sonner";
 import { loginScopes } from "@/config/auth-config";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 
 import { useUserStore } from "@/lib/stores/user-store";
+import { RegisterOrLoginB2CRequest } from "@/lib/types/auth";
 
 export default function useAuth() {
   const { instance, inProgress } = useMsal();
@@ -67,7 +67,7 @@ export default function useAuth() {
         account: res.account,
       });
 
-      const userDto: UserB2CLoginRegister = {
+      const userDto: RegisterOrLoginB2CRequest = {
         email: tokenRes.account.username,
         name: tokenRes.account.name || "unknown",
         b2cUserId: tokenRes.uniqueId,

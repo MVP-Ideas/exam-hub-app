@@ -19,11 +19,9 @@ import {
   PauseCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  ExamSession,
-  ExamSessionAnswerCreate,
-  ExamSessionQuestion,
-} from "@/lib/types/exam-session";
+import { ExamSessionResponse } from "@/lib/types/exam-session";
+import { ExamSessionQuestionResponse } from "@/lib/types/exam-session-question";
+import { CreateAnswerRequest } from "@/lib/types/answer";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -43,10 +41,10 @@ import { Calculator } from "./calculator";
 import ExamSessionResourcesModal from "./exam-session-resources-modal";
 
 type Props = {
-  examSession: ExamSession;
+  examSession: ExamSessionResponse;
   endable: boolean;
-  questions: ExamSessionQuestion[];
-  answers: ExamSessionAnswerCreate[];
+  questions: ExamSessionQuestionResponse[];
+  answers: CreateAnswerRequest[];
   currentQuestionIndex: number;
   setCurrentQuestionIndex: (index: number) => void;
   navMode: "numbers" | "questions";
@@ -60,7 +58,7 @@ type Props = {
 export default function ExamSessionToolbar({
   examSession,
   endable,
-  questions,
+  questions: examSessionQuestions,
   answers,
   currentQuestionIndex,
   setCurrentQuestionIndex,
@@ -79,7 +77,7 @@ export default function ExamSessionToolbar({
 
   const handleFeedbackSubmit = async () => {
     try {
-      const currentQuestion = questions[currentQuestionIndex];
+      const currentQuestion = examSessionQuestions[currentQuestionIndex];
       await createQuestionFeedback({
         examSessionQuestionId: currentQuestion.id,
         feedback: feedbackText,
@@ -107,8 +105,8 @@ export default function ExamSessionToolbar({
         <p className="text-sm font-bold">Question {currentQuestionIndex + 1}</p>
         {settings.showQuestionPoints && (
           <p className="text-primary text-xs font-bold">
-            {questions[currentQuestionIndex].points} point
-            {questions[currentQuestionIndex].points > 1 ? "s" : ""}
+            {examSessionQuestions[currentQuestionIndex].points} point
+            {examSessionQuestions[currentQuestionIndex].points > 1 ? "s" : ""}
           </p>
         )}
       </SidebarHeader>
@@ -140,9 +138,9 @@ export default function ExamSessionToolbar({
           </div>
           {navMode === "numbers" ? (
             <div className="grid grid-cols-6 gap-2">
-              {questions.map((question, index) => (
+              {examSessionQuestions.map((examSessionQuestion, index) => (
                 <div key={index} className="relative">
-                  {flaggedQuestions.includes(question.id) && (
+                  {flaggedQuestions.includes(examSessionQuestion.id) && (
                     <div className="absolute -top-1 -right-1">
                       <div className="bg-destructive flex h-3 w-3 items-center justify-center rounded-full" />
                     </div>
@@ -156,7 +154,7 @@ export default function ExamSessionToolbar({
                       answers.find(
                         (a) =>
                           a &&
-                          a.examSessionQuestionId === question.id &&
+                          a.examSessionQuestionId === examSessionQuestion.id &&
                           a.choices &&
                           a.choices.length > 0,
                       ) &&
@@ -174,9 +172,9 @@ export default function ExamSessionToolbar({
             </div>
           ) : (
             <div className="custom-scrollbar flex max-h-72 flex-col overflow-y-auto pt-2 pr-1">
-              {questions.map((question, index) => (
+              {examSessionQuestions.map((examSessionQuestion, index) => (
                 <div key={index} className="relative">
-                  {flaggedQuestions.includes(question.id) && (
+                  {flaggedQuestions.includes(examSessionQuestion.id) && (
                     <div className="absolute -top-0 -right-0">
                       <div className="bg-destructive flex h-2 w-2 items-center justify-center rounded-full" />
                     </div>
@@ -192,7 +190,7 @@ export default function ExamSessionToolbar({
                         (a) =>
                           a &&
                           a.choices &&
-                          a.examSessionQuestionId === question.id &&
+                          a.examSessionQuestionId === examSessionQuestion.id &&
                           a.choices.length > 0,
                       ) &&
                         index !== currentQuestionIndex &&
@@ -206,7 +204,7 @@ export default function ExamSessionToolbar({
                       <span className="bg-muted text-muted-foreground flex h-4 w-4 items-center justify-center rounded-full text-xs font-semibold">
                         {index + 1}
                       </span>
-                      <span className="truncate">{question.text}</span>
+                      <span className="truncate">{examSessionQuestion.question.text}</span>
                     </div>
                   </Button>
                 </div>

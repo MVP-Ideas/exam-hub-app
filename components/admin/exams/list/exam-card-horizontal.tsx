@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useArchiveExam from "@/hooks/exams/useArchiveExam";
-import { Exam } from "@/lib/types/exam";
+import { ExamResponse } from "@/lib/types/exam";
 import { getStatusColor, getDifficultyColor } from "@/lib/utils/exam";
 import {
   Tag,
@@ -33,7 +33,7 @@ import {
 import Link from "next/link";
 
 type Props = {
-  exam: Exam;
+  exam: ExamResponse;
   route: string;
   disableOptions?: boolean;
 };

@@ -1,4 +1,4 @@
-import { Question } from "@/lib/types/questions";
+import { QuestionResponse } from "@/lib/types/questions";
 import QuestionService from "@/lib/services/question-service";
 import { useQuery } from "@tanstack/react-query";
 
@@ -7,7 +7,7 @@ const useQuestionById = (questionId: string, enabled: boolean = true) => {
     data: question,
     isLoading,
     isError,
-  } = useQuery<Question>({
+  } = useQuery<QuestionResponse>({
     queryKey: ["question", questionId],
     queryFn: async () => await QuestionService.get(questionId),
     select: (data) => data,

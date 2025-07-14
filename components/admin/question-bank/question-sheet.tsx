@@ -34,11 +34,7 @@ import DragAndDropEditor from "./choices/question-drag-and-drop-editor";
 import TrueFalseEditor from "./choices/question-true-or-false-editor";
 import MultipleChoiceSingleEditor from "./choices/question-multiple-choice-single-editor";
 import MultipleChoiceMultipleEditor from "./choices/question-multiple-choice-multiple";
-import {
-  QuestionChoiceCreateUpdate,
-  QuestionType,
-  QuestionCreateUpdate,
-} from "@/lib/types/questions";
+import { CreateQuestionRequest, QuestionType } from "@/lib/types/questions";
 import QuestionTypeSelect from "./question-type-select";
 import QuestionCategoryMultiselect from "../../categories/question-category-multiselect";
 import QuestionAddLinkDialog from "./modals/question-add-link-dialog";
@@ -49,13 +45,15 @@ import { toast } from "sonner";
 import useDeleteQuestion from "@/hooks/questions/useDeleteQuestion";
 import ConfirmDeleteDialog from "@/components/common/dialogs/confirm-delete-dialog";
 import useCreateQuestion from "@/hooks/questions/useCreateQuestion";
-import { Resource } from "@/lib/types/resource";
+import { ResourceResponse } from "@/lib/types/resource";
 import Link from "next/link";
 import AppLoader from "@/components/common/app-loader";
+import { CreateQuestionChoiceRequest } from "@/lib/types/question-choice";
 
 const choiceSchema = z.object({
   text: z.string().min(1, "Choice text is required"),
   isCorrect: z.boolean(),
+  explanation: z.string().optional(),
 });
 
 export const resourceSchema = z.object({
@@ -128,7 +126,7 @@ export default function QuestionSheet({
   const { control, handleSubmit, setValue, watch, reset } = form;
 
   const questionType = watch("type");
-  const resources = watch("resources") as Resource[] | undefined;
+  const resources = watch("resources") as ResourceResponse[] | undefined;
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -142,15 +140,16 @@ export default function QuestionSheet({
   };
 
   const onSubmit = async (data: QuestionFormSchema) => {
-    const updateChoices: QuestionChoiceCreateUpdate[] = data.choices.map(
+    const updateChoices: CreateQuestionChoiceRequest[] = data.choices.map(
       (choice) =>
         ({
           text: choice.text,
           isCorrect: choice.isCorrect,
-        }) as QuestionChoiceCreateUpdate,
+          explanation: choice.explanation,
+        }) as CreateQuestionChoiceRequest,
     );
 
-    const updatedData: QuestionCreateUpdate = {
+    const updatedData: CreateQuestionRequest = {
       text: data.text,
       description: data.description ?? "",
       type: data.type,
@@ -264,7 +263,7 @@ export default function QuestionSheet({
             hidden={isLoading}
             showClose={showClose}
             side="right"
-            className="flex min-w-screen flex-col overflow-y-auto p-0 pt-8 md:min-w-[80vw] lg:min-w-[50vw]"
+            className="flex min-w-screen flex-col overflow-y-auto p-0 md:min-w-[80vw] lg:min-w-[50vw]"
           >
             <FormProvider {...form}>
               <Form {...form}>

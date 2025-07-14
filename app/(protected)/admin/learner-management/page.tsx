@@ -11,7 +11,7 @@ import {
 } from "@/components/user/learner-card";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import useInfiniteUsers from "@/hooks/users/useInfiniteUsers";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import { LayoutGrid, List, Search, UserIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -24,8 +24,8 @@ export default function Page() {
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
 
-  const [editUser, setEditUser] = useState<User | null>(null);
-  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState<UserResponse | null>(null);
+  const [deleteUser, setDeleteUser] = useState<UserResponse | null>(null);
 
   const debouncedSearch = useDebouncedValue(search, 300);
 

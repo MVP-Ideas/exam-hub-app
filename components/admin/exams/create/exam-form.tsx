@@ -13,7 +13,10 @@ import ExamStudyResources from "./exam-study-resources";
 import ExamQuestions from "./exam-questions/exam-questions";
 import ExamSettings from "./exam-settings";
 import useCreateExam from "@/hooks/exams/useCreateExam";
-import { Exam, ExamCreateUpdate as ExamCreateUpdate } from "@/lib/types/exam";
+import {
+  ExamResponse,
+  CreateExamRequest as CreateExamRequest,
+} from "@/lib/types/exam";
 import { useEffect, useState } from "react";
 import useUpdateExam from "@/hooks/exams/useUpdateExam";
 
@@ -62,7 +65,7 @@ export type ExamFormSchema = z.infer<typeof createExamSchema>;
 
 type Props = {
   type: "edit" | "create";
-  exam?: Exam;
+  exam?: ExamResponse;
 };
 
 export default function ExamForm({ type, exam }: Props) {
@@ -110,7 +113,7 @@ export default function ExamForm({ type, exam }: Props) {
     data: z.infer<typeof createExamSchema>,
   ) => {
     try {
-      const examCreate: ExamCreateUpdate = {
+      const examCreate: CreateExamRequest = {
         title: data.title,
         description: data.description,
         categoryIds: data.categoryIds ?? [],

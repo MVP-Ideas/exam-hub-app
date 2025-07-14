@@ -1,10 +1,10 @@
 import ResourceService from "@/lib/services/resource-service";
-import { ResourceFileCreate } from "@/lib/types/resource";
+import { CreateFileResourceRequest } from "@/lib/types/resource";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const createFileResourceRequest = async (data: ResourceFileCreate) => {
+const createFileResourceRequest = async (data: CreateFileResourceRequest) => {
   try {
     const response = await ResourceService.upload(data);
     if (response) {
@@ -18,7 +18,8 @@ const createFileResourceRequest = async (data: ResourceFileCreate) => {
 
 const useCreateFileResource = () => {
   const { mutateAsync: createFileResource, isPending } = useMutation({
-    mutationFn: (data: ResourceFileCreate) => createFileResourceRequest(data),
+    mutationFn: (data: CreateFileResourceRequest) =>
+      createFileResourceRequest(data),
     onSuccess: () => {
       toast.success("File resource created successfully");
     },

@@ -1,26 +1,18 @@
 import api from "../axios";
 import {
-  Exam,
-  ExamCreateUpdate,
-  ExamList,
+  ExamResponse,
+  CreateExamRequest,
+  ExamListResponse,
   ExamWithUserMetadata,
+  SearchParams,
 } from "../types/exam";
 import { PaginationResponse } from "../types/pagination";
 
 const BASE_URL = "exams";
 
-type SearchParams = {
-  search?: string;
-  page: number;
-  pageSize: number;
-  difficulty?: string | null;
-  category?: string | null;
-  status?: string | null;
-};
-
 const ExamService = {
   list: async (params: SearchParams) => {
-    const response = await api.get<PaginationResponse<Exam>>(BASE_URL, {
+    const response = await api.get<PaginationResponse<ExamResponse>>(BASE_URL, {
       params: {
         search: params.search,
         page: params.page,
@@ -33,7 +25,7 @@ const ExamService = {
     return response.data;
   },
   getExamsList: async () => {
-    const response = await api.get<ExamList[]>(`${BASE_URL}/list`);
+    const response = await api.get<ExamListResponse[]>(`${BASE_URL}/list`);
     return response.data;
   },
   get: async (id: string, showUserStats: boolean = false) => {
@@ -44,16 +36,16 @@ const ExamService = {
     });
     return response.data;
   },
-  create: async (data: ExamCreateUpdate) => {
-    const response = await api.post<Exam>(BASE_URL, data);
+  create: async (data: CreateExamRequest) => {
+    const response = await api.post<ExamResponse>(BASE_URL, data);
     return response.data;
   },
-  update: async (id: string, data: ExamCreateUpdate) => {
-    const response = await api.put<Exam>(`${BASE_URL}/${id}`, data);
+  update: async (id: string, data: CreateExamRequest) => {
+    const response = await api.put<ExamResponse>(`${BASE_URL}/${id}`, data);
     return response.data;
   },
   archive: async (id: string) => {
-    const response = await api.post<Exam>(`${BASE_URL}/${id}/archive`);
+    const response = await api.post<ExamResponse>(`${BASE_URL}/${id}/archive`);
     return response.data;
   },
 };

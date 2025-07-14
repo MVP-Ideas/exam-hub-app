@@ -1,11 +1,13 @@
 import QuestionFeedbackService from "@/lib/services/question-feedback-service";
-import { QuestionFeedbackCreate } from "@/lib/types/question-feedback";
+import { CreateQuestionFeedbackRequest } from "@/lib/types/question-feedback";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-const createQuestionFeedbackRequest = async (data: QuestionFeedbackCreate) => {
+const createQuestionFeedbackRequest = async (
+  data: CreateQuestionFeedbackRequest,
+) => {
   try {
     const response = await QuestionFeedbackService.create(data);
     if (response) {
@@ -21,7 +23,7 @@ const useCreateQuestionFeedback = () => {
   const [isPending, startTransition] = useTransition();
 
   const { mutateAsync: createQuestionFeedback } = useMutation({
-    mutationFn: (data: QuestionFeedbackCreate) =>
+    mutationFn: (data: CreateQuestionFeedbackRequest) =>
       createQuestionFeedbackRequest(data),
     onSuccess: () => {
       startTransition(() => {

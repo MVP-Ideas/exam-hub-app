@@ -1,12 +1,12 @@
 import useDeleteUser from "@/hooks/users/useDeleteUser";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import ConfirmDeleteDialog from "../common/dialogs/confirm-delete-dialog";
 
 export default function DeleteUserModal({
   user,
   onClose,
 }: {
-  user: User;
+  user: UserResponse;
   onClose: () => void;
 }) {
   const { deleteUser, isPending } = useDeleteUser(user.id);

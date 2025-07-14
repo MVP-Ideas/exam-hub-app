@@ -1,10 +1,10 @@
 import api from "../axios";
-import { QuestionFeedbackCreate } from "../types/question-feedback";
+import { CreateQuestionFeedbackRequest } from "../types/question-feedback";
 
 const BASE_URL = "question-feedback";
 
 const QuestionFeedbackService = {
-  create: async (data: QuestionFeedbackCreate) => {
+  create: async (data: CreateQuestionFeedbackRequest) => {
     const response = await api.post<boolean>(BASE_URL, data);
     return response.data;
   },
