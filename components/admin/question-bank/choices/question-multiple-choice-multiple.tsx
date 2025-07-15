@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { QuestionType } from "@/lib/types/questions";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -69,8 +68,8 @@ export default function MultipleChoiceMultipleEditor({
                   onCheckedChange={() => toggleCorrect(index)}
                 />
                 <div className="flex w-full flex-col gap-2">
-                  <Input
-                    className="w-full"
+                  <Textarea
+                    className="min-h-10 w-full text-sm"
                     value={choice.text}
                     placeholder="Enter answer option..."
                     onChange={(e) => {

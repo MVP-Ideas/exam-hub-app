@@ -65,14 +65,16 @@ export const useExamSessionStore = create<ExamSessionState>()(
       setAnswers: (answers) => set({ answers }),
       resetAnswers: () => set({ answers: [] }),
 
-      clearData: () => set({
-        navMode: "numbers",
-        flaggedQuestions: [],
-        lastSavedTime: null,
-        lastVisitedExamSessionId: null,
-        answers: [],
-        calculatorIsOpened: undefined,
-      }),
+      clearData: () =>
+        set({
+          navMode: "numbers",
+          flaggedQuestions: [],
+          lastSavedTime: null,
+          lastVisitedExamSessionId: null,
+          answers: [],
+          calculatorIsOpened: undefined,
+          hints: {},
+        }),
 
       calculatorIsOpened: false,
       setCalculatorIsOpened: (isOpened) =>
@@ -93,6 +95,7 @@ export const useExamSessionStore = create<ExamSessionState>()(
         lastVisitedExamSessionId: state.lastVisitedExamSessionId,
         answers: state.answers,
         calculatorIsOpened: state.calculatorIsOpened,
+        hints: state.hints,
       }),
     },
   ),

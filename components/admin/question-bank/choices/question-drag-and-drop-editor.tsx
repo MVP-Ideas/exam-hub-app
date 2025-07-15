@@ -255,10 +255,10 @@ function SortableItem({
           <GripVertical size={16} />
         </div>
         <div className="flex w-full flex-col gap-2">
-          <Input
+          <Textarea
             value={text}
             onChange={(e) => onTextChange(e.target.value)}
-            className="w-full"
+            className="min-h-10 w-full text-sm"
             placeholder="Enter draggable item..."
           />
           <Textarea

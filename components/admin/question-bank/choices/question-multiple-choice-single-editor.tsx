@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { QuestionType } from "@/lib/types/questions";
@@ -82,10 +81,10 @@ export default function MultipleChoiceSingleEditor({
                   />
 
                   <div className="flex w-full flex-col gap-2">
-                    <Input
+                    <Textarea
                       id={`radio-${index}`}
                       value={choice.text}
-                      className="w-full"
+                      className="min-h-10 w-full text-sm"
                       placeholder="Enter answer option..."
                       onChange={(e) => {
                         const updated = [...choices];

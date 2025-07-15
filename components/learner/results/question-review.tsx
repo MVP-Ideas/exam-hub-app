@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircleIcon, XCircleIcon } from "lucide-react";
 import { AnswerChoice } from "@/lib/types/answer-choice";
+
 export function QuestionReview({
   question: examSessionQuestion,
   index,
@@ -191,17 +192,17 @@ export function QuestionReview({
               ) {
                 return (
                   <div>
-                    {examSessionQuestion?.answer?.choices.map(
-                      (choice: AnswerChoice) => (
-                        <div key={choice.questionChoiceId}>
+                    {examSessionQuestion?.question?.choices
+                      .filter((choice) => choice.isCorrect)
+                      .map((choice) => (
+                        <div key={choice.id}>
                           {getQuestionTypeText(
                             examSessionQuestion.points,
                             examSessionQuestion.points,
                             choice.text || "",
                           )}
                         </div>
-                      ),
-                    )}
+                      ))}
                   </div>
                 );
               } else if (
@@ -210,17 +211,17 @@ export function QuestionReview({
               ) {
                 return (
                   <ul className="list-disc pl-4">
-                    {examSessionQuestion?.answer?.choices.map(
-                      (choice: AnswerChoice) => (
-                        <li key={choice.questionChoiceId}>
+                    {examSessionQuestion?.question?.choices
+                      .filter((choice) => choice.isCorrect)
+                      .map((choice) => (
+                        <li key={choice.id}>
                           {getQuestionTypeText(
                             examSessionQuestion.points,
                             examSessionQuestion.points,
                             choice.text || "",
                           )}
                         </li>
-                      ),
-                    )}
+                      ))}
                   </ul>
                 );
               } else if (
@@ -228,10 +229,11 @@ export function QuestionReview({
               ) {
                 return (
                   <ol className="list-decimal pl-4">
-                    {examSessionQuestion?.answer?.choices
+                    {examSessionQuestion?.question?.choices
+                      .filter((choice) => choice.isCorrect)
                       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                      .map((choice: AnswerChoice) => (
-                        <li key={choice.questionChoiceId}>
+                      .map((choice) => (
+                        <li key={choice.id}>
                           {getQuestionTypeText(
                             examSessionQuestion.points,
                             examSessionQuestion.points,
