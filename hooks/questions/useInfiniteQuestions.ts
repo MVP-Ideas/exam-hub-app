@@ -1,6 +1,6 @@
 import QuestionService from "@/lib/services/question-service";
 import { PaginationResponse } from "@/lib/types/pagination";
-import { Question } from "@/lib/types/questions";
+import { QuestionResponse } from "@/lib/types/questions";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 
 type Props = {
@@ -27,7 +27,7 @@ const useInfiniteQuestions = ({
     isLoading,
     isFetching,
     isError,
-  } = useInfiniteQuery<PaginationResponse<Question>>({
+  } = useInfiniteQuery<PaginationResponse<QuestionResponse>>({
     queryKey: ["questions", search, pageSize, type, category],
     queryFn: async ({ pageParam }) =>
       await QuestionService.list({

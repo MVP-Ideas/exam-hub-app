@@ -9,7 +9,7 @@ const useExamSessionResult = (examSessionId: string) => {
     isFetching,
   } = useQuery({
     queryKey: ["examSessionResult", examSessionId],
-    queryFn: () => ExamSessionService.getResults(examSessionId),
+    queryFn: () => ExamSessionService.getResult(examSessionId),
     enabled: !!examSessionId,
   });
 

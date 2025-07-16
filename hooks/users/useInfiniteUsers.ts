@@ -1,6 +1,6 @@
 import UserService from "@/lib/services/user-service";
 import { PaginationResponse } from "@/lib/types/pagination";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 
 type Props = {
@@ -20,7 +20,7 @@ const useInfiniteUsers = ({ search, page, pageSize, role }: Props) => {
     isLoading,
     isFetching,
     isError,
-  } = useInfiniteQuery<PaginationResponse<User>>({
+  } = useInfiniteQuery<PaginationResponse<UserResponse>>({
     queryKey: ["infiniteLearners", search, pageSize, role],
     queryFn: async ({ pageParam }) =>
       await UserService.getUsers({

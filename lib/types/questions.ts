@@ -1,5 +1,10 @@
-import { QuestionCategoryQuestionResponse } from "./question-categories";
-import { Resource } from "./resource";
+import { ExamFromQuestionResponse } from "./exam";
+import { QuestionCategoryResponse } from "./question-category";
+import {
+  CreateQuestionChoiceRequest,
+  QuestionChoiceResponse,
+} from "./question-choice";
+import { ResourceResponse } from "./resource";
 
 export enum QuestionType {
   MultipleChoiceSingle = "MultipleChoiceSingle",
@@ -14,7 +19,42 @@ export enum QuestionSourceType {
   Base64 = "base64",
 }
 
-export type Question = {
+// Requests
+export type CreateQuestionRequest = {
+  choices: CreateQuestionChoiceRequest[];
+  resources: string[];
+  text: string;
+  description: string;
+  type: QuestionType;
+  aiHelpEnabled: boolean;
+  categoryIds: string[];
+};
+
+export type UpdateQuestionRequest = {
+  choices?: CreateQuestionChoiceRequest[];
+  resources?: string[];
+  text?: string;
+  description?: string;
+  type?: QuestionType;
+  aiHelpEnabled?: boolean;
+  categoryIds?: string[];
+};
+
+// Responses
+export type QuestionPaginatedResponse = {
+  id: string;
+  createdById: string;
+  lastModifiedById: string;
+  updatedAt: string;
+  createdAt: string;
+  text: string;
+  description: string;
+  type: QuestionType;
+  categories: QuestionCategoryResponse[];
+  exams: ExamFromQuestionResponse[];
+};
+
+export type QuestionResponse = {
   id: string;
   createdById: string;
   lastModifiedById: string;
@@ -23,70 +63,9 @@ export type Question = {
   text: string;
   description: string;
   type: QuestionType;
-  categories: QuestionCategoryQuestionResponse[];
   isActive: boolean;
-  choices: QuestionChoice[];
-  resources: Resource[];
-  aiHelpEnabled: boolean;
-  exams: QuestionExam[];
-};
-
-export type QuestionChoice = {
-  id: string;
-  questionId: string;
-  text: string;
-  isCorrect: boolean;
-  order: number | null;
-};
-
-export type QuestionCreateUpdate = {
-  text: string;
-  description: string;
-  choices: QuestionChoiceCreateUpdate[];
-  resources: string[];
-  type: QuestionType;
-  categoryIds: string[];
-  aiHelpEnabled: boolean;
-};
-
-export type QuestionChoiceCreateUpdate = {
-  text: string;
-  isCorrect: boolean;
-};
-
-export interface ExamQuestion {
-  order: number;
-  question: string;
-  choices: QuestionChoice[];
-  type: QuestionType;
-  isAnswered: boolean;
-  reviewLater: boolean;
-  leaveFeedback: boolean;
-}
-
-// For getting the exams that uses the question
-export type QuestionExam = {
-  id: string;
-  createdAt: Date;
-  title: string;
-  status: "Draft" | "Published" | "Archived";
-};
-
-export type GenerateQuestionsRequest = {
-  sourceType: QuestionSourceType;
-  content: string;
-  questionCount: number;
-  allowedQuestionTypes: QuestionType[];
-};
-
-export type GeneratedQuestionResponse = {
-  text: string;
-  type: QuestionType;
-  choices: GeneratedQuestionChoiceResponse[];
-};
-
-export type GeneratedQuestionChoiceResponse = {
-  text: string;
-  isCorrect: boolean;
-  order?: number;
+  categories: QuestionCategoryResponse[];
+  choices: QuestionChoiceResponse[];
+  resources: ResourceResponse[];
+  exams: ExamFromQuestionResponse[];
 };

@@ -1,15 +1,13 @@
 import ExamSessionService from "@/lib/services/exam-session-service";
-import {
-  ExamSessionAnswerCreate,
-  ExamSessionQuestion,
-} from "@/lib/types/exam-session";
+import { CreateAnswerRequest } from "@/lib/types/answer";
+import { ExamSessionQuestionResponse } from "@/lib/types/exam-session-question";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 
 type AnswerQuestionParams = {
   examSessionId: string;
   questionId: string;
-  answer: ExamSessionAnswerCreate;
+  answer: CreateAnswerRequest;
 };
 
 const answerQuestionRequest = async ({
@@ -41,7 +39,7 @@ const useAnswerQuestion = () => {
 
   const { mutateAsync: answerQuestion } = useMutation({
     mutationFn: (params: AnswerQuestionParams) => answerQuestionRequest(params),
-    onSuccess: (data: ExamSessionQuestion, variables) => {
+    onSuccess: (data: ExamSessionQuestionResponse, variables) => {
       startTransition(() => {
         queryClient.invalidateQueries({
           queryKey: [

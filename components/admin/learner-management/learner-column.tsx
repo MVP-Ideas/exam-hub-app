@@ -2,19 +2,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getIsActive, getLastActiveDate } from "@/lib/date-utils";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import { ColumnDef } from "@tanstack/react-table";
 import { Delete, Edit } from "lucide-react";
 
 type Props = {
-  onEditUser: (user: User) => void;
-  onDeleteUser: (user: User) => void;
+  onEditUser: (user: UserResponse) => void;
+  onDeleteUser: (user: UserResponse) => void;
 };
 
 const learnerColumn = ({
   onEditUser,
   onDeleteUser,
-}: Props): ColumnDef<User>[] => [
+}: Props): ColumnDef<UserResponse>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -65,8 +65,7 @@ const learnerColumn = ({
   {
     accessorKey: "examsCompleted",
     header: () => <span>Completed</span>,
-    cell: ({ row }) => {
-      const user = row.original;
+    cell: () => {
       return (
         <div className="flex w-full gap-2">
           <p className="w-full text-center">1</p>
@@ -78,8 +77,7 @@ const learnerColumn = ({
   {
     accessorKey: "averageScore",
     header: () => <span>Avg. Score</span>,
-    cell: ({ row }) => {
-      const user = row.original;
+    cell: () => {
       return (
         <div className="flex items-center gap-2">
           <p className="w-full text-center">100%</p>

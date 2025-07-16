@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import useUpdateUser from "@/hooks/users/useUpdateUser";
 import { Label } from "../ui/label";
 
@@ -19,7 +19,7 @@ export function EditUserModal({
   user,
   onClose,
 }: {
-  user: User;
+  user: UserResponse;
   onClose: () => void;
 }) {
   const [name, setName] = useState(user.name);

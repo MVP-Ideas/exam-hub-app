@@ -1,5 +1,5 @@
 import QuestionService from "@/lib/services/question-service";
-import { QuestionCreateUpdate } from "@/lib/types/questions";
+import { UpdateQuestionRequest } from "@/lib/types/questions";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 const updateQuestionRequest = async (
   id: string,
-  data: QuestionCreateUpdate,
+  data: UpdateQuestionRequest,
 ) => {
   try {
     const response = await QuestionService.update(id, data);
@@ -25,7 +25,8 @@ const useUpdateQuestion = (id: string) => {
   const [isPending, startTransition] = useTransition();
 
   const { mutateAsync: updateQuestion } = useMutation({
-    mutationFn: (data: QuestionCreateUpdate) => updateQuestionRequest(id, data),
+    mutationFn: (data: UpdateQuestionRequest) =>
+      updateQuestionRequest(id, data),
     onSuccess: () => {
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["questions"] });

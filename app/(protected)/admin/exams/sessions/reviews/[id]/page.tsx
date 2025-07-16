@@ -42,7 +42,7 @@ export default function Page() {
     if (examSessionResult) {
       const points = examSessionResult.questions.map((question) => ({
         questionId: question.id,
-        points: question.answer?.points || 0,
+        points: question.points || 0,
       }));
       setQuestionPoints(points);
     }
@@ -101,7 +101,7 @@ export default function Page() {
     if (!examSessionResult) return;
     const resetPoints = examSessionResult.questions.map((question) => ({
       questionId: question.id,
-      points: question.answer?.points || 0,
+      points: question.points || 0,
     }));
     setQuestionPoints(resetPoints);
   };

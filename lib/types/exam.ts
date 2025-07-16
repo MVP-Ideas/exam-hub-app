@@ -1,25 +1,26 @@
-import { ExamCategory } from "./exam-category";
-import { Resource } from "./resource";
+import { ExamCategoryExamResponse } from "./exam-category";
+import {
+  ExamQuestionExamResponse,
+  UpsertExamQuestionRequest,
+} from "./exam-question";
+import {
+  UpsertExamSettingsRequest,
+  ExamSettingsResponse,
+} from "./exam-settings";
+import { ResourceResponse } from "./resource";
 
-export type Exam = {
-  id: string;
-  title: string;
-  description: string;
-  categories: ExamCategory[];
-  difficulty: string;
-  durationSeconds: number;
-  passingScore: number;
-  resources: Resource[];
-  status: string;
-  questions: ExamQuestionCreateReadUpdate[];
-  settings: ExamSettingsCreateReadUpdate;
-  createdAt: string;
-  updatedAt: string;
-  version: number;
-  isFeatured: boolean;
+// Query
+export type SearchParams = {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+  difficulty?: string | null;
+  category?: string | null;
+  status?: string | null;
 };
 
-export type ExamCreateUpdate = {
+// Requests
+export type CreateExamRequest = {
   title: string;
   description: string;
   categoryIds: string[];
@@ -28,35 +29,58 @@ export type ExamCreateUpdate = {
   passingScore: number;
   resourceIds: string[];
   isDraft: boolean;
-  questions: ExamQuestionCreateReadUpdate[];
-  settings: ExamSettingsCreateReadUpdate;
+  questions: UpsertExamQuestionRequest[];
+  settings: UpsertExamSettingsRequest;
 };
 
-export type ExamSettingsCreateReadUpdate = {
-  resultsImmediately: boolean;
-  randomizeQuestions: boolean;
-  showCalculator: boolean;
-  showExamResourcesDuringSession: boolean;
-  showQuestionResourcesDuringSession: boolean;
-  showQuestionPoints: boolean;
-  showQuestionExplanations: boolean;
-  enableAiPoweredExplanations: boolean;
-  enableAiRewriteQuestions: boolean;
-  enableHints: boolean;
+export type UpdateExamRequest = {
+  title: string;
+  description: string;
+  categoryIds: string[];
+  difficulty: string;
+  durationSeconds?: number;
 };
 
-export type ExamQuestionCreateReadUpdate = {
-  questionId: string;
-  text?: string;
-  points: number;
+// Responses
+export type ExamExamSessionResponse = {
+  id: string;
+  title: string;
+  resources: ResourceResponse[];
 };
 
-export type ExamExistingSession = {
+export type ExamExistingOngoingSessionResponse = {
   existingExamSessionId: string;
   lastUpdated: string;
 };
 
-export type ExamPreviousSession = {
+export type ExamFromQuestionResponse = {
+  id: string;
+  title: string;
+  createdAt: string;
+  status: string;
+};
+
+export type ExamListResponse = {
+  id: string;
+  title: string;
+};
+
+export type ExamPaginatedResponse = {
+  id: string;
+  title: string;
+  description: string;
+  durationSeconds?: number;
+  passingScore: number;
+  version: number;
+  status: string;
+  difficulty: string;
+  createdAt: string;
+  updatedAt: string;
+  categories: ExamCategoryExamResponse[];
+  questions: ExamQuestionExamResponse[];
+};
+
+export type ExamPreviousSessionResponse = {
   examSessionId: string;
   finishedAt: string;
   scorePercentage: number;
@@ -64,12 +88,25 @@ export type ExamPreviousSession = {
   status: string;
 };
 
-export type ExamWithUserMetadata = Exam & {
-  existingOngoingSession: ExamExistingSession;
-  previousSessions: ExamPreviousSession[];
-};
-
-export type ExamList = {
+export type ExamResponse = {
   id: string;
   title: string;
+  description: string;
+  difficulty: string;
+  durationSeconds: number;
+  passingScore: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+  isFeatured: boolean;
+  settings: ExamSettingsResponse;
+  categories: ExamCategoryExamResponse[];
+  resources: ResourceResponse[];
+  questions: ExamQuestionExamResponse[];
+};
+
+export type ExamWithUserMetadata = ExamResponse & {
+  existingOngoingSession: ExamExistingOngoingSessionResponse;
+  previousSessions: ExamPreviousSessionResponse[];
 };

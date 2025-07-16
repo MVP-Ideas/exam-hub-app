@@ -2,7 +2,7 @@
 
 import UserService from "@/lib/services/user-service";
 import { PaginationResponse } from "@/lib/types/pagination";
-import { User } from "@/lib/types/user";
+import { UserResponse } from "@/lib/types/user";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 type Props = {
@@ -18,14 +18,14 @@ const useGetUsers = (params: Props) => {
     isLoading,
     isFetching,
     isError,
-  } = useQuery<PaginationResponse<User>>({
+  } = useQuery<PaginationResponse<UserResponse>>({
     queryKey: ["users", params],
     queryFn: async () => await UserService.getUsers(params),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const emptyResponse: PaginationResponse<User> = {
+  const emptyResponse: PaginationResponse<UserResponse> = {
     items: [],
     page: params.page,
     pageSize: params.pageSize,

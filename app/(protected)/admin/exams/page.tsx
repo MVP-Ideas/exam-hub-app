@@ -116,7 +116,7 @@ export default function Page() {
   }, [debouncedSearch, difficulty, categories, status, page, viewMode, router]);
 
   return (
-    <div className="flex h-full min-h-screen w-full flex-col items-center p-10 md:pb-0">
+    <div className="flex h-full min-h-screen w-full flex-col items-center p-10">
       <div className="flex h-full w-full flex-col items-center gap-6">
         <div className="flex w-full flex-row flex-wrap items-end justify-between gap-y-4">
           <div className="flex flex-col items-start">

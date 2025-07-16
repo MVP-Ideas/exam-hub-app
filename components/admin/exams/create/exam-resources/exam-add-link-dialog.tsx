@@ -6,7 +6,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import useCreateUrlResource from "@/hooks/resources/useCreateUrlResource";
-import { ResourceUrlCreate } from "@/lib/types/resource";
+import { CreateUrlResourceRequest } from "@/lib/types/resource";
 import AddLinkDialog from "@/components/common/dialogs/add-link-dialog";
 import { ExamFormSchema } from "../exam-form";
 
@@ -39,7 +39,7 @@ export default function ExamAddLinkDialog({ disabled = false }: Props) {
 
   const onSubmit = async (data: LinkForm) => {
     if (!data.title || !data.url) return;
-    const resourceData: ResourceUrlCreate = {
+    const resourceData: CreateUrlResourceRequest = {
       title: data.title,
       url: data.url,
       description: data.description ?? "",

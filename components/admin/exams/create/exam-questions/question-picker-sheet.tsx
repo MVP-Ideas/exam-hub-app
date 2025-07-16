@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import { Search, MoveLeftIcon, FileQuestionIcon, CloudOff } from "lucide-react";
+import { Search, FileQuestionIcon, CloudOff } from "lucide-react";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import QuestionTypeSelect from "@/components/admin/question-bank/question-type-select";
 import QuestionCategorySelect from "@/components/categories/question-category-select";
@@ -71,7 +70,7 @@ export default function QuestionPickerSheet({
         className="w-full overflow-y-auto p-6 md:min-w-[95vw] lg:min-w-[65vw]"
       >
         <SheetHeader className="flex flex-col items-start p-0">
-          <SheetClose
+          {/* <SheetClose
             className="mb-2 w-fit cursor-pointer"
             onClick={() => setOpen(false)}
           >
@@ -83,7 +82,7 @@ export default function QuestionPickerSheet({
                 </span>
               </div>
             </div>
-          </SheetClose>
+          </SheetClose> */}
           <SheetTitle>Select an Existing Question</SheetTitle>
           <SheetDescription>
             Search and filter to reuse a question

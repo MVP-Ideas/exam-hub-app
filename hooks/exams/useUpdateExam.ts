@@ -1,11 +1,11 @@
 import ExamService from "@/lib/services/exam-service";
-import { ExamCreateUpdate } from "@/lib/types/exam";
+import { CreateExamRequest } from "@/lib/types/exam";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-const updateExamRequest = async (id: string, data: ExamCreateUpdate) => {
+const updateExamRequest = async (id: string, data: CreateExamRequest) => {
   try {
     const response = await ExamService.update(id, data);
     if (response) {
@@ -22,7 +22,7 @@ const useUpdateExam = (id: string) => {
   const [isPending, startTransition] = useTransition();
 
   const { mutateAsync: updateExam } = useMutation({
-    mutationFn: (data: ExamCreateUpdate) => updateExamRequest(id, data),
+    mutationFn: (data: CreateExamRequest) => updateExamRequest(id, data),
     onSuccess: () => {
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["exams"] });

@@ -20,9 +20,6 @@ const useGenerateQuestionHint = () => {
   const { mutateAsync: generateHint, isPending } = useMutation({
     mutationFn: (params: { examSessionId: string; questionId: string }) =>
       generateHintRequest(params.examSessionId, params.questionId),
-    onSuccess: (data) => {
-      console.log("Hint generated:", data);
-    },
     onError: (error) => {
       console.error("Error generating hint:", error);
     },

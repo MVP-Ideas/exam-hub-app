@@ -1,10 +1,10 @@
 import UserService from "@/lib/services/user-service";
-import { UserUpdate } from "@/lib/types/user";
+import { UpdateUserRequest } from "@/lib/types/user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-const updateUserRequest = async (id: string, request: UserUpdate) => {
+const updateUserRequest = async (id: string, request: UpdateUserRequest) => {
   const response = await UserService.update(id, request);
 
   if (response) {
@@ -19,7 +19,7 @@ const useUpdateUser = (id: string) => {
   const [isPending, startTransition] = useTransition();
 
   const { mutateAsync: updateUser } = useMutation({
-    mutationFn: (request: UserUpdate) => updateUserRequest(id, request),
+    mutationFn: (request: UpdateUserRequest) => updateUserRequest(id, request),
     onSuccess: () => {
       startTransition(() => {
         queryClient.invalidateQueries({ queryKey: ["learners"] });

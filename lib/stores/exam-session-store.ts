@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ExamSessionAnswerCreate } from "../types/exam-session";
+import { CreateAnswerRequest } from "../types/answer";
 
 type NavigationMode = "numbers" | "questions";
 
@@ -21,8 +21,8 @@ interface ExamSessionState {
   lastSavedTime: Date | null;
   setLastSavedTime: (time: Date | null) => void;
 
-  answers: ExamSessionAnswerCreate[];
-  setAnswers: (answers: ExamSessionAnswerCreate[]) => void;
+  answers: CreateAnswerRequest[];
+  setAnswers: (answers: CreateAnswerRequest[]) => void;
   resetAnswers: () => void;
 
   clearData: () => void;
@@ -65,14 +65,16 @@ export const useExamSessionStore = create<ExamSessionState>()(
       setAnswers: (answers) => set({ answers }),
       resetAnswers: () => set({ answers: [] }),
 
-      clearData: () => set({
-        navMode: "numbers",
-        flaggedQuestions: [],
-        lastSavedTime: null,
-        lastVisitedExamSessionId: null,
-        answers: [],
-        calculatorIsOpened: undefined,
-      }),
+      clearData: () =>
+        set({
+          navMode: "numbers",
+          flaggedQuestions: [],
+          lastSavedTime: null,
+          lastVisitedExamSessionId: null,
+          answers: [],
+          calculatorIsOpened: undefined,
+          hints: {},
+        }),
 
       calculatorIsOpened: false,
       setCalculatorIsOpened: (isOpened) =>
@@ -93,6 +95,7 @@ export const useExamSessionStore = create<ExamSessionState>()(
         lastVisitedExamSessionId: state.lastVisitedExamSessionId,
         answers: state.answers,
         calculatorIsOpened: state.calculatorIsOpened,
+        hints: state.hints,
       }),
     },
   ),

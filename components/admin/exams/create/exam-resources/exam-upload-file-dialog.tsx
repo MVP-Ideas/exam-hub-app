@@ -5,7 +5,7 @@ import { useFormContext, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { ResourceFileCreate } from "@/lib/types/resource";
+import { CreateFileResourceRequest } from "@/lib/types/resource";
 import useCreateFileResource from "@/hooks/resources/useCreateFileResource";
 import UploadFileDialog from "@/components/common/dialogs/upload-file-dialog";
 import { ExamFormSchema } from "../exam-form";
@@ -40,7 +40,7 @@ export default function ExamUploadFileDialog({ disabled = false }: Props) {
 
   const onSubmit = async (data: FileForm) => {
     try {
-      const resourceData: ResourceFileCreate = {
+      const resourceData: CreateFileResourceRequest = {
         title: data.title,
         description: data.description !== undefined ? data.description : "",
         file: data.file,

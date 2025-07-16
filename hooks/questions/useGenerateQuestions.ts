@@ -1,5 +1,5 @@
 import QuestionService from "@/lib/services/question-service";
-import { GenerateQuestionsRequest } from "@/lib/types/questions";
+import { GenerateQuestionsRequest } from "@/lib/types/functions-ai";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";

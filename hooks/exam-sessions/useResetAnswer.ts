@@ -8,7 +8,7 @@ const resetAnswerRequest = async (
   questionId: string,
 ) => {
   try {
-    const response = await ExamSessionService.resetAnswers(
+    const response = await ExamSessionService.resetAnswer(
       examSessionId,
       questionId,
     );

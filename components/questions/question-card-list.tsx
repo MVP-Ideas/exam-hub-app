@@ -4,14 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import QuestionSheet from "@/components/admin/question-bank/question-sheet";
-import { Question } from "@/lib/types/questions";
+import { QuestionResponse } from "@/lib/types/questions";
 import { cn } from "@/lib/utils";
 import { getQuestionTypeBadge } from "@/lib/constants/question";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "date-fns";
 
 type Props = {
-  questions: Question[];
+  questions: QuestionResponse[];
   addedQuestionIds?: string[];
   onSelect?: (id: string) => void;
   openQuestionSheet?: (id: string) => void;
@@ -32,7 +32,7 @@ export default function QuestionCardList({
             key={question.id}
             mode="edit"
             questionId={question.id}
-            showClose
+            showClose={false}
           >
             <Card
               className={cn(
@@ -42,8 +42,8 @@ export default function QuestionCardList({
               )}
             >
               <CardContent className="p-4">
-                <div className="flex flex-col gap-4 lg:grid lg:grid-cols-14 lg:items-center">
-                  <div className="col-span-3">
+                <div className="flex flex-col gap-4 lg:grid lg:grid-cols-16 lg:items-center">
+                  <div className={cn("col-span-3", !onSelect && "col-span-5")}>
                     <h3 className="text-primary line-clamp-2 text-sm font-medium">
                       {question.text}
                     </h3>

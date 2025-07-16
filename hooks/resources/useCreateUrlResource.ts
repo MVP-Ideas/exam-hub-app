@@ -1,10 +1,10 @@
 import ResourceService from "@/lib/services/resource-service";
-import { ResourceUrlCreate } from "@/lib/types/resource";
+import { CreateUrlResourceRequest } from "@/lib/types/resource";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const createUrlResourceRequest = async (data: ResourceUrlCreate) => {
+const createUrlResourceRequest = async (data: CreateUrlResourceRequest) => {
   try {
     const response = await ResourceService.addLink(data);
     if (response) {
@@ -18,7 +18,8 @@ const createUrlResourceRequest = async (data: ResourceUrlCreate) => {
 
 const useCreateUrlResource = () => {
   const { mutateAsync: createUrlResource, isPending } = useMutation({
-    mutationFn: (data: ResourceUrlCreate) => createUrlResourceRequest(data),
+    mutationFn: (data: CreateUrlResourceRequest) =>
+      createUrlResourceRequest(data),
     onSuccess: () => {
       toast.success("Link resource created successfully");
     },

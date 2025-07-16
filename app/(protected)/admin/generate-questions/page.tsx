@@ -15,18 +15,18 @@ import {
   XIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  GeneratedQuestionResponse,
-  QuestionSourceType,
-  QuestionType,
-} from "@/lib/types/questions";
+import { QuestionSourceType, QuestionType } from "@/lib/types/questions";
 import useGenerateQuestions from "@/hooks/questions/useGenerateQuestions";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import useCreateQuestion from "@/hooks/questions/useCreateQuestion";
+import { getQuestionTypeBadge } from "@/lib/constants/question";
+import { GeneratedQuestionResponse } from "@/lib/types/functions-ai";
+import { CreateQuestionRequest } from "@/lib/types/questions";
 
 export default function Page() {
   const [textContent, setTextContent] = useState("");
@@ -36,8 +36,23 @@ export default function Page() {
   const [questionType, setQuestionType] = useState("multiple-choice-single");
   const [questionCount, setQuestionCount] = useState(5);
 
-  const [questions, setQuestions] = useState<GeneratedQuestionResponse[]>([]);
+  const [questions, setQuestions] = useState<
+    {
+      question: GeneratedQuestionResponse;
+      isSaved: boolean;
+      isPending: boolean;
+    }[]
+  >([]);
+  const [questionsHistory, setQuestionsHistory] = useState<
+    {
+      question: GeneratedQuestionResponse;
+      isSaved: boolean;
+      isPending: boolean;
+    }[]
+  >([]);
+
   const { generateQuestions, isPending } = useGenerateQuestions();
+  const { createQuestion } = useCreateQuestion();
 
   const handleGenerateQuestions = async () => {
     try {
@@ -48,23 +63,89 @@ export default function Page() {
         "drag-and-drop": QuestionType.DragAndDrop,
       };
 
-      const questions = await generateQuestions({
+      const generatedQuestions = await generateQuestions({
         sourceType: QuestionSourceType.Text,
         content: textContent,
         questionCount: questionCount,
-        allowedQuestionTypes: [
+        allowedQuestionType:
           questionTypeMap[questionType as keyof typeof questionTypeMap],
-        ],
       });
 
-      if (questions && questions.length > 0) {
-        setQuestions(questions);
+      if (generatedQuestions && generatedQuestions.length > 0) {
+        setQuestionsHistory((prevQuestions) => [
+          ...generatedQuestions.map((question) => ({
+            question: question,
+            isSaved: false,
+            isPending: false,
+          })),
+          ...prevQuestions,
+        ]);
+        setQuestions(() =>
+          generatedQuestions.map((question) => ({
+            question: question,
+            isSaved: false,
+            isPending: false,
+          })),
+        );
+
         toast.success("Questions generated successfully");
       } else {
         toast.error("Failed to generate questions");
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleSaveQuestion = async (question: GeneratedQuestionResponse) => {
+    setQuestions((prevQuestions) =>
+      prevQuestions.map((q) =>
+        q.question.text === question.text ? { ...q, isPending: true } : q,
+      ),
+    );
+    setQuestionsHistory((prevQuestions) =>
+      prevQuestions.map((q) =>
+        q.question.text === question.text ? { ...q, isPending: true } : q,
+      ),
+    );
+
+    const questionData: CreateQuestionRequest = {
+      text: question.text,
+      type: question.type,
+      choices: question.choices,
+      resources: [],
+      categoryIds: [],
+      description: "",
+      aiHelpEnabled: false,
+    };
+
+    try {
+      await createQuestion(questionData);
+      setQuestions((prevQuestions) =>
+        prevQuestions.map((q) =>
+          q.question.text === question.text ? { ...q, isSaved: true } : q,
+        ),
+      );
+      setQuestionsHistory((prevQuestions) =>
+        prevQuestions.map((q) =>
+          q.question.text === question.text ? { ...q, isSaved: true } : q,
+        ),
+      );
+      toast.success("Question saved successfully");
+
+      setQuestions((prevQuestions) =>
+        prevQuestions.map((q) =>
+          q.question.text === question.text ? { ...q, isPending: false } : q,
+        ),
+      );
+      setQuestionsHistory((prevQuestions) =>
+        prevQuestions.map((q) =>
+          q.question.text === question.text ? { ...q, isPending: false } : q,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save question");
     }
   };
 
@@ -98,183 +179,6 @@ export default function Page() {
 
   const removeFile = () => {
     setSelectedFile(null);
-  };
-
-  const ReadonlyQuestionDisplay = ({
-    question,
-    index,
-    onSave,
-  }: {
-    question: GeneratedQuestionResponse;
-    index: number;
-    onSave: (question: GeneratedQuestionResponse) => void;
-  }) => {
-    const getQuestionTypeDisplay = (type: QuestionType) => {
-      switch (type) {
-        case QuestionType.MultipleChoiceSingle:
-          return "Multiple Choice Single";
-        case QuestionType.MultipleChoiceMultiple:
-          return "Multiple Choice Multiple";
-        case QuestionType.TrueFalse:
-          return "True/False";
-        case QuestionType.DragAndDrop:
-          return "Drag and Drop";
-        default:
-          return type;
-      }
-    };
-
-    const renderChoices = () => {
-      switch (question.type) {
-        case QuestionType.MultipleChoiceSingle:
-          return (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Answer Options</Label>
-              <RadioGroup value="" className="space-y-2">
-                {question.choices.map((choice, choiceIndex) => (
-                  <div
-                    key={choiceIndex}
-                    className="flex items-center space-x-2"
-                  >
-                    <RadioGroupItem
-                      value={choiceIndex.toString()}
-                      id={`q${index}-choice${choiceIndex}`}
-                      checked={choice.isCorrect}
-                      disabled
-                    />
-                    <Label
-                      htmlFor={`q${index}-choice${choiceIndex}`}
-                      className={`text-sm ${choice.isCorrect ? "font-medium text-green-700" : "font-normal"}`}
-                    >
-                      {choice.text}
-                    </Label>
-                    {choice.isCorrect && (
-                      <Badge variant="default" className="ml-2 text-xs">
-                        Correct
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-          );
-
-        case QuestionType.MultipleChoiceMultiple:
-          return (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Selectable Options</Label>
-              <div className="space-y-2">
-                {question.choices.map((choice, choiceIndex) => (
-                  <div
-                    key={choiceIndex}
-                    className="flex items-center space-x-2"
-                  >
-                    <Checkbox
-                      id={`q${index}-choice${choiceIndex}`}
-                      checked={choice.isCorrect}
-                      disabled
-                    />
-                    <Label
-                      htmlFor={`q${index}-choice${choiceIndex}`}
-                      className={`text-sm ${choice.isCorrect ? "font-medium text-green-700" : "font-normal"}`}
-                    >
-                      {choice.text}
-                    </Label>
-                    {choice.isCorrect && (
-                      <Badge variant="default" className="ml-2 text-xs">
-                        Correct
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-
-        case QuestionType.TrueFalse:
-          return (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Correct Answer</Label>
-              <RadioGroup value="" className="flex space-x-6">
-                {question.choices.map((choice, choiceIndex) => (
-                  <div
-                    key={choiceIndex}
-                    className="flex items-center space-x-2"
-                  >
-                    <RadioGroupItem
-                      value={choice.text.toLowerCase()}
-                      id={`q${index}-${choice.text.toLowerCase()}`}
-                      checked={choice.isCorrect}
-                      disabled
-                    />
-                    <Label
-                      htmlFor={`q${index}-${choice.text.toLowerCase()}`}
-                      className={`text-sm ${choice.isCorrect ? "font-medium text-green-700" : "font-normal"}`}
-                    >
-                      {choice.text}
-                    </Label>
-                    {choice.isCorrect && (
-                      <Badge variant="default" className="ml-2 text-xs">
-                        Correct
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-          );
-
-        case QuestionType.DragAndDrop:
-          return (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Draggable Items</Label>
-              <div className="space-y-2 rounded-md border p-3">
-                {question.choices.map((choice, choiceIndex) => (
-                  <div
-                    key={choiceIndex}
-                    className="bg-muted/30 flex items-center justify-between gap-2 rounded border p-2"
-                  >
-                    <span className="text-sm">{choice.text}</span>
-                    <Badge variant="outline" className="text-xs">
-                      Item {choiceIndex + 1}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-
-        default:
-          return null;
-      }
-    };
-
-    return (
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="mb-2 text-lg">
-                Question {index + 1}
-              </CardTitle>
-              <Badge variant="secondary" className="mb-3">
-                {getQuestionTypeDisplay(question.type)}
-              </Badge>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {question.text}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {renderChoices()}
-
-          <div className="flex justify-end pt-4">
-            <Button onClick={() => onSave(question)}>Save Question</Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
   };
 
   return (
@@ -497,11 +401,8 @@ export default function Page() {
                 }
                 onClick={handleGenerateQuestions}
               >
-                {isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Generate Questions"
-                )}
+                Generate Questions
+                {isPending && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
               </Button>
             </div>
           </div>
@@ -515,7 +416,7 @@ export default function Page() {
 
           <div className="flex flex-col gap-4">
             {questions.length === 0 ? (
-              <div className="py-8 text-center">
+              <div className="bg-muted/30 flex min-h-[200px] items-center justify-center rounded-lg p-8 text-center md:min-h-[400px]">
                 <p className="text-muted-foreground">
                   No questions generated yet. Add content above and click
                   &quot;Generate Questions&quot; to get started.
@@ -524,19 +425,201 @@ export default function Page() {
             ) : (
               questions.map((question, index) => (
                 <ReadonlyQuestionDisplay
-                  key={index}
-                  question={question}
+                  key={"generated-" + index}
+                  question={question.question}
                   index={index}
-                  onSave={(question) => {
-                    // TODO: Implement save functionality
-                    console.log("Saving question:", question);
+                  isSaved={question.isSaved}
+                  isPending={question.isPending}
+                  onSave={() => {
+                    handleSaveQuestion(question.question);
                   }}
                 />
               ))
             )}
           </div>
         </div>
+
+        {/* Questions History */}
+        {(() => {
+          // Filter out questions that are in the current set
+          const currentQuestionTexts = new Set(
+            questions.map((q) => q.question.text),
+          );
+          const historyQuestions = questionsHistory.filter(
+            (historyQ) => !currentQuestionTexts.has(historyQ.question.text),
+          );
+
+          return (
+            historyQuestions.length > 0 && (
+              <>
+                <Separator />
+                <div className="flex w-full flex-col gap-4">
+                  <h2 className="text-lg font-bold">
+                    Generated Questions History
+                  </h2>
+                  <div className="flex flex-col gap-4">
+                    {historyQuestions.map((question, index) => (
+                      <ReadonlyQuestionDisplay
+                        key={"history-" + index}
+                        question={question.question}
+                        index={index}
+                        isSaved={question.isSaved}
+                        isPending={question.isPending}
+                        onSave={() => {
+                          handleSaveQuestion(question.question);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )
+          );
+        })()}
       </div>
     </div>
   );
 }
+
+const ReadonlyQuestionDisplay = ({
+  question,
+  index,
+  onSave,
+  isSaved,
+  isPending,
+}: {
+  question: GeneratedQuestionResponse;
+  index: number;
+  onSave: (question: GeneratedQuestionResponse) => void;
+  isSaved: boolean;
+  isPending: boolean;
+}) => {
+  const renderChoices = () => {
+    switch (question.type) {
+      case QuestionType.MultipleChoiceSingle:
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Answer Options</Label>
+            <RadioGroup value="" className="space-y-2">
+              {question.choices.map((choice, choiceIndex) => (
+                <div key={choiceIndex} className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value={choiceIndex.toString()}
+                    id={`q${index}-choice${choiceIndex}`}
+                    checked={choice.isCorrect}
+                    disabled
+                  />
+                  <Label
+                    htmlFor={`q${index}-choice${choiceIndex}`}
+                    className={`text-sm ${choice.isCorrect ? "font-medium text-green-700" : "font-normal"}`}
+                  >
+                    {choice.text}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        );
+
+      case QuestionType.MultipleChoiceMultiple:
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Selectable Options</Label>
+            <div className="space-y-2">
+              {question.choices.map((choice, choiceIndex) => (
+                <div key={choiceIndex} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`q${index}-choice${choiceIndex}`}
+                    checked={choice.isCorrect}
+                  />
+                  <Label
+                    htmlFor={`q${index}-choice${choiceIndex}`}
+                    className={`text-sm ${choice.isCorrect ? "font-medium text-green-700" : "font-normal"}`}
+                  >
+                    {choice.text}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case QuestionType.TrueFalse:
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Correct Answer</Label>
+            <RadioGroup value="" className="flex flex-col space-x-6">
+              {question.choices.map((choice, choiceIndex) => (
+                <div key={choiceIndex} className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value={choice.text.toLowerCase()}
+                    id={`q${index}-${choice.text.toLowerCase()}`}
+                    checked={choice.isCorrect}
+                    disabled
+                  />
+                  <Label
+                    htmlFor={`q${index}-${choice.text.toLowerCase()}`}
+                    className={`text-sm ${choice.isCorrect ? "font-medium text-green-700" : "font-normal"}`}
+                  >
+                    {choice.text}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        );
+
+      case QuestionType.DragAndDrop:
+        return (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Draggable Items</Label>
+            <div className="space-y-2 rounded-md border p-3">
+              {question.choices.map((choice, choiceIndex) => (
+                <div
+                  key={choiceIndex}
+                  className="bg-muted/30 flex items-center justify-between gap-2 rounded border p-2"
+                >
+                  <span className="text-sm">{choice.text}</span>
+                  <Badge variant="outline" className="text-xs">
+                    Item {choiceIndex + 1}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="mb-2 flex flex-col items-start gap-x-2 md:flex-row">
+              <p className="text-sm leading-relaxed">{question.text}</p>
+
+              {getQuestionTypeBadge(question.type)}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {renderChoices()}
+
+        <div className="flex justify-end pt-2">
+          <Button
+            onClick={() => onSave(question)}
+            disabled={isSaved || isPending}
+            variant={isSaved ? "outline" : "default"}
+          >
+            {isSaved ? "Saved" : isPending ? "Saving..." : "Save Question"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

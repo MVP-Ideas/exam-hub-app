@@ -32,11 +32,7 @@ import { QuestionType } from "@/lib/types/questions";
 import useTimer from "@/hooks/timer/useTimer";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  ExamSession,
-  ExamSessionAnswerCreate,
-  ExamSessionQuestion,
-} from "@/lib/types/exam-session";
+import { ExamSessionResponse } from "@/lib/types/exam-session";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import { cn } from "@/lib/utils";
 import {
@@ -48,15 +44,17 @@ import {
 import useGenerateQuestionHint from "@/hooks/exam-sessions/useGenerateQuestionHint";
 import { LightBulbIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
+import { CreateAnswerRequest } from "@/lib/types/answer";
+import { ExamSessionQuestionResponse } from "@/lib/types/exam-session-question";
 
 type QuestionBoxProps = {
-  question: ExamSessionQuestion;
-  examSession: ExamSession;
+  examSessionQuestion: ExamSessionQuestionResponse;
+  examSession: ExamSessionResponse;
   currentQuestionIndex: number;
   setCurrentQuestionIndex: (index: number) => void;
   disabledNextButton: boolean;
-  answer: ExamSessionAnswerCreate;
-  setAnswer: (answer: ExamSessionAnswerCreate) => void;
+  answer: CreateAnswerRequest;
+  setAnswer: (answer: CreateAnswerRequest) => void;
   isUpdatingProgress: boolean;
   isReadyToSubmit: boolean;
   showSubmitDialog: () => void;
@@ -64,7 +62,7 @@ type QuestionBoxProps = {
 };
 
 export default function QuestionBox({
-  question,
+  examSessionQuestion,
   examSession,
   currentQuestionIndex,
   setCurrentQuestionIndex,
@@ -73,7 +71,7 @@ export default function QuestionBox({
   setAnswer,
   isUpdatingProgress,
   isReadyToSubmit,
-  showSubmitDialog, // Updated prop name
+  showSubmitDialog,
   isPaused,
 }: QuestionBoxProps) {
   const {
@@ -87,19 +85,19 @@ export default function QuestionBox({
   const { generateHint, isPending: isGeneratingHint } =
     useGenerateQuestionHint();
   const enableHints = examSession?.settings.enableHints;
-  const currentHint = enableHints ? hints[question.id] : "";
+  const currentHint = enableHints ? hints[examSessionQuestion.id] : "";
 
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
   const [choiceOrder, setChoiceOrder] = useState<string[]>([]);
 
-  const initialSeconds = answer?.timeSpentSeconds || 0;
+  const initialSeconds = examSessionQuestion.timeSpentSeconds || 0;
 
   const { seconds, resetTimer } = useTimer({
     initialSeconds,
     isRunning: !isPaused,
     onTimeUpdate: (currentSeconds) => {
       if (
-        question.type === QuestionType.DragAndDrop &&
+        examSessionQuestion.question.type === QuestionType.DragAndDrop &&
         answer.choices.length === 0
       ) {
         return;
@@ -107,8 +105,9 @@ export default function QuestionBox({
 
       setAnswer({
         ...answer,
-        examSessionQuestionId: question.id,
+        examSessionQuestionId: examSessionQuestion.id,
         timeSpentSeconds: currentSeconds,
+        toBeReviewed: false,
       });
     },
   });
@@ -119,15 +118,15 @@ export default function QuestionBox({
       return;
     }
 
-    if (hints[question.id]) {
+    if (hints[examSessionQuestion.id]) {
       return;
     }
     try {
       const hint = await generateHint({
         examSessionId: examSession.id,
-        questionId: question.id,
+        questionId: examSessionQuestion.id,
       });
-      setHint(question.id, hint);
+      setHint(examSessionQuestion.id, hint);
     } catch {
       toast.error("Error generating hint. Please try again.");
     }
@@ -137,15 +136,17 @@ export default function QuestionBox({
     setSelectedChoices([]);
     setChoiceOrder([]);
 
-    if (question.type === QuestionType.DragAndDrop) {
-      const defaultOrder = question.choices.map((c) => c.id);
+    if (examSessionQuestion.question.type === QuestionType.DragAndDrop) {
+      const defaultOrder = examSessionQuestion.question.choices.map(
+        (c) => c.id,
+      );
       setChoiceOrder(defaultOrder);
       setSelectedChoices(defaultOrder);
 
       setAnswer({
         ...answer,
-        examSessionQuestionId: question.id,
-        choices: question.choices.map((choice, index) => ({
+        examSessionQuestionId: examSessionQuestion.id,
+        choices: examSessionQuestion.question.choices.map((choice, index) => ({
           questionChoiceId: choice.id,
           order: index,
         })),
@@ -153,7 +154,7 @@ export default function QuestionBox({
     } else {
       setAnswer({
         ...answer,
-        examSessionQuestionId: question.id,
+        examSessionQuestionId: examSessionQuestion.id,
         choices: [],
       });
     }
@@ -168,15 +169,16 @@ export default function QuestionBox({
   useEffect(() => {
     setSelectedChoices([]);
     setChoiceOrder([]);
-  }, [question.id]);
+  }, [examSessionQuestion.id]);
 
   useEffect(() => {
-    setHint(question.id, hints[question.id] || "");
-  }, [question.id]);
+    setHint(examSessionQuestion.id, hints[examSessionQuestion.id] || "");
+  }, [examSessionQuestion.id]);
 
   // Reset selections and timer when question changes
   useEffect(() => {
-    const isCorrectAnswer = answer?.examSessionQuestionId === question.id;
+    const isCorrectAnswer =
+      answer?.examSessionQuestionId === examSessionQuestion.id;
     const currentChoices = isCorrectAnswer ? answer?.choices || [] : [];
 
     // Check if this is a valid existing answer with choices
@@ -186,7 +188,7 @@ export default function QuestionBox({
 
     if (hasValidChoices) {
       setSelectedChoices(currentChoices.map((c) => c.questionChoiceId));
-      if (question.type === QuestionType.DragAndDrop) {
+      if (examSessionQuestion.question.type === QuestionType.DragAndDrop) {
         const orderedChoices = currentChoices
           .sort((a, b) => (a.order || 0) - (b.order || 0))
           .map((c) => c.questionChoiceId);
@@ -195,30 +197,34 @@ export default function QuestionBox({
     } else {
       setSelectedChoices([]);
 
-      if (question.type === QuestionType.DragAndDrop) {
-        const defaultOrder = question.choices.map((c) => c.id);
+      if (examSessionQuestion.question.type === QuestionType.DragAndDrop) {
+        const defaultOrder = examSessionQuestion.question.choices.map(
+          (c) => c.id,
+        );
         setChoiceOrder(defaultOrder);
         setSelectedChoices(defaultOrder);
 
         setAnswer({
           ...answer,
-          examSessionQuestionId: question.id,
-          choices: question.choices.map((choice, index) => ({
-            questionChoiceId: choice.id,
-            order: index,
-          })),
+          examSessionQuestionId: examSessionQuestion.id,
+          choices: examSessionQuestion.question.choices.map(
+            (choice, index) => ({
+              questionChoiceId: choice.id,
+              order: index,
+            }),
+          ),
         });
       } else {
         setChoiceOrder([]);
       }
     }
-  }, [question.id, answer?.examSessionQuestionId]);
+  }, [examSessionQuestion.id, answer?.examSessionQuestionId]);
 
   const handleSingleChoiceSelection = (value: string) => {
     setSelectedChoices([value]);
     setAnswer({
       ...answer,
-      examSessionQuestionId: question.id,
+      examSessionQuestionId: examSessionQuestion.id,
       timeSpentSeconds: seconds,
       choices: [{ questionChoiceId: value }],
     });
@@ -235,7 +241,7 @@ export default function QuestionBox({
     }
     setAnswer({
       ...answer,
-      examSessionQuestionId: question.id,
+      examSessionQuestionId: examSessionQuestion.id,
       timeSpentSeconds: seconds,
       choices: newChoices.map((choiceId) => ({
         questionChoiceId: choiceId,
@@ -255,7 +261,7 @@ export default function QuestionBox({
       setChoiceOrder(newOrder);
       setAnswer({
         ...answer,
-        examSessionQuestionId: question.id,
+        examSessionQuestionId: examSessionQuestion.id,
         timeSpentSeconds: seconds,
         choices: newOrder.map((choiceId, index) => ({
           questionChoiceId: choiceId,
@@ -268,11 +274,11 @@ export default function QuestionBox({
   useEffect(() => {
     const timeSpent = answer?.timeSpentSeconds || 0;
     resetTimer(timeSpent);
-  }, [question.id, answer?.timeSpentSeconds, resetTimer]);
+  }, [examSessionQuestion.id, answer?.timeSpentSeconds, resetTimer]);
 
-  const isFlagged = flaggedQuestions.includes(question.id);
+  const isFlagged = flaggedQuestions.includes(examSessionQuestion.id);
 
-  if (!question) {
+  if (!examSessionQuestion) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center">
         <div className="flex w-full max-w-md flex-col items-center justify-center gap-y-2 text-center">
@@ -286,11 +292,11 @@ export default function QuestionBox({
   }
 
   const renderQuestionContent = () => {
-    if (!question) {
+    if (!examSessionQuestion) {
       return null;
     }
 
-    switch (question.type) {
+    switch (examSessionQuestion.question.type) {
       case QuestionType.MultipleChoiceSingle:
         return (
           <RadioGroup
@@ -298,7 +304,7 @@ export default function QuestionBox({
             onValueChange={handleSingleChoiceSelection}
             className="space-y-2"
           >
-            {question.choices.map((choice) => (
+            {examSessionQuestion.question.choices.map((choice) => (
               <div
                 key={choice.id}
                 className="flex items-center space-x-2 rounded-md border p-3"
@@ -315,7 +321,7 @@ export default function QuestionBox({
       case QuestionType.MultipleChoiceMultiple:
         return (
           <div className="space-y-2">
-            {question.choices.map((choice) => (
+            {examSessionQuestion.question.choices.map((choice) => (
               <div
                 key={choice.id}
                 className="flex items-center space-x-2 rounded-md border p-3"
@@ -342,7 +348,7 @@ export default function QuestionBox({
             onValueChange={handleSingleChoiceSelection}
             className="space-y-2"
           >
-            {question.choices.map((choice) => (
+            {examSessionQuestion.question.choices.map((choice) => (
               <div
                 key={choice.id}
                 className="flex items-center space-x-2 rounded-md border p-3"
@@ -369,7 +375,7 @@ export default function QuestionBox({
             >
               <div className="space-y-2">
                 {choiceOrder.map((choiceId) => {
-                  const choice = question.choices.find(
+                  const choice = examSessionQuestion.question.choices.find(
                     (c) => c.id === choiceId,
                   );
                   if (!choice) return null;
@@ -401,7 +407,9 @@ export default function QuestionBox({
       <div className="flex flex-col gap-4">
         <div className="flex flex-col-reverse items-center justify-between gap-y-2 md:flex-row">
           <div className="flex flex-col items-center gap-2 md:flex-row">
-            <h2 className="text-base font-bold md:text-lg">{question.text}</h2>
+            <h2 className="text-base font-bold md:text-lg">
+              {examSessionQuestion.question.text}
+            </h2>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -410,9 +418,9 @@ export default function QuestionBox({
                     size="icon"
                     onClick={() => {
                       if (isFlagged) {
-                        removeFlaggedQuestion(question.id);
+                        removeFlaggedQuestion(examSessionQuestion.id);
                       } else {
-                        addFlaggedQuestion(question.id);
+                        addFlaggedQuestion(examSessionQuestion.id);
                       }
                     }}
                   >
@@ -433,9 +441,9 @@ export default function QuestionBox({
             </TooltipProvider>
           </div>
         </div>
-        {question.description && (
+        {examSessionQuestion.question.description && (
           <p className="text-muted-foreground text-xs md:text-sm">
-            {question.description}
+            {examSessionQuestion.question.description}
           </p>
         )}
       </div>
@@ -478,19 +486,20 @@ export default function QuestionBox({
         </div>
       </div>
 
-      {question.resources && question.resources.length > 0 && (
-        <div className="mt-4">
-          <h3 className="mb-2 font-medium">Resources</h3>
-          <div className="grid grid-cols-1 gap-2 xl:grid-cols-3">
-            {question.resources.map((resource) => (
-              <ResourceCard
-                key={`${question.id}-${resource.id}`}
-                resourceId={resource.id}
-              />
-            ))}
+      {examSessionQuestion.question.resources &&
+        examSessionQuestion.question.resources.length > 0 && (
+          <div className="mt-4">
+            <h3 className="mb-2 font-medium">Resources</h3>
+            <div className="grid grid-cols-1 gap-2 xl:grid-cols-3">
+              {examSessionQuestion.question.resources.map((resource) => (
+                <ResourceCard
+                  key={`${examSessionQuestion.id}-${resource.id}`}
+                  resourceId={resource.id}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Footer */}
       <footer className="flex w-full flex-row items-center justify-between p-4">

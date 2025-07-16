@@ -2,7 +2,7 @@
 
 import QuestionService from "@/lib/services/question-service";
 import { PaginationResponse } from "@/lib/types/pagination";
-import { Question } from "@/lib/types/questions";
+import { QuestionResponse } from "@/lib/types/questions";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 type Props = {
@@ -19,14 +19,14 @@ const useGetQuestions = (params: Props) => {
     isLoading,
     isFetching,
     isError,
-  } = useQuery<PaginationResponse<Question>>({
+  } = useQuery<PaginationResponse<QuestionResponse>>({
     queryKey: ["questions", JSON.stringify(params)],
     queryFn: async () => await QuestionService.list(params),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 10,
   });
 
-  const emptyResponse: PaginationResponse<Question> = {
+  const emptyResponse: PaginationResponse<QuestionResponse> = {
     items: [],
     page: params.page,
     pageSize: params.pageSize,

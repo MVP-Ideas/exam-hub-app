@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { QuestionFormSchema } from "../question-sheet";
 import useCreateUrlResource from "@/hooks/resources/useCreateUrlResource";
-import { ResourceUrlCreate } from "@/lib/types/resource";
+import { CreateUrlResourceRequest } from "@/lib/types/resource";
 import AddLinkDialog from "@/components/common/dialogs/add-link-dialog";
 
 const linkSchema = z.object({
@@ -35,7 +35,7 @@ export default function QuestionAddLinkDialog() {
 
   const onSubmit = async (data: LinkForm) => {
     if (!data.title || !data.url) return;
-    const resourceData: ResourceUrlCreate = {
+    const resourceData: CreateUrlResourceRequest = {
       title: data.title,
       url: data.url,
       description: data.description ?? "",

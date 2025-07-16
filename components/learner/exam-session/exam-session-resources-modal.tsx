@@ -7,14 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ExamSession } from "@/lib/types/exam-session";
+import { ExamSessionResponse } from "@/lib/types/exam-session";
 import ResourceCard from "@/components/admin/resources/resource-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 type ExamSessionResourcesModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  examSession: ExamSession;
+  examSession: ExamSessionResponse;
 };
 
 export default function ExamSessionResourcesModal({
@@ -36,7 +36,9 @@ export default function ExamSessionResourcesModal({
 
         {resources.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-muted-foreground">No resources available for this exam.</p>
+            <p className="text-muted-foreground">
+              No resources available for this exam.
+            </p>
           </div>
         ) : (
           <ScrollArea className="max-h-[60vh]">

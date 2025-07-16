@@ -1,6 +1,6 @@
 import ExamService from "@/lib/services/exam-service";
 import { PaginationResponse } from "@/lib/types/pagination";
-import { Exam } from "@/lib/types/exam";
+import { ExamResponse } from "@/lib/types/exam";
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 
 type Props = {
@@ -29,7 +29,7 @@ const useInfiniteExams = ({
     isLoading,
     isFetching,
     isError,
-  } = useInfiniteQuery<PaginationResponse<Exam>>({
+  } = useInfiniteQuery<PaginationResponse<ExamResponse>>({
     queryKey: ["exams", search, pageSize, difficulty, category, status],
     queryFn: async ({ pageParam }) =>
       await ExamService.list({

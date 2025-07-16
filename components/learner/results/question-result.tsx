@@ -1,4 +1,4 @@
-import { ExamSessionQuestionResult } from "@/lib/types/exam-session";
+import { ExamSessionQuestionResultResponse } from "@/lib/types/exam-session-question";
 import { QuestionType } from "@/lib/types/questions";
 import { cn } from "@/lib/utils";
 import {
@@ -7,37 +7,16 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { AnswerChoice } from "@/lib/types/answer-choice";
+import { QuestionChoiceResultResponse } from "@/lib/types/question-choice";
 
 export function QuestionResult({
-  question,
+  question: examSessionQuestion,
   index,
 }: {
-  question: ExamSessionQuestionResult;
+  question: ExamSessionQuestionResultResponse;
   index: number;
 }) {
-  const getQuestionTypeText = (
-    questionPoints: number,
-    answerPoints: number,
-    text: string,
-  ) => {
-    const isCorrect = questionPoints === answerPoints;
-    const isPartialCorrect = answerPoints > 0 && !isCorrect;
-    return (
-      <p
-        className={cn(
-          `text-start font-bold md:text-lg`,
-          isCorrect
-            ? "text-green-500 dark:text-green-300"
-            : isPartialCorrect
-              ? "text-yellow-500 dark:text-yellow-300"
-              : "text-red-500 dark:text-red-300",
-        )}
-      >
-        {text}
-      </p>
-    );
-  };
-
   const correctType = (questionPoints: number, answerPoints: number) => {
     if (questionPoints === answerPoints) {
       return "Correct";
@@ -48,18 +27,222 @@ export function QuestionResult({
     }
   };
 
+  const renderUserAnswerChoices = (choices: AnswerChoice[]) => {
+    const question = examSessionQuestion.question;
+    const questionType = question.type;
+    const isQuestionCorrect = question.points === examSessionQuestion.points;
+
+    if (
+      questionType === QuestionType.MultipleChoiceSingle ||
+      questionType === QuestionType.TrueFalse
+    ) {
+      return (
+        <div className="flex w-full flex-col items-start">
+          {choices.map((choice: AnswerChoice) => {
+            const explanation = question.choices.find(
+              (c) => c.id === choice.questionChoiceId,
+            )?.explanation;
+
+            return (
+              <AnswerItem
+                key={choice.questionChoiceId}
+                isCorrect={isQuestionCorrect}
+                showBullet={true}
+                title={choice.text || ""}
+                explanation={explanation}
+              />
+            );
+          })}
+        </div>
+      );
+    } else if (questionType === QuestionType.MultipleChoiceMultiple) {
+      return (
+        <div className="flex w-full flex-col items-start">
+          {choices.map((choice: AnswerChoice) => {
+            const isChoiceCorrect = question.choices.some(
+              (c) => c.id === choice.questionChoiceId && c.isCorrect,
+            );
+            const explanation = question.choices.find(
+              (c) => c.id === choice.questionChoiceId,
+            )?.explanation;
+
+            return (
+              <AnswerItem
+                key={choice.questionChoiceId}
+                isCorrect={isChoiceCorrect}
+                showBullet={true}
+                title={choice.text || ""}
+                explanation={explanation}
+              />
+            );
+          })}
+          {/* If wrong, show missing correct choices only */}
+          {(() => {
+            const missingCorrectChoices = question.choices.filter(
+              (c) =>
+                c.isCorrect &&
+                !choices.some((choice) => choice.questionChoiceId === c.id),
+            );
+
+            if (missingCorrectChoices.length > 0) {
+              return missingCorrectChoices.map((choice) => {
+                return (
+                  <AnswerItem
+                    key={choice.id}
+                    isCorrect={false}
+                    showBullet={true}
+                    title={`Missing: ${choice.text || ""}`}
+                    explanation={choice.explanation}
+                    showCorrectnessSign={false}
+                  />
+                );
+              });
+            }
+            return null;
+          })()}
+        </div>
+      );
+    } else if (questionType === QuestionType.DragAndDrop) {
+      return (
+        <div className="flex w-full flex-col items-start">
+          {choices
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((choice: AnswerChoice, index) => {
+              const explanation = question.choices.find(
+                (c) => c.id === choice.questionChoiceId,
+              )?.explanation;
+
+              return (
+                <AnswerItem
+                  key={choice.questionChoiceId}
+                  isCorrect={isQuestionCorrect}
+                  showBullet={false}
+                  number={index + 1}
+                  title={choice.text || ""}
+                  explanation={explanation}
+                />
+              );
+            })}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderCorrectAnswerChoices = (
+    choices: QuestionChoiceResultResponse[],
+  ) => {
+    const questionType = examSessionQuestion.question.type;
+
+    if (
+      questionType === QuestionType.MultipleChoiceSingle ||
+      questionType === QuestionType.TrueFalse
+    ) {
+      return (
+        <div className="flex w-full flex-col items-start">
+          {choices.map((choice: QuestionChoiceResultResponse) => {
+            return (
+              <AnswerItem
+                key={choice.id}
+                isCorrect={choice.isCorrect}
+                showBullet={true}
+                title={choice.text || ""}
+                explanation={choice.explanation}
+                showCorrectnessSign={false}
+              />
+            );
+          })}
+        </div>
+      );
+    } else if (questionType === QuestionType.MultipleChoiceMultiple) {
+      return (
+        <div className="flex w-full flex-col items-start">
+          {choices.map((choice: QuestionChoiceResultResponse) => {
+            return (
+              <AnswerItem
+                key={choice.id}
+                isCorrect={choice.isCorrect}
+                showBullet={true}
+                title={choice.text || ""}
+                explanation={choice.explanation}
+                showCorrectnessSign={false}
+              />
+            );
+          })}
+        </div>
+      );
+    } else if (questionType === QuestionType.DragAndDrop) {
+      return (
+        <div className="flex w-full flex-col items-start">
+          {choices
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((choice: QuestionChoiceResultResponse, index) => {
+              return (
+                <AnswerItem
+                  key={choice.id}
+                  isCorrect={choice.isCorrect}
+                  showBullet={false}
+                  number={index + 1}
+                  title={choice.text || ""}
+                  explanation={choice.explanation}
+                  showCorrectnessSign={false}
+                />
+              );
+            })}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderAccordionContent = () => {
+    return (
+      <AccordionContent className="flex w-full flex-col items-start px-8 py-4">
+        <div className="flex w-full flex-col items-start gap-y-4 pl-1">
+          <div className="flex w-full flex-col items-start">
+            {/* User Answer */}
+            <p className="text-muted-foreground mb-2 text-xs md:text-sm">
+              Your Answer
+            </p>
+            {examSessionQuestion.answer?.choices &&
+              renderUserAnswerChoices(examSessionQuestion.answer.choices)}
+          </div>
+
+          {/* Correct Answer */}
+          {!examSessionQuestion.isCorrect && (
+            <div className="flex w-full flex-col items-start">
+              <p className="text-muted-foreground mb-2 text-xs md:text-sm">
+                Correct Answer
+              </p>
+              {examSessionQuestion?.question?.choices &&
+                renderCorrectAnswerChoices(
+                  examSessionQuestion.question.choices.filter(
+                    (choice) => choice.isCorrect,
+                  ),
+                )}
+            </div>
+          )}
+        </div>
+      </AccordionContent>
+    );
+  };
+
   return (
     <AccordionItem
-      value={question.id}
+      value={examSessionQuestion.id}
       className="border-t-primary/20 w-full flex-row gap-y-4"
     >
-      <AccordionTrigger className="flex w-full flex-col items-start justify-between px-8 md:flex-row md:items-center">
+      <AccordionTrigger className="bg-accent flex w-full flex-col items-start justify-between px-8 md:flex-row md:items-center">
         <div className="flex h-full flex-col items-center p-0">
-          {correctType(question.points, question.answer?.points || 0) ===
-          "Correct" ? (
+          {correctType(
+            examSessionQuestion.question.points,
+            examSessionQuestion.points || 0,
+          ) === "Correct" ? (
             <CheckCircleIcon className="h-6 w-6 text-green-500" />
-          ) : correctType(question.points, question.answer?.points || 0) ===
-            "PartiallyCorrect" ? (
+          ) : correctType(
+              examSessionQuestion.question.points,
+              examSessionQuestion.points || 0,
+            ) === "PartiallyCorrect" ? (
             <CheckCircleIcon className="h-6 w-6 text-yellow-500" />
           ) : (
             <XCircleIcon className="h-6 w-6 text-red-500" />
@@ -72,139 +255,70 @@ export function QuestionResult({
             </p>
             <p className="text-muted-foreground text-xs font-light">
               (Scored{" "}
-              {question.answer?.isCorrect
-                ? `${question.answer?.points || 0}`
+              {examSessionQuestion.isCorrect
+                ? `${examSessionQuestion.points || 0}`
                 : "0"}{" "}
-              out of {question.points || 0})
+              out of {examSessionQuestion.question.points || 0})
             </p>
           </div>
 
           <p className="text-muted-foreground text-xs md:text-sm">
-            {question.text}
+            {examSessionQuestion.question.text}
           </p>
         </div>
       </AccordionTrigger>
-      <AccordionContent className="bg-accent flex w-full flex-col items-start px-8 py-4">
-        <div className="flex w-full flex-col items-start gap-y-4 pl-1">
-          <div className="flex flex-col items-start">
-            <p className="text-muted-foreground text-xs md:text-sm">Answer</p>
-            {(() => {
-              if (
-                question.type === QuestionType.MultipleChoiceSingle ||
-                question.type === QuestionType.TrueFalse
-              ) {
-                return (
-                  <div>
-                    {question.answer?.choices.map((choice) => (
-                      <div key={choice.questionChoiceId}>
-                        {getQuestionTypeText(
-                          question.points,
-                          question.answer?.points || 0,
-                          choice.text || "",
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              } else if (
-                question.type === QuestionType.MultipleChoiceMultiple
-              ) {
-                return (
-                  <ul className="list-disc pl-4">
-                    {question.answer?.choices.map((choice) => (
-                      <li key={choice.questionChoiceId}>
-                        {getQuestionTypeText(
-                          question.points,
-                          question.answer?.points || 0,
-                          choice.text || "",
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                );
-              } else if (question.type === QuestionType.DragAndDrop) {
-                return (
-                  <ol className="list-decimal pl-4">
-                    {question.answer?.choices
-                      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                      .map((choice) => (
-                        <li key={choice.questionChoiceId}>
-                          {getQuestionTypeText(
-                            question.points,
-                            question.answer?.points || 0,
-                            choice.text || "",
-                          )}
-                        </li>
-                      ))}
-                  </ol>
-                );
-              }
-              return null;
-            })()}
-          </div>
 
-          <div className="flex flex-col items-start">
-            <p className="text-muted-foreground text-xs md:text-sm">
-              Correct Answer
-            </p>
-            {(() => {
-              if (
-                question.type === QuestionType.MultipleChoiceSingle ||
-                question.type === QuestionType.TrueFalse
-              ) {
-                return (
-                  <div>
-                    {question?.correctChoices.map((choice) => (
-                      <div key={choice.id}>
-                        {getQuestionTypeText(
-                          question.points,
-                          question.points,
-                          choice.text || "",
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              } else if (
-                question.type === QuestionType.MultipleChoiceMultiple
-              ) {
-                return (
-                  <ul className="list-disc pl-4">
-                    {question?.correctChoices.map((choice) => (
-                      <li key={choice.id}>
-                        {getQuestionTypeText(
-                          question.points,
-                          question.points,
-                          choice.text || "",
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                );
-              } else if (question.type === QuestionType.DragAndDrop) {
-                return (
-                  <ol className="list-decimal pl-4">
-                    {question?.correctChoices
-                      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                      .map((choice) => (
-                        <li key={choice.id}>
-                          {getQuestionTypeText(
-                            question.points,
-                            question.points,
-                            choice.text || "",
-                          )}
-                        </li>
-                      ))}
-                  </ol>
-                );
-              }
-              return null;
-            })()}
-          </div>
-        </div>
-      </AccordionContent>
+      {renderAccordionContent()}
 
       <div className="flex flex-col items-start"></div>
     </AccordionItem>
   );
 }
+const AnswerItem = ({
+  isCorrect,
+  showBullet,
+  number,
+  title,
+  explanation,
+  showCorrectnessSign = true,
+}: {
+  isCorrect: boolean;
+  showBullet: boolean;
+  number?: number;
+  title: string;
+  explanation?: string;
+  showCorrectnessSign?: boolean;
+}) => {
+  return (
+    <div
+      className={cn(
+        "mb-2 w-full rounded-md border-l-4 bg-gray-50 p-3 transition-all duration-200",
+        isCorrect
+          ? "border-l-green-500 bg-green-50"
+          : "border-l-red-500 bg-red-50",
+      )}
+    >
+      <div className="flex w-full items-start gap-3">
+        <div
+          className={cn(
+            "mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white",
+            isCorrect ? "bg-green-500" : "bg-red-500",
+          )}
+        >
+          {showBullet ? "•" : number}
+        </div>
+
+        <div className="flex w-full flex-col items-start">
+          <div className="mb-1 font-medium text-gray-900">{title}</div>
+
+          {explanation && (
+            <div className="mt-1.5 text-start text-sm text-gray-600 italic">
+              {showCorrectnessSign && (isCorrect ? "✅ Correct! " : "❌ ")}
+              {explanation}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};

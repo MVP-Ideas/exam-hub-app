@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
 import { PaginationResponse } from "@/lib/types/pagination";
-import { User, UserUpdate } from "@/lib/types/user";
+import { UserResponse, UpdateUserRequest } from "@/lib/types/user";
 
 const BASE_URL = "users";
 
@@ -13,22 +13,25 @@ type SearchParams = {
 
 const UserService = {
   getCurrentUser: async () => {
-    const response = await api.get<User>(`${BASE_URL}/me`);
+    const response = await api.get<UserResponse>(`${BASE_URL}/me`);
     return response.data;
   },
   getUsers: async (params: SearchParams) => {
-    const response = await api.get<PaginationResponse<User>>(`${BASE_URL}`, {
-      params: {
-        search: params.search,
-        page: params.page,
-        pageSize: params.pageSize,
-        role: params.role,
+    const response = await api.get<PaginationResponse<UserResponse>>(
+      `${BASE_URL}`,
+      {
+        params: {
+          search: params.search,
+          page: params.page,
+          pageSize: params.pageSize,
+          role: params.role,
+        },
       },
-    });
+    );
     return response.data;
   },
-  update: async (id: string, user: UserUpdate) => {
-    const response = await api.put<User>(`${BASE_URL}/${id}`, user);
+  update: async (id: string, user: UpdateUserRequest) => {
+    const response = await api.put<UserResponse>(`${BASE_URL}/${id}`, user);
     return response.data;
   },
   delete: async (id: string) => {

@@ -1,5 +1,5 @@
 import ExamService from "@/lib/services/exam-service";
-import { Exam } from "@/lib/types/exam";
+import { ExamResponse } from "@/lib/types/exam";
 import { PaginationResponse } from "@/lib/types/pagination";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 
@@ -17,14 +17,14 @@ const useGetExams = (params: Props) => {
     isLoading,
     isFetching,
     isError,
-  } = useQuery<PaginationResponse<Exam>>({
+  } = useQuery<PaginationResponse<ExamResponse>>({
     queryKey: ["exams", params],
     queryFn: async () => await ExamService.list(params),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const emptyResponse: PaginationResponse<Exam> = {
+  const emptyResponse: PaginationResponse<ExamResponse> = {
     items: [],
     page: params.page,
     pageSize: params.pageSize,

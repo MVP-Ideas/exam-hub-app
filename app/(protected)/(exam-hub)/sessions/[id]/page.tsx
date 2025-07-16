@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/dialog";
 import useSubmitExamSession from "@/hooks/exam-sessions/useSubmitExamSession";
 import AppLoader from "@/components/common/app-loader";
-import { ExamSessionAnswerCreate } from "@/lib/types/exam-session";
 import ExamSessionSubmitModal from "@/components/learner/exam-session/exam-session-submit-modal";
+import { CreateAnswerRequest } from "@/lib/types/answer";
 
 export default function Page() {
   const router = useRouter();
@@ -37,8 +37,8 @@ export default function Page() {
     id as string,
   );
 
-  const questions = useMemo(() => examSession?.questions || [], [examSession]);
-  const questionIds = useMemo(() => questions.map((q) => q.id), [questions]);
+  const examSessionQuestions = useMemo(() => examSession?.questions || [], [examSession]);
+  const examSessionQuestionIds = useMemo(() => examSessionQuestions.map((q) => q.id), [examSessionQuestions]);
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
 
   const questionFromUrl = parseInt(searchParams.get("question") || "1");
@@ -95,7 +95,7 @@ export default function Page() {
             (a) =>
               a &&
               a.timeSpentSeconds > 0 &&
-              questionIds.includes(a.examSessionQuestionId),
+              examSessionQuestionIds.includes(a.examSessionQuestionId),
           ),
           timeSpentSeconds: timeSpentSeconds,
         });
@@ -114,7 +114,7 @@ export default function Page() {
       setLastSavedTime,
       isSubmitting,
       isSubmittingExam,
-      questionIds,
+      examSessionQuestionIds,
     ],
   );
 
@@ -123,7 +123,7 @@ export default function Page() {
       setIsSubmittingExam(true);
       await updateProgress({
         answers: answers.filter((a) =>
-          questionIds.includes(a.examSessionQuestionId),
+          examSessionQuestionIds.includes(a.examSessionQuestionId),
         ),
         timeSpentSeconds: timeSpentSeconds,
       });
@@ -195,35 +195,36 @@ export default function Page() {
   );
 
   useEffect(() => {
-    if (examSession?.id && questions.length > 0) {
+    if (examSession?.id && examSessionQuestions.length > 0) {
       setAnswers([]);
       const answers = [];
-      for (const question of questions) {
+      for (const question of examSessionQuestions) {
         answers.push({
           examSessionQuestionId: question.id,
           choices: question.answer?.choices || [],
-          timeSpentSeconds: question.answer?.timeSpentSeconds || 0,
+          timeSpentSeconds: question.timeSpentSeconds || 0,
+          toBeReviewed: false,
         });
       }
 
-      setAnswers(answers as ExamSessionAnswerCreate[]);
+      setAnswers(answers as CreateAnswerRequest[]);
     }
-  }, [examSession?.id, questions, setAnswers]);
+  }, [examSession?.id, examSessionQuestions, setAnswers]);
 
   const getCurrentAnswer = (
     questionId: string,
-  ): ExamSessionAnswerCreate | undefined => {
+  ): CreateAnswerRequest | undefined => {
     return answers.find(
       (answer) => answer?.examSessionQuestionId === questionId,
     );
   };
 
-  const updateAnswerByQuestionId = (updatedAnswer: ExamSessionAnswerCreate) => {
+  const updateAnswerByQuestionId = (updatedAnswer: CreateAnswerRequest) => {
     if (isSubmitting || isUpdatingProgress) {
       return;
     }
 
-    const newAnswers = [...answers] as ExamSessionAnswerCreate[];
+    const newAnswers = [...answers] as CreateAnswerRequest[];
     const existingIndex = newAnswers.findIndex(
       (answer) =>
         answer?.examSessionQuestionId === updatedAnswer.examSessionQuestionId,
@@ -249,7 +250,7 @@ export default function Page() {
     );
   }
 
-  if (isError || !examSession || questions.length === 0) {
+  if (isError || !examSession || examSessionQuestions.length === 0) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center">
         <div className="flex w-full max-w-sm flex-col items-center justify-center gap-y-2 text-center">
@@ -274,7 +275,7 @@ export default function Page() {
     );
   }
 
-  const answeredQuestions = questions.filter((q) =>
+  const answeredQuestions = examSessionQuestions.filter((q) =>
     answers.some(
       (a) =>
         a &&
@@ -310,9 +311,9 @@ export default function Page() {
   return (
     <div className="flex h-full w-full flex-row">
       <ExamSessionToolbar
-        endable={answeredQuestions === questions.length}
+        endable={answeredQuestions === examSessionQuestions.length}
         examSession={examSession}
-        questions={questions}
+        questions={examSessionQuestions}
         answers={answers}
         currentQuestionIndex={currentQuestionIndex - 1}
         setCurrentQuestionIndex={navigateToQuestion}
@@ -349,32 +350,31 @@ export default function Page() {
           <div className="flex w-full flex-row items-center justify-between">
             <p className="text-muted-foreground text-xs">Exam Progress</p>
             <p className="text-muted-foreground text-xs">
-              {answeredQuestions}/{questions.length} Questions
+              {answeredQuestions}/{examSessionQuestions.length} Questions
             </p>
           </div>
-          <Progress value={(answeredQuestions / questions.length) * 100} />
+          <Progress value={(answeredQuestions / examSessionQuestions.length) * 100} />
         </div>
         <Separator />
         {/* Question */}
         <div className="flex flex-1 flex-col">
           <QuestionBox
             examSession={examSession}
-            question={questions[currentQuestionIndex - 1]}
+            examSessionQuestion={examSessionQuestions[currentQuestionIndex - 1]}
             currentQuestionIndex={currentQuestionIndex}
             setCurrentQuestionIndex={navigateToQuestion}
-            disabledNextButton={currentQuestionIndex === questions.length}
+            disabledNextButton={currentQuestionIndex === examSessionQuestions.length}
             answer={
-              getCurrentAnswer(questions[currentQuestionIndex - 1]?.id) || {
-                examSessionQuestionId: questions[currentQuestionIndex - 1]?.id,
+              getCurrentAnswer(examSessionQuestions[currentQuestionIndex - 1]?.id) || {
+                examSessionQuestionId: examSessionQuestions[currentQuestionIndex - 1]?.id,
                 choices: [],
                 timeSpentSeconds: 0,
-                aiAssitanceUsed: false,
                 toBeReviewed: false,
               }
             }
             setAnswer={updateAnswerByQuestionId}
             isUpdatingProgress={isUpdatingProgress}
-            isReadyToSubmit={answeredQuestions === questions.length}
+            isReadyToSubmit={answeredQuestions === examSessionQuestions.length}
             showSubmitDialog={showSubmitExamDialog}
             isPaused={isPaused}
           />
@@ -415,7 +415,7 @@ export default function Page() {
       <ExamSessionSubmitModal
         open={showSubmitDialog}
         onOpenChange={setShowSubmitDialog}
-        questions={questions}
+        questions={examSessionQuestions}
         answers={answers}
         answeredQuestions={answeredQuestions}
         flaggedQuestions={flaggedQuestions}

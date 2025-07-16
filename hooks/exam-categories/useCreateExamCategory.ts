@@ -1,11 +1,11 @@
 import ExamCategoryService from "@/lib/services/exam-category-service";
-import { ExamCategoryCreateUpdate } from "@/lib/types/exam-category";
+import { CreateExamCategoryRequest } from "@/lib/types/exam-category";
 import { extractAxiosErrorMessage } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
-const createExamCategoryRequest = async (data: ExamCategoryCreateUpdate) => {
+const createExamCategoryRequest = async (data: CreateExamCategoryRequest) => {
   try {
     const response = await ExamCategoryService.create(data);
     if (response) {
@@ -22,7 +22,7 @@ const useCreateExamCategory = () => {
   const [isPending, startTransition] = useTransition();
 
   const { mutateAsync: createExamCategory } = useMutation({
-    mutationFn: (data: ExamCategoryCreateUpdate) =>
+    mutationFn: (data: CreateExamCategoryRequest) =>
       createExamCategoryRequest(data),
     onSuccess: () => {
       startTransition(() => {
