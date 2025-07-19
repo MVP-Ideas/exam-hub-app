@@ -1,9 +1,9 @@
 "use client";
 
-import QuestionSheet from "@/components/admin/question-bank/question-sheet";
-import QuestionTypeFilter from "@/components/admin/question-bank/question-type-filter";
-import QuestionCategoryFilter from "@/components/categories/question-category-filter";
-import QuestionCardList from "@/components/questions/question-card-list";
+import QuestionSheet from "@/components/admin/question-bank/QuestionSheet";
+import QuestionTypeFilter from "@/components/admin/question-bank/QuestionTypeFilter";
+import QuestionCategoryFilter from "@/components/categories/QuestionCategoryFilter";
+import QuestionCardList from "@/components/questions/QuestionCardList";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

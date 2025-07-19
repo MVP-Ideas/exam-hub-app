@@ -1,8 +1,8 @@
 "use client";
 
-import { DashboardSidebar } from "@/components/learner/dashboard-sidebar";
-import PageFooter from "@/components/learner/page-footer";
-import PageHeader from "@/components/learner/page-header";
+import { DashboardSidebar } from "@/components/learner/DashboardSidebar";
+import PageFooter from "@/components/learner/PageFooter";
+import PageHeader from "@/components/learner/PageHeader";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function Layout({ children }: { children: React.ReactNode }) {

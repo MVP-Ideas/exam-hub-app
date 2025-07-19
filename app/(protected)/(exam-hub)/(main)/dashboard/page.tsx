@@ -1,7 +1,7 @@
 "use client";
 
-import RecommendedForYou from "@/components/learner/dashboard/recommended-for-you";
-import UserDashboardStatistics from "@/components/learner/dashboard/user-dashboard-statistics";
+import RecommendedForYou from "@/components/learner/dashboard/RecommendedForYou";
+import UserDashboardStatistics from "@/components/learner/dashboard/UserDashboardStatistics";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/lib/stores/user-store";
 

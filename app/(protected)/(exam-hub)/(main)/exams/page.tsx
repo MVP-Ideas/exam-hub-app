@@ -1,10 +1,10 @@
 "use client";
 
-import AllExams from "@/components/learner/exams/all-exams";
-import ExamCategorySelect from "@/components/learner/exams/exam-category-select";
-import ExamDifficultySelect from "@/components/learner/exams/exam-difficulty-select";
-import FeaturedExams from "@/components/learner/exams/featured-exams";
-import LearningJourney from "@/components/learner/exams/learning-journey";
+import AllExams from "@/components/learner/exams/AllExams";
+import ExamCategorySelect from "@/components/learner/exams/ExamCategorySelect";
+import ExamDifficultySelect from "@/components/learner/exams/ExamDifficultySelect";
+import FeaturedExams from "@/components/learner/exams/FeaturedExams";
+import LearningJourney from "@/components/learner/exams/LearningJourney";
 import { Input } from "@/components/ui/input";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import { Search } from "lucide-react";

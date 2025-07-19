@@ -9,8 +9,8 @@ import { formatUTCDate } from "@/lib/date-utils";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import AppLoader from "@/components/common/app-loader";
-import { QuestionResult } from "@/components/learner/results/question-result";
+import AppLoader from "@/components/common/AppLoader";
+import { QuestionResult } from "@/components/learner/results/QuestionResult";
 
 export default function Page() {
   const { id } = useParams();

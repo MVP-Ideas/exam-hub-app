@@ -1,5 +1,5 @@
 "use client";
-import AppLoader from "@/components/common/app-loader";
+import AppLoader from "@/components/common/AppLoader";
 
 export default function Loading() {
   return (

@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import DeleteUserModal from "@/components/user/delete-user-modal";
-import { EditUserModal } from "@/components/user/edit-user-modal";
+import DeleteUserModal from "@/components/user/DeleteUserModal";
+import { EditUserModal } from "@/components/user/EditUserModal";
 import {
   LearnerCard,
   LearnerCardHorizontal,
-} from "@/components/user/learner-card";
+} from "@/components/user/LearnerCard";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import useInfiniteUsers from "@/hooks/users/useInfiniteUsers";
 import { UserResponse } from "@/lib/types/user";

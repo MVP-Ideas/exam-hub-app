@@ -39,13 +39,13 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import ResourceCard from "@/components/admin/resources/resource-card";
+import ResourceCard from "@/components/admin/resources/ResourceCard";
 import { DialogClose } from "@/components/ui/dialog";
 import { formatUTCDate } from "@/lib/date-utils";
 import useStartExamSession from "@/hooks/exam-sessions/useStartExamSession";
 import { toast } from "sonner";
 import { useState } from "react";
-import AppLoader from "@/components/common/app-loader";
+import AppLoader from "@/components/common/AppLoader";
 import { getDifficultyColor } from "@/lib/utils/exam";
 
 export default function Page() {

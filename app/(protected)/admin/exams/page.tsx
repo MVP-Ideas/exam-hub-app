@@ -1,7 +1,7 @@
 "use client";
 
-import ExamDifficultySelect from "@/components/admin/exams/exam-difficulty-select";
-import ExamStatusSelect from "@/components/admin/exams/exam-status-select";
+import ExamDifficultySelect from "@/components/admin/exams/ExamDifficultySelect";
+import ExamStatusSelect from "@/components/admin/exams/ExamStatusSelect";
 import { Input } from "@/components/ui/input";
 import useInfiniteExams from "@/hooks/exams/useInfiniteExams";
 import {
@@ -21,9 +21,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import ExamCard from "@/components/admin/exams/list/exam-card";
-import ExamCardHorizontal from "@/components/admin/exams/list/exam-card-horizontal";
-import ExamCategoryFilter from "@/components/categories/exam-category-filter";
+import ExamCard from "@/components/admin/exams/list/ExamCard";
+import ExamCardHorizontal from "@/components/admin/exams/list/ExamCardHorizontal";
+import ExamCategoryFilter from "@/components/categories/ExamCategoryFilter";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import useExamCategories from "@/hooks/exam-categories/useExamCategories";
 

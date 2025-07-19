@@ -1,6 +1,6 @@
 "use client";
 
-import { MsalSignInButton } from "@/components/auth/msal-sign-in-button";
+import { MsalSignInButton } from "@/components/auth/MsalSignInButton";
 import {
   Card,
   CardHeader,

@@ -1,6 +1,6 @@
 "use client";
 
-import ExamSessionToolbar from "@/components/learner/exam-session/exam-session-toolbar";
+import ExamSessionToolbar from "@/components/learner/exam-session/ExamSessionToolbar";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -9,7 +9,7 @@ import useExamSessionById from "@/hooks/exam-sessions/useExamSessionById";
 import { Menu, TimerIcon } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import QuestionBox from "@/components/learner/exam-session/question-box";
+import QuestionBox from "@/components/learner/exam-session/QuestionBox";
 import useExamTimer from "@/hooks/exam-sessions/useExamTimer";
 import useUpdateExamProgress from "@/hooks/exam-sessions/useUpdateExamProgress";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
@@ -22,9 +22,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import useSubmitExamSession from "@/hooks/exam-sessions/useSubmitExamSession";
-import AppLoader from "@/components/common/app-loader";
-import ExamSessionSubmitModal from "@/components/learner/exam-session/exam-session-submit-modal";
-import { CreateAnswerRequest } from "@/lib/types/answer";
+import AppLoader from "@/components/common/AppLoader";
+import ExamSessionSubmitModal from "@/components/learner/exam-session/ExamSessionSubmitModal";
+import { CreateAnswerRequest } from "@/lib/types";
 
 export default function Page() {
   const router = useRouter();
@@ -37,8 +37,14 @@ export default function Page() {
     id as string,
   );
 
-  const examSessionQuestions = useMemo(() => examSession?.questions || [], [examSession]);
-  const examSessionQuestionIds = useMemo(() => examSessionQuestions.map((q) => q.id), [examSessionQuestions]);
+  const examSessionQuestions = useMemo(
+    () => examSession?.questions || [],
+    [examSession],
+  );
+  const examSessionQuestionIds = useMemo(
+    () => examSessionQuestions.map((q) => q.id),
+    [examSessionQuestions],
+  );
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
 
   const questionFromUrl = parseInt(searchParams.get("question") || "1");
@@ -353,7 +359,9 @@ export default function Page() {
               {answeredQuestions}/{examSessionQuestions.length} Questions
             </p>
           </div>
-          <Progress value={(answeredQuestions / examSessionQuestions.length) * 100} />
+          <Progress
+            value={(answeredQuestions / examSessionQuestions.length) * 100}
+          />
         </div>
         <Separator />
         {/* Question */}
@@ -363,10 +371,15 @@ export default function Page() {
             examSessionQuestion={examSessionQuestions[currentQuestionIndex - 1]}
             currentQuestionIndex={currentQuestionIndex}
             setCurrentQuestionIndex={navigateToQuestion}
-            disabledNextButton={currentQuestionIndex === examSessionQuestions.length}
+            disabledNextButton={
+              currentQuestionIndex === examSessionQuestions.length
+            }
             answer={
-              getCurrentAnswer(examSessionQuestions[currentQuestionIndex - 1]?.id) || {
-                examSessionQuestionId: examSessionQuestions[currentQuestionIndex - 1]?.id,
+              getCurrentAnswer(
+                examSessionQuestions[currentQuestionIndex - 1]?.id,
+              ) || {
+                examSessionQuestionId:
+                  examSessionQuestions[currentQuestionIndex - 1]?.id,
                 choices: [],
                 timeSpentSeconds: 0,
                 toBeReviewed: false,
