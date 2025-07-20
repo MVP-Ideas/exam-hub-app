@@ -6,7 +6,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircleIcon, SparklesIcon, XCircleIcon } from "lucide-react";
 import { AnswerChoice } from "@/lib/types/answer-choice";
 import { QuestionChoiceResultResponse } from "@/lib/types/question-choice";
 import { LightBulbIcon } from "@heroicons/react/24/outline";

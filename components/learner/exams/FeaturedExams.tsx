@@ -8,6 +8,7 @@ export default function FeaturedExams() {
     search: "",
     difficulty: "",
     status: "published",
+    isFeatured: true,
   });
 
   const top2exams = exams?.items.slice(0, 2).map((exam) => ({

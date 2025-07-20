@@ -17,6 +17,7 @@ export type SearchParams = {
   difficulty?: string | null;
   category?: string | null;
   status?: string | null;
+  isFeatured?: boolean;
 };
 
 // Requests
