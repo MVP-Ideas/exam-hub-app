@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { UserResponse } from "@/lib/types/user";
 import {
   BookOpen,
@@ -12,6 +12,7 @@ import {
   TrendingUp,
   UserIcon,
 } from "lucide-react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 type Props = {
   learner: UserResponse;
@@ -50,35 +51,42 @@ export function LearnerCardHorizontal({ learner, onEdit, onDelete }: Props) {
       {/* Colored indicator */}
       <div className={`w-2 ${isActive ? "bg-green-500" : "bg-gray-300"}`} />
 
-      <div className="flex flex-1 flex-col py-2 pl-2">
-        <div className="flex flex-col p-4 md:flex-row md:items-center md:justify-between">
+      {/* Content */}
+      <CardContent className="flex w-full flex-1 flex-col gap-y-4 py-4 pl-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="flex items-center space-x-3">
-            <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
-              <UserIcon className="text-primary h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">{learner.name}</h3>
-              <div className="text-muted-foreground mt-1 flex items-center text-sm">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback>
+                {learner.name.split(" ")[0].charAt(0)}
+                {learner.name.split(" ")[1]?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col items-start">
+              <div className="flex flex-row items-center gap-x-2">
+                <h3 className="text-sm font-semibold md:text-lg">
+                  {learner.name}
+                </h3>
+                <span
+                  className={`rounded-full border px-2 text-xs font-medium ${getStatusColor(isActive)}`}
+                >
+                  {isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+              <div className="text-muted-foreground mt-1 flex items-center text-xs md:text-sm">
                 <Mail className="mr-1 h-4 w-4" />
                 {learner.email}
               </div>
             </div>
           </div>
 
-          <div className="mt-3 flex flex-col space-y-2 md:mt-0 md:flex-row md:items-center md:space-y-0 md:space-x-2">
-            <span
-              className={`rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(isActive)}`}
-            >
-              {isActive ? "Active" : "Inactive"}
-            </span>
+          <div className="mt-3 flex flex-col items-end space-y-2 md:mt-0 md:flex-row md:items-center md:space-y-0 md:space-x-2">
             <div className="flex space-x-2">
               <Button
                 onClick={() => onEdit(learner)}
                 size="sm"
                 variant="outline"
               >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
+                <Edit className="h-4 w-4" />
               </Button>
               <Button
                 onClick={() => onDelete(learner)}
@@ -91,7 +99,7 @@ export function LearnerCardHorizontal({ learner, onEdit, onDelete }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 px-4 pb-4">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
           <div className="bg-primary/5 flex items-center justify-between rounded-lg p-2">
             <div className="flex items-center gap-2">
               <BookOpen className="text-primary h-4 w-4" />
@@ -122,7 +130,7 @@ export function LearnerCardHorizontal({ learner, onEdit, onDelete }: Props) {
             </span>
           </div>
         </div>
-      </div>
+      </CardContent>
     </Card>
   );
 }

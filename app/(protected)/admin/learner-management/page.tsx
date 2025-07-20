@@ -1,18 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteUserModal from "@/components/user/DeleteUserModal";
 import { EditUserModal } from "@/components/user/EditUserModal";
-import {
-  LearnerCard,
-  LearnerCardHorizontal,
-} from "@/components/user/LearnerCard";
+import { LearnerCardHorizontal } from "@/components/user/LearnerCard";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
 import useInfiniteUsers from "@/hooks/users/useInfiniteUsers";
 import { UserResponse } from "@/lib/types/user";
-import { LayoutGrid, List, Search, UserIcon } from "lucide-react";
+import { Search, UserIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
@@ -29,27 +25,18 @@ export default function Page() {
 
   const debouncedSearch = useDebouncedValue(search, 300);
 
-  const [viewMode, setViewMode] = useState("grid");
-
   const queryParams = useMemo(
     () => ({
       search: debouncedSearch,
       page: page,
-      pageSize: 12, // Increased for card layout
+      pageSize: 12,
       role: "Learner",
     }),
     [debouncedSearch, page],
   );
 
-  const {
-    users,
-    totalItems,
-    isLoading,
-    isError,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-  } = useInfiniteUsers(queryParams);
+  const { users, isLoading, isError, fetchNextPage, hasNextPage, isFetching } =
+    useInfiniteUsers(queryParams);
 
   const { ref: loaderRef, inView } = useInView({
     rootMargin: "300px",
@@ -79,18 +66,18 @@ export default function Page() {
   }, [debouncedSearch, router]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col p-10 md:h-full md:pb-0">
-      <div className="flex h-full w-full flex-col gap-6">
+    <div className="flex min-h-screen w-full flex-col p-4 md:p-6">
+      <div className="flex h-full w-full flex-col gap-4">
         {/* Header */}
         <div className="flex w-full flex-col items-start">
-          <h1 className="text-2xl font-bold">Learner Management</h1>
-          <p className="text-sm">
+          <h1 className="text-xl font-bold md:text-2xl">Learner Management</h1>
+          <p className="text-muted-foreground text-xs md:text-sm">
             Manage learners, track progress, and organize groups
           </p>
         </div>
 
         {/* Search */}
-        <div className="bg-background border-primary/20 flex w-full flex-col gap-4 rounded-lg">
+        <div className="bg-background flex w-full flex-col gap-3 rounded-lg">
           <Input
             icon={<Search size={16} className="text-muted-foreground" />}
             placeholder="Search learners...."
@@ -100,147 +87,75 @@ export default function Page() {
           />
 
           {/* Loading State */}
-          {isLoading &&
-            (viewMode === "grid" ? (
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="bg-background border-primary/20 rounded-lg border p-6"
-                  >
-                    <div className="mb-4 flex items-start justify-between">
+          {isLoading && (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-background border-primary/20 flex rounded-lg border p-3"
+                >
+                  <div className="w-1 bg-gray-200" />
+                  <div className="ml-2 flex flex-1 flex-col">
+                    <div className="flex flex-col gap-2 md:flex-row md:justify-between">
                       <div className="flex items-center space-x-3">
-                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
                         <div>
-                          <Skeleton className="mb-2 h-5 w-32" />
-                          <Skeleton className="h-4 w-48" />
+                          <Skeleton className="mb-1 h-4 w-24" />
+                          <Skeleton className="h-3 w-32" />
                         </div>
                       </div>
-                      <Skeleton className="h-6 w-16 rounded-full" />
+                      <div className="flex items-center space-x-2">
+                        <Skeleton className="h-5 w-12 rounded-full" />
+                        <Skeleton className="h-7 w-12" />
+                        <Skeleton className="h-7 w-7" />
+                      </div>
                     </div>
-                    <div className="mb-4 grid grid-cols-2 gap-4 md:grid-cols-3">
-                      <Skeleton className="h-20 rounded-lg" />
-                      <Skeleton className="h-20 rounded-lg" />
-                      <Skeleton className="col-span-2 h-20 rounded-lg md:col-span-1" />
-                    </div>
-                    <div className="border-primary/10 flex space-x-2 border-t pt-4">
-                      <Skeleton className="h-10 flex-1" />
-                      <Skeleton className="h-10 w-10" />
+                    <div className="mt-2 grid grid-cols-1 gap-1 md:grid-cols-3 md:gap-2">
+                      <Skeleton className="h-8 rounded-lg" />
+                      <Skeleton className="h-8 rounded-lg" />
+                      <Skeleton className="h-8 rounded-lg" />
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="bg-background border-primary/20 flex rounded-lg border p-6"
-                  >
-                    <div className="w-2 bg-gray-200" />
-                    <div className="ml-2 flex flex-1 flex-col">
-                      <div className="flex justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Skeleton className="h-10 w-10 rounded-full" />
-                          <div>
-                            <Skeleton className="mb-2 h-5 w-32" />
-                            <Skeleton className="h-4 w-48" />
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Skeleton className="h-6 w-16 rounded-full" />
-                          <Skeleton className="h-8 w-16" />
-                          <Skeleton className="h-8 w-8" />
-                        </div>
-                      </div>
-                      <div className="mt-4 grid grid-cols-3 gap-2">
-                        <Skeleton className="h-12 rounded-lg" />
-                        <Skeleton className="h-12 rounded-lg" />
-                        <Skeleton className="h-12 rounded-lg" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Error State */}
           {isError && (
-            <div className="bg-muted flex h-40 w-full flex-col items-center justify-center gap-4 rounded-lg">
-              <p className="text-destructive font-bold">
+            <div className="bg-muted flex h-32 w-full flex-col items-center justify-center gap-2 rounded-lg">
+              <p className="text-destructive text-sm font-bold">
                 Failed to load learners. Please try again.
               </p>
             </div>
           )}
 
-          {/* View mode toggle */}
-          <div className="flex w-full flex-row items-center justify-end gap-2">
-            {/* Total count display */}
-            {!isLoading && !isError && users && users.length > 0 && (
-              <div className="text-muted-foreground text-xs text-nowrap">
-                Showing {users.length} of {totalItems} learner(s)
-              </div>
-            )}
-            <div className="border-muted-foreground/30 bg-muted flex w-full border-b" />
-            <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="icon"
-              className="h-10 w-10"
-              onClick={() => setViewMode("grid")}
-            >
-              <LayoutGrid size={16} />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="icon"
-              className="h-10 w-10"
-              onClick={() => setViewMode("list")}
-            >
-              <List size={16} />
-            </Button>
-          </div>
-
           {/* Learner Cards */}
           {!isLoading && !isError && users && (
             <>
               {users.length === 0 ? (
-                <div className="bg-muted flex h-40 w-full flex-col items-center justify-center gap-4 rounded-lg">
-                  <UserIcon size={40} className="text-muted-foreground" />
-                  <p className="text-muted-foreground font-bold">
+                <div className="bg-muted flex h-32 w-full flex-col items-center justify-center gap-2 rounded-lg">
+                  <UserIcon size={32} className="text-muted-foreground" />
+                  <p className="text-muted-foreground text-sm font-bold">
                     No learners found.
                   </p>
                 </div>
               ) : (
-                <div
-                  className={
-                    viewMode === "grid"
-                      ? "grid grid-cols-1 gap-6 lg:grid-cols-2"
-                      : "flex flex-col gap-4"
-                  }
-                >
-                  {users.map((learner) =>
-                    viewMode === "grid" ? (
-                      <LearnerCard
-                        key={learner.id}
-                        learner={learner}
-                        onEdit={setEditUser}
-                        onDelete={setDeleteUser}
-                      />
-                    ) : (
-                      <LearnerCardHorizontal
-                        key={learner.id}
-                        learner={learner}
-                        onEdit={setEditUser}
-                        onDelete={setDeleteUser}
-                      />
-                    ),
-                  )}
+                <div className="flex flex-col gap-3">
+                  {users.map((learner) => (
+                    <LearnerCardHorizontal
+                      key={learner.id}
+                      learner={learner}
+                      onEdit={setEditUser}
+                      onDelete={setDeleteUser}
+                    />
+                  ))}
 
                   {/* Infinite scroll loader */}
                   {hasNextPage && (
                     <div ref={loaderRef} className="h-4 w-full text-center">
                       {isFetching && (
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-muted-foreground text-xs">
                           Loading more...
                         </p>
                       )}

@@ -9,6 +9,7 @@ import {
 import { CheckCircleIcon, XCircleIcon } from "lucide-react";
 import { AnswerChoice } from "@/lib/types/answer-choice";
 import { QuestionChoiceResultResponse } from "@/lib/types/question-choice";
+import { LightBulbIcon } from "@heroicons/react/24/outline";
 
 export function QuestionResult({
   question: examSessionQuestion,
@@ -201,9 +202,12 @@ export function QuestionResult({
         <div className="flex w-full flex-col items-start gap-y-4 pl-1">
           <div className="flex w-full flex-col items-start">
             {/* User Answer */}
-            <p className="text-muted-foreground mb-2 text-xs md:text-sm">
-              Your Answer
-            </p>
+            <div className="flex w-full flex-row items-center justify-start gap-x-2 py-2">
+              <p className="text-muted-foreground text-xs md:text-sm">
+                Your Answer
+              </p>
+            </div>
+
             {examSessionQuestion.answer?.choices &&
               renderUserAnswerChoices(examSessionQuestion.answer.choices)}
           </div>
@@ -265,6 +269,13 @@ export function QuestionResult({
           <p className="text-muted-foreground text-xs md:text-sm">
             {examSessionQuestion.question.text}
           </p>
+
+          {examSessionQuestion.aiAssistanceUsed && (
+            <div className="my-1 flex flex-row items-center gap-x-2 rounded-md border border-orange-500 bg-orange-50 px-4 py-1">
+              <LightBulbIcon className="h-4 w-4 text-orange-500" />
+              <p className="text-xs text-orange-500">Used hint</p>
+            </div>
+          )}
         </div>
       </AccordionTrigger>
 

@@ -4,15 +4,7 @@ import ExamDifficultySelect from "@/components/admin/exams/ExamDifficultySelect"
 import ExamStatusSelect from "@/components/admin/exams/ExamStatusSelect";
 import { Input } from "@/components/ui/input";
 import useInfiniteExams from "@/hooks/exams/useInfiniteExams";
-import {
-  CloudOff,
-  FileQuestion,
-  LayoutGrid,
-  List,
-  PlusIcon,
-  Search,
-  X,
-} from "lucide-react";
+import { CloudOff, FileQuestion, PlusIcon, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useInView } from "react-intersection-observer";
@@ -21,7 +13,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import ExamCard from "@/components/admin/exams/list/ExamCard";
 import ExamCardHorizontal from "@/components/admin/exams/list/ExamCardHorizontal";
 import ExamCategoryFilter from "@/components/categories/ExamCategoryFilter";
 import useDebouncedValue from "@/hooks/common/useDebouncedValue";
@@ -46,9 +37,6 @@ export default function Page() {
     searchParams.get("status") ?? "",
   );
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
-  const [viewMode, setViewMode] = useState(
-    searchParams.get("viewMode") ?? "grid",
-  );
   const debouncedSearch = useDebouncedValue(search, 500);
 
   const { categories: examCategories } = useExamCategories();
@@ -107,13 +95,9 @@ export default function Page() {
       params.set("page", page.toString());
     }
 
-    if (viewMode !== "grid") {
-      params.set("viewMode", viewMode);
-    }
-
     const queryString = params.toString();
     router.push(`?${queryString}`, { scroll: false });
-  }, [debouncedSearch, difficulty, categories, status, page, viewMode, router]);
+  }, [debouncedSearch, difficulty, categories, status, page, router]);
 
   return (
     <div className="flex h-full min-h-screen w-full flex-col items-center p-10">
@@ -230,13 +214,10 @@ export default function Page() {
                   setCategories([]);
                   setPage(1);
 
-                  // Keep search and viewMode but remove filter params
+                  // Keep search but remove filter params
                   const params = new URLSearchParams();
                   if (debouncedSearch) {
                     params.set("search", debouncedSearch);
-                  }
-                  if (viewMode !== "grid") {
-                    params.set("viewMode", viewMode);
                   }
 
                   const queryString = params.toString();
@@ -250,87 +231,23 @@ export default function Page() {
           )}
         </div>
         <div className="flex h-full w-full flex-col gap-y-4">
-          <div className="flex w-full flex-row items-center justify-end gap-1">
-            <div className="border-muted-foreground/30 bg-muted flex w-full border-b" />
-            <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="icon"
-              className="h-10 w-10"
-              onClick={() => {
-                setViewMode("grid");
-
-                // Update URL with current params but change viewMode
-                const params = new URLSearchParams();
-                if (debouncedSearch) params.set("search", debouncedSearch);
-                if (difficulty) params.set("difficulty", difficulty);
-                if (categories.length > 0)
-                  params.set("categories", categories.join(","));
-                if (status) params.set("status", status);
-                if (page > 1) params.set("page", page.toString());
-
-                const queryString = params.toString();
-                router.push(`?${queryString}`, { scroll: false });
-              }}
-            >
-              <LayoutGrid size={16} />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="icon"
-              className="h-10 w-10"
-              onClick={() => {
-                setViewMode("list");
-
-                // Update URL with current params but change viewMode
-                const params = new URLSearchParams();
-                if (debouncedSearch) params.set("search", debouncedSearch);
-                if (difficulty) params.set("difficulty", difficulty);
-                if (categories.length > 0)
-                  params.set("categories", categories.join(","));
-                if (status) params.set("status", status);
-                if (page > 1) params.set("page", page.toString());
-                params.set("viewMode", "list");
-
-                const queryString = params.toString();
-                router.push(`?${queryString}`, { scroll: false });
-              }}
-            >
-              <List size={16} />
-            </Button>
-          </div>
           {isLoading && (
-            <div
-              className={
-                viewMode === "grid"
-                  ? "grid grid-cols-1 gap-4 md:grid-cols-2"
-                  : "flex flex-col gap-4"
-              }
-            >
+            <div className="flex flex-col gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-56 w-full" />
               ))}
             </div>
           )}
           {!isLoading && (
-            <div
-              className={
-                viewMode === "grid"
-                  ? "grid grid-cols-1 gap-4 md:grid-cols-2"
-                  : "flex flex-col gap-4"
-              }
-            >
+            <div className="flex flex-col gap-4">
               {exams?.length > 0 &&
-                exams.map((exam) =>
-                  viewMode === "grid" ? (
-                    <ExamCard route="/admin/exams" key={exam.id} exam={exam} />
-                  ) : (
-                    <ExamCardHorizontal
-                      route="/admin/exams"
-                      key={exam.id}
-                      exam={exam}
-                    />
-                  ),
-                )}
+                exams.map((exam) => (
+                  <ExamCardHorizontal
+                    route="/admin/exams"
+                    key={exam.id}
+                    exam={exam}
+                  />
+                ))}
 
               {hasNextPage && (
                 <div ref={loaderRef} className="h-4 w-full text-center">
@@ -343,19 +260,6 @@ export default function Page() {
               )}
             </div>
           )}
-
-          {isLoading &&
-            (viewMode === "grid" ? (
-              <div className="grid h-full w-full grid-cols-2 gap-4">
-                <Skeleton className="bg-background h-96 w-full" />
-                <Skeleton className="bg-background h-96 w-full" />
-              </div>
-            ) : (
-              <div className="flex h-full w-full flex-col gap-4">
-                <Skeleton className="bg-background h-48 w-full" />
-                <Skeleton className="bg-background h-48 w-full" />
-              </div>
-            ))}
 
           {isError && (
             <div className="bg-muted flex h-full w-full flex-1 flex-col items-center justify-center gap-4 rounded-lg">
