@@ -37,8 +37,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import useCreateQuestionFeedback from "@/hooks/question-feedback/useCreateQuestionFeedback";
 import { ThemeDropdown } from "@/components/common/ThemeDropdown";
-import { Calculator } from "./Calculator";
 import ExamSessionResourcesModal from "./ExamSessionResourcesModal";
+import { Calculator } from "./Calculator";
 
 type Props = {
   examSession: ExamSessionResponse;
