@@ -26,6 +26,8 @@ import {
   RefreshCcw,
   Flag,
   Loader2,
+  EyeIcon,
+  EyeOffIcon,
 } from "lucide-react";
 import ResourceCard from "@/components/admin/resources/ResourceCard";
 import { QuestionType } from "@/lib/types/questions";
@@ -45,7 +47,12 @@ import useGenerateQuestionHint from "@/hooks/exam-sessions/useGenerateQuestionHi
 import { LightBulbIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import { CreateAnswerRequest } from "@/lib/types/answer";
-import { ExamSessionQuestionResponse } from "@/lib/types/exam-session-question";
+import {
+  ExamSessionQuestionResponse,
+  RewriteDifficulty,
+} from "@/lib/types/exam-session-question";
+import useGetExamSessionQuestionCorrectAnswer from "@/hooks/exam-sessions/useGetExamSessionQuestionAnswer";
+import { useRewriteQuestionText } from "@/hooks/exam-sessions/useRewriteQuestionText";
 
 type QuestionBoxProps = {
   examSessionQuestion: ExamSessionQuestionResponse;
@@ -81,15 +88,33 @@ export default function QuestionBox({
     lastSavedTime,
     hints,
     setHint,
+    correctAnswers,
+    setCorrectAnswers,
+    showCorrectAnswers,
+    setShowCorrectAnswers,
+    questionText,
+    setQuestionText,
   } = useExamSessionStore();
   const { generateHint, isPending: isGeneratingHint } =
     useGenerateQuestionHint();
   const enableHints = examSession?.settings.enableHints;
+  const enableViewAnswer = examSession?.settings.enableViewAnswer;
   const currentHint = enableHints ? hints[examSessionQuestion.id] : "";
+
+  const [currentQuestionText, setCurrentQuestionText] = useState<string>(
+    examSessionQuestion.question.text,
+  );
+
+  const { getCorrectAnswers, isPending: isGettingCorrectAnswers } =
+    useGetExamSessionQuestionCorrectAnswer();
+  const { rewriteQuestion, isPending: isRewritingQuestion } =
+    useRewriteQuestionText();
 
   const [selectedChoices, setSelectedChoices] = useState<string[]>([]);
   const [choiceOrder, setChoiceOrder] = useState<string[]>([]);
-
+  const [correctChoiceIds, setCorrectChoiceIds] = useState<
+    { questionChoiceId: string; order?: number }[]
+  >([]);
   const initialSeconds = examSessionQuestion.timeSpentSeconds || 0;
 
   const { seconds, resetTimer } = useTimer({
@@ -132,6 +157,67 @@ export default function QuestionBox({
     }
   };
 
+  const handleViewAnswer = async () => {
+    if (correctAnswers[examSessionQuestion.id]) {
+      setShowCorrectAnswers(examSessionQuestion.id, true);
+      setCorrectChoiceIds(
+        correctAnswers[examSessionQuestion.id].map((c) => ({
+          questionChoiceId: c.questionChoiceId,
+          order: c.order,
+        })),
+      );
+      return;
+    }
+
+    try {
+      const fetchedCorrectAnswers = await getCorrectAnswers({
+        examSessionId: examSession.id,
+        examSessionQuestionId: examSessionQuestion.id,
+      });
+
+      setCorrectAnswers(examSessionQuestion.id, fetchedCorrectAnswers);
+      setShowCorrectAnswers(examSessionQuestion.id, true);
+      setCorrectChoiceIds(
+        fetchedCorrectAnswers.map((c) => ({
+          questionChoiceId: c.questionChoiceId,
+          order: c.order,
+        })),
+      );
+    } catch {
+      toast.error("Error fetching correct answers. Please try again.");
+    }
+  };
+
+  const handleRewriteQuestion = async (
+    difficulty: RewriteDifficulty | "none",
+  ) => {
+    if (difficulty === "none") {
+      setQuestionText(
+        examSessionQuestion.id,
+        examSessionQuestion.question.text,
+        "none",
+      );
+      setCurrentQuestionText(examSessionQuestion.question.text);
+      return;
+    }
+
+    try {
+      const rewrittenQuestion = await rewriteQuestion({
+        examSessionId: examSession.id,
+        questionId: examSessionQuestion.id,
+        difficulty,
+      });
+      setQuestionText(
+        examSessionQuestion.id,
+        rewrittenQuestion.text,
+        difficulty,
+      );
+      setCurrentQuestionText(rewrittenQuestion.text);
+    } catch {
+      toast.error("Error rewriting question. Please try again.");
+    }
+  };
+
   const handleResetAnswer = () => {
     setSelectedChoices([]);
     setChoiceOrder([]);
@@ -169,10 +255,18 @@ export default function QuestionBox({
   useEffect(() => {
     setSelectedChoices([]);
     setChoiceOrder([]);
-  }, [examSessionQuestion.id]);
-
-  useEffect(() => {
     setHint(examSessionQuestion.id, hints[examSessionQuestion.id] || "");
+    setCorrectChoiceIds(
+      correctAnswers[examSessionQuestion.id]?.map((c) => ({
+        questionChoiceId: c.questionChoiceId,
+        order: c.order,
+      })) || [],
+    );
+    if (questionText[examSessionQuestion.id]) {
+      setCurrentQuestionText(questionText[examSessionQuestion.id].text);
+    } else {
+      setCurrentQuestionText(examSessionQuestion.question.text);
+    }
   }, [examSessionQuestion.id]);
 
   // Reset selections and timer when question changes
@@ -307,7 +401,14 @@ export default function QuestionBox({
             {examSessionQuestion.question.choices.map((choice) => (
               <div
                 key={choice.id}
-                className="flex items-center space-x-2 rounded-md border p-3"
+                className={cn(
+                  "flex items-center space-x-2 rounded-md border p-3",
+                  correctChoiceIds?.some(
+                    (c) => c.questionChoiceId === choice.id,
+                  ) &&
+                    showCorrectAnswers[examSessionQuestion.id] &&
+                    "border-green-500 bg-green-50",
+                )}
               >
                 <RadioGroupItem value={choice.id} id={choice.id} />
                 <Label htmlFor={choice.id} className="w-full cursor-pointer">
@@ -324,7 +425,14 @@ export default function QuestionBox({
             {examSessionQuestion.question.choices.map((choice) => (
               <div
                 key={choice.id}
-                className="flex items-center space-x-2 rounded-md border p-3"
+                className={cn(
+                  "flex items-center space-x-2 rounded-md border p-3",
+                  correctChoiceIds?.some(
+                    (c) => c.questionChoiceId === choice.id,
+                  ) &&
+                    showCorrectAnswers[examSessionQuestion.id] &&
+                    "border-green-500 bg-green-50",
+                )}
               >
                 <Checkbox
                   id={choice.id}
@@ -351,7 +459,14 @@ export default function QuestionBox({
             {examSessionQuestion.question.choices.map((choice) => (
               <div
                 key={choice.id}
-                className="flex items-center space-x-2 rounded-md border p-3"
+                className={cn(
+                  "flex items-center space-x-2 rounded-md border p-3",
+                  correctChoiceIds?.some(
+                    (c) => c.questionChoiceId === choice.id,
+                  ) &&
+                    showCorrectAnswers[examSessionQuestion.id] &&
+                    "border-green-500 bg-green-50",
+                )}
               >
                 <RadioGroupItem value={choice.id} id={choice.id} />
                 <Label htmlFor={choice.id} className="w-full cursor-pointer">
@@ -380,11 +495,22 @@ export default function QuestionBox({
                   );
                   if (!choice) return null;
 
+                  const order =
+                    showCorrectAnswers[examSessionQuestion.id] &&
+                    correctChoiceIds.some(
+                      (c) => c.questionChoiceId === choiceId,
+                    )
+                      ? correctAnswers[examSessionQuestion.id].find(
+                          (c) => c.questionChoiceId === choiceId,
+                        )?.order
+                      : undefined;
+
                   return (
                     <SortableItem
                       key={choiceId}
                       id={choiceId}
                       text={choice.text}
+                      order={order}
                     />
                   );
                 })}
@@ -404,11 +530,11 @@ export default function QuestionBox({
 
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-6 p-6">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-col-reverse items-center justify-between gap-y-2 md:flex-row">
-          <div className="flex flex-col items-center gap-2 md:flex-row">
+          <div className="flex flex-col items-center md:flex-row">
             <h2 className="text-base font-bold md:text-lg">
-              {examSessionQuestion.question.text}
+              {currentQuestionText}
             </h2>
             <TooltipProvider>
               <Tooltip>
@@ -441,6 +567,40 @@ export default function QuestionBox({
             </TooltipProvider>
           </div>
         </div>
+        <div className="flex flex-row flex-wrap items-center gap-1.5">
+          <Button
+            variant="outline"
+            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+            onClick={() => handleRewriteQuestion("easier")}
+            disabled={isRewritingQuestion}
+          >
+            Make this easier
+          </Button>
+          <Button
+            variant="outline"
+            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+            onClick={() => handleRewriteQuestion("harder")}
+            disabled={isRewritingQuestion}
+          >
+            Make this harder
+          </Button>
+          <Button
+            variant="outline"
+            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+            onClick={() => handleRewriteQuestion("same")}
+            disabled={isRewritingQuestion}
+          >
+            Rephrase
+          </Button>
+          <Button
+            variant="outline"
+            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+            onClick={() => handleRewriteQuestion("none")}
+            disabled={isRewritingQuestion}
+          >
+            Reset
+          </Button>
+        </div>
         {examSessionQuestion.question.description && (
           <p className="text-muted-foreground text-xs md:text-sm">
             {examSessionQuestion.question.description}
@@ -453,7 +613,7 @@ export default function QuestionBox({
           {/* Question */}
           <div className="flex flex-col gap-4">{renderQuestionContent()}</div>
           {/* Actions */}
-          <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-row flex-wrap items-center gap-4">
             <Button
               variant="outline"
               className="w-fit"
@@ -471,6 +631,30 @@ export default function QuestionBox({
               >
                 <LightBulbIcon className="mr-2 h-4 w-4" />
                 Generate hint
+              </Button>
+            )}
+            {enableViewAnswer &&
+              !showCorrectAnswers[examSessionQuestion.id] && (
+                <Button
+                  variant="outline"
+                  className="w-fit"
+                  onClick={handleViewAnswer}
+                  disabled={isGettingCorrectAnswers}
+                >
+                  <EyeIcon className="mr-2 h-4 w-4" />
+                  View answer
+                </Button>
+              )}
+            {enableViewAnswer && showCorrectAnswers[examSessionQuestion.id] && (
+              <Button
+                variant="outline"
+                className="w-fit"
+                onClick={() =>
+                  setShowCorrectAnswers(examSessionQuestion.id, false)
+                }
+              >
+                <EyeOffIcon className="mr-2 h-4 w-4" />
+                Hide answers
               </Button>
             )}
           </div>
@@ -561,7 +745,15 @@ export default function QuestionBox({
   );
 }
 
-function SortableItem({ id, text }: { id: string; text: string }) {
+function SortableItem({
+  id,
+  text,
+  order,
+}: {
+  id: string;
+  text: string;
+  order?: number;
+}) {
   const {
     attributes,
     listeners,
@@ -581,17 +773,24 @@ function SortableItem({ id, text }: { id: string; text: string }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-background flex items-center gap-2 rounded-md border p-3"
+      className="bg-background flex items-center justify-between gap-2 rounded-md border p-3"
       {...attributes}
     >
-      <Button
-        variant="ghost"
-        {...listeners}
-        className="cursor-grab touch-manipulation"
-      >
-        <GripVertical size={16} />
-      </Button>
-      <span>{text}</span>
+      <div className="flex flex-row items-center gap-2">
+        <Button
+          variant="ghost"
+          {...listeners}
+          className="cursor-grab touch-manipulation"
+        >
+          <GripVertical size={16} />
+        </Button>
+        <span>{text}</span>
+      </div>
+      {order !== undefined && (
+        <div className="flex flex-row items-center gap-2 rounded-full bg-green-500 px-2 py-1 text-xs font-medium text-white">
+          {order + 1}
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ export type UpsertExamSettingsRequest = {
   enableAiPoweredExplanations: boolean;
   enableAiRewriteQuestions: boolean;
   enableHints: boolean;
+  enableViewAnswer: boolean;
 };
 
 // Responses
@@ -24,4 +25,5 @@ export type ExamSettingsResponse = {
   enableAiPoweredExplanations: boolean;
   enableAiRewriteQuestions: boolean;
   enableHints: boolean;
+  enableViewAnswer: boolean;
 };

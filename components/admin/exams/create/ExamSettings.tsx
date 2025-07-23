@@ -9,7 +9,6 @@ import {
   HelpCircle,
   BookOpen,
   PencilLine,
-  Sparkles,
   Lightbulb,
   Calculator,
 } from "lucide-react";
@@ -99,12 +98,12 @@ const settingGroups: SettingGroup[] = [
   {
     name: "AI Features",
     settings: [
-      {
-        name: "enableAiPoweredExplanations",
-        title: "AI Explanations",
-        description: "Enable AI-powered explanations for complex questions.",
-        icon: <Sparkles />,
-      },
+      // {
+      //   name: "enableAiPoweredExplanations",
+      //   title: "AI Explanations",
+      //   description: "Enable AI-powered explanations for complex questions.",
+      //   icon: <Sparkles />,
+      // },
       {
         name: "enableAiRewriteQuestions",
         title: "AI Question Rewriting",
@@ -116,6 +115,13 @@ const settingGroups: SettingGroup[] = [
         title: "Enable Hints",
         description: "Allow learners to request hints during the exam.",
         icon: <Lightbulb />,
+      },
+      {
+        name: "enableViewAnswer",
+        title: "Enable Viewing Answer",
+        description:
+          "Allow learners to view the correct answer during the exam.",
+        icon: <EyeIcon />,
       },
     ],
   },

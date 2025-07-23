@@ -6,8 +6,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircleIcon, SparklesIcon, XCircleIcon } from "lucide-react";
+import { CheckCircleIcon, XCircleIcon } from "lucide-react";
 import { AnswerChoice } from "@/lib/types/answer-choice";
 import { QuestionChoiceResultResponse } from "@/lib/types/question-choice";
 import { LightBulbIcon } from "@heroicons/react/24/outline";
@@ -211,6 +210,14 @@ export function QuestionResult({
 
             {examSessionQuestion.answer?.choices &&
               renderUserAnswerChoices(examSessionQuestion.answer.choices)}
+            {examSessionQuestion.answer?.choices === undefined ||
+              (examSessionQuestion.answer?.choices.length === 0 && (
+                <div className="flex w-full flex-col items-start">
+                  <p className="text-muted-foreground text-xs italic md:text-sm">
+                    - No answer provided
+                  </p>
+                </div>
+              ))}
           </div>
 
           {/* Correct Answer */}

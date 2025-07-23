@@ -16,7 +16,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipProvider,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import useArchiveExam from "@/hooks/exams/useArchiveExam";
+import useFeatureExam from "@/hooks/exams/useFeatureExam";
+import useUnfeatureExam from "@/hooks/exams/useUnfeatureExam";
 import { ExamResponse } from "@/lib/types/exam";
 import { getStatusColor, getDifficultyColor } from "@/lib/utils/exam";
 import {
@@ -29,6 +37,7 @@ import {
   Archive,
   Flame,
   BarChart,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -47,6 +56,19 @@ export default function ExamCardHorizontal({
   const handleArchive = async () => {
     await archiveExam();
   };
+  const { featureExam, isPending: isFeatureLoading } = useFeatureExam(exam.id);
+  const { unfeatureExam, isPending: isUnfeatureLoading } = useUnfeatureExam(
+    exam.id,
+  );
+
+  const handleToggleFeatured = async () => {
+    if (exam.isFeatured) {
+      await unfeatureExam();
+    } else {
+      await featureExam();
+    }
+  };
+
   return (
     <Card
       key={exam.id}
@@ -60,31 +82,58 @@ export default function ExamCardHorizontal({
         {/* Main info */}
         <div className="flex flex-col gap-2 p-4">
           <CardHeader className="p-0">
-            <div className="flex items-center gap-2">
-              <Badge
-                hidden={!exam.isFeatured}
-                variant="outline"
-                className={`bg-primary/20 border-0 text-blue-800`}
-              >
-                <Flame className="mr-1 h-4 w-4" />
-                Featured
-              </Badge>
-              <Badge
-                hidden={disableOptions}
-                variant="outline"
-                className={`${getStatusColor(exam.status)} border-0`}
-              >
-                {exam.status}
-              </Badge>
-              <Badge
-                variant="outline"
-                className={`${getDifficultyColor(exam.difficulty)} border-0`}
-              >
-                {exam.difficulty}
-              </Badge>
-              <span className="text-muted-foreground text-xs">
-                v{exam.version}
-              </span>
+            <div className="flex flex-row items-center justify-between gap-2">
+              <div className="flex flex-row items-center gap-2">
+                <Badge
+                  hidden={!exam.isFeatured}
+                  variant="outline"
+                  className={`bg-primary/20 border-0 text-blue-800`}
+                >
+                  <Flame className="mr-1 h-4 w-4" />
+                  Featured
+                </Badge>
+                <Badge
+                  hidden={disableOptions}
+                  variant="outline"
+                  className={`${getStatusColor(exam.status)} border-0`}
+                >
+                  {exam.status}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={`${getDifficultyColor(exam.difficulty)} border-0`}
+                >
+                  {exam.difficulty}
+                </Badge>
+                <span className="text-muted-foreground text-xs">
+                  v{exam.version}
+                </span>
+              </div>
+              {!disableOptions && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger
+                      disabled={isFeatureLoading || isUnfeatureLoading}
+                    >
+                      <Button
+                        disabled={isFeatureLoading || isUnfeatureLoading}
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleToggleFeatured}
+                      >
+                        {exam.isFeatured ? (
+                          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                        ) : (
+                          <Star className="h-4 w-4 text-gray-500" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {exam.isFeatured ? "Unfeature Exam" : "Feature Exam"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <CardTitle className="text-lg">{exam.title}</CardTitle>
             <CardDescription className="line-clamp-2">

@@ -4,6 +4,9 @@ import {
   ExamQuestionExamSessionQuestionResultResponse,
 } from "./exam-question";
 
+// Query
+export type RewriteDifficulty = "same" | "easier" | "harder";
+
 // Requests
 export type UpdateExamSessionQuestionRequest = {
   examSessionQuestionId: string;
@@ -30,4 +33,14 @@ export type ExamSessionQuestionResultResponse = {
   timeSpentSeconds: number;
   toBeReviewed: boolean;
   answer?: AnswerResponse;
+};
+
+export type ExamSessionQuestionChoiceExplanationResponse = {
+  questionChoiceId: string;
+  explanation: string;
+  order?: number;
+};
+
+export type ExamSessionQuestionRewriteResponse = {
+  text: string;
 };

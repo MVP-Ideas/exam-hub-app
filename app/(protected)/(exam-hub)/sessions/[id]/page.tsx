@@ -301,10 +301,7 @@ export default function Page() {
           </p>
           <Button
             variant="outline"
-            onClick={() => {
-              submitExamSession();
-              router.push(`/results/${examSession.id}`);
-            }}
+            onClick={() => router.push(`/results/${examSession.id}`)}
             className="w-full"
           >
             Go to Results

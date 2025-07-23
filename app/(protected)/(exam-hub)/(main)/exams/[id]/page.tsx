@@ -305,7 +305,7 @@ export default function Page() {
                       <div className="text-muted-foreground flex items-center gap-6 text-sm">
                         <div className="text-right">
                           <p className="text-foreground font-medium">
-                            {session.scorePercentage.toFixed(2)}%
+                            {session.scorePercentage?.toFixed(2)}%
                           </p>
                           <p className="text-xs">Score</p>
                         </div>

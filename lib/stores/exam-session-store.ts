@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { CreateAnswerRequest } from "../types/answer";
+import { ExamSessionQuestionChoiceExplanationResponse } from "../types";
 
 type NavigationMode = "numbers" | "questions";
 
@@ -33,6 +34,32 @@ interface ExamSessionState {
   hints: { [questionId: string]: string };
   setHint: (questionId: string, hint: string) => void;
   resetHints: () => void;
+
+  correctAnswers: {
+    [questionId: string]: ExamSessionQuestionChoiceExplanationResponse[];
+  };
+  setCorrectAnswers: (
+    questionId: string,
+    answers: ExamSessionQuestionChoiceExplanationResponse[],
+  ) => void;
+  resetCorrectAnswers: () => void;
+
+  showCorrectAnswers: { [questionId: string]: boolean };
+  setShowCorrectAnswers: (questionId: string, show: boolean) => void;
+  resetShowCorrectAnswers: (questionId: string) => void;
+
+  questionText: {
+    [questionId: string]: {
+      text: string;
+      overwriteStatus: "none" | "same" | "easier" | "harder";
+    };
+  };
+  setQuestionText: (
+    questionId: string,
+    text: string,
+    overwriteStatus: "none" | "same" | "easier" | "harder",
+  ) => void;
+  resetQuestionText: (questionId: string) => void;
 }
 
 export const useExamSessionStore = create<ExamSessionState>()(
@@ -84,6 +111,42 @@ export const useExamSessionStore = create<ExamSessionState>()(
       setHint: (questionId, hint) =>
         set((state) => ({ hints: { ...state.hints, [questionId]: hint } })),
       resetHints: () => set({ hints: {} }),
+
+      correctAnswers: {},
+      setCorrectAnswers: (questionId, answers) =>
+        set((state) => ({
+          correctAnswers: { ...state.correctAnswers, [questionId]: answers },
+        })),
+      resetCorrectAnswers: () => set({ correctAnswers: {} }),
+
+      showCorrectAnswers: {},
+      setShowCorrectAnswers: (questionId, show) =>
+        set((state) => ({
+          showCorrectAnswers: {
+            ...state.showCorrectAnswers,
+            [questionId]: show,
+          },
+        })),
+      resetShowCorrectAnswers: (questionId) =>
+        set((state) => ({
+          showCorrectAnswers: {
+            ...state.showCorrectAnswers,
+            [questionId]: false,
+          },
+        })),
+
+      questionText: {},
+      setQuestionText: (questionId, text, overwriteStatus) =>
+        set((state) => ({
+          questionText: { ...state.questionText, [questionId]: { text, overwriteStatus } },
+        })),
+      resetQuestionText: (questionId) =>
+        set((state) => ({
+          questionText: {
+            ...state.questionText,
+            [questionId]: { text: "", overwriteStatus: "none" },
+          },
+        })),
     }),
     {
       name: "exam-session-storage",
@@ -96,6 +159,9 @@ export const useExamSessionStore = create<ExamSessionState>()(
         answers: state.answers,
         calculatorIsOpened: state.calculatorIsOpened,
         hints: state.hints,
+        correctAnswers: state.correctAnswers,
+        showCorrectAnswers: state.showCorrectAnswers,
+        questionText: state.questionText,
       }),
     },
   ),

@@ -277,20 +277,6 @@ export default function Page() {
                 </h2>
                 <p className="text-lg font-bold">{incorrectWithAssistance}</p>
               </div>
-
-              {totalAiAssistanceUsed && (
-                <div className="flex w-full flex-row items-center justify-center gap-x-2">
-                  <LightBulbIcon className="h-4 w-4 text-orange-500" />
-                  <p className="text-xs">
-                    Used AI-Assitance on {totalAiAssistanceUsed} question(s)
-                  </p>
-                </div>
-              )}
-
-              <div className="flex w-full flex-row items-center justify-center gap-x-2">
-                <EyeIcon className="h-4 w-4 text-blue-500" />
-                <p className="text-xs">Viewed answer on {1} question(s)</p>
-              </div>
             </div>
           </div>
         </div>

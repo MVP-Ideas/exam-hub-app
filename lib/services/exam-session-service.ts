@@ -10,7 +10,10 @@ import {
   RetakeOptions,
 } from "../types/exam-session";
 import {
+  ExamSessionQuestionChoiceExplanationResponse,
   ExamSessionQuestionResponse,
+  ExamSessionQuestionRewriteResponse,
+  RewriteDifficulty,
   UpdateExamSessionQuestionRequest,
 } from "../types/exam-session-question";
 import { CreateAnswerRequest } from "../types/answer";
@@ -132,6 +135,24 @@ const ExamSessionService = {
   generateHint: async (examSessionId: string, questionId: string) => {
     const response = await api.post<{ hint: string }>(
       `${BASE_URL}/${examSessionId}/questions/${questionId}/generate-hint`,
+    );
+    return response.data;
+  },
+  getAnswer: async (examSessionId: string, examSessionQuestionId: string) => {
+    const response = await api.get<
+      ExamSessionQuestionChoiceExplanationResponse[]
+    >(
+      `${BASE_URL}/${examSessionId}/questions/${examSessionQuestionId}/correct-answers`,
+    );
+    return response.data;
+  },
+  rewriteQuestion: async (
+    examSessionId: string,
+    questionId: string,
+    difficulty: RewriteDifficulty,
+  ) => {
+    const response = await api.post<ExamSessionQuestionRewriteResponse>(
+      `${BASE_URL}/${examSessionId}/questions/${questionId}/rewrite-question?difficulty=${difficulty}`,
     );
     return response.data;
   },

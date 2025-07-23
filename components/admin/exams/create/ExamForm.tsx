@@ -36,6 +36,7 @@ export const settingsSchema = z.object({
   enableAiPoweredExplanations: z.boolean(),
   enableAiRewriteQuestions: z.boolean(),
   enableHints: z.boolean(),
+  enableViewAnswer: z.boolean(),
 });
 
 export const resourceSchema = z.object({
@@ -76,7 +77,6 @@ export default function ExamForm({ type, exam }: Props) {
   );
   const [isDraft, setIsDraft] = useState(true);
   const isPending = type === "edit" ? isUpdatePending : isCreatePending;
-  console.log(exam);
 
   const form = useForm<ExamFormSchema>({
     resolver: zodResolver(createExamSchema),
@@ -100,6 +100,7 @@ export default function ExamForm({ type, exam }: Props) {
         enableAiPoweredExplanations: false,
         enableAiRewriteQuestions: false,
         enableHints: false,
+        enableViewAnswer: false,
       },
     },
   });
@@ -142,6 +143,7 @@ export default function ExamForm({ type, exam }: Props) {
             data.settings.enableAiPoweredExplanations,
           enableAiRewriteQuestions: data.settings.enableAiRewriteQuestions,
           enableHints: data.settings.enableHints,
+          enableViewAnswer: data.settings.enableViewAnswer,
         },
         isDraft: isDraft,
       };
@@ -195,6 +197,7 @@ export default function ExamForm({ type, exam }: Props) {
           enableAiRewriteQuestions:
             exam.settings?.enableAiRewriteQuestions ?? false,
           enableHints: exam.settings?.enableHints ?? false,
+          enableViewAnswer: exam.settings?.enableViewAnswer ?? false,
         },
       });
     }
