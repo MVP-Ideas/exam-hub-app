@@ -6,6 +6,7 @@ import useExamSessionPracticeOptions from "@/hooks/exam-sessions/useExamSessionP
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  EyeIcon,
   RotateCcwIcon,
   XIcon,
 } from "lucide-react";
@@ -15,8 +16,8 @@ import { formatUTCDate } from "@/lib/date-utils";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import AppLoader from "@/components/common/app-loader";
-import { QuestionResult } from "@/components/learner/results/question-result";
+import AppLoader from "@/components/common/AppLoader";
+import { QuestionResult } from "@/components/learner/results/QuestionResult";
 import { LightBulbIcon } from "@heroicons/react/24/outline";
 import { RetakeOptions } from "@/lib/types/exam-session";
 import useRetakeExamSession from "@/hooks/exam-sessions/useRetakeExamSession";
@@ -52,6 +53,22 @@ export default function Page() {
   const percentage = examSessionResult?.score
     ? (examSessionResult?.score / examSessionResult?.totalScore) * 100
     : 0;
+
+  const correctWithoutAssistance = examSessionResult?.questions.filter(
+    (q) => q.isCorrect && !q.aiAssistanceUsed,
+  ).length;
+  const correctWithAssistance = examSessionResult?.questions.filter(
+    (q) => q.isCorrect && q.aiAssistanceUsed,
+  ).length;
+  const incorrectWithoutAssistance = examSessionResult?.questions.filter(
+    (q) => !q.isCorrect && !q.aiAssistanceUsed,
+  ).length;
+  const incorrectWithAssistance = examSessionResult?.questions.filter(
+    (q) => !q.isCorrect && q.aiAssistanceUsed,
+  ).length;
+  const totalAiAssistanceUsed = examSessionResult?.questions.filter(
+    (q) => q.aiAssistanceUsed,
+  ).length;
 
   const isPassed = examSessionResult?.passingFlag === "Passed";
 
@@ -218,6 +235,48 @@ export default function Page() {
                   day: "numeric",
                 })}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Breakdown */}
+        <div className="border-primary/20 flex w-full flex-col gap-y-4 rounded-lg border p-0">
+          <div className="flex flex-col items-start gap-y-4 px-8 py-4">
+            <h1 className="text-lg font-bold">Performance Breakdown</h1>
+            <div className="grid w-full grid-cols-1 gap-4 pb-4 md:grid-cols-2">
+              {/* Correct without Assistance */}
+              <div className="flex w-full flex-col items-start justify-center gap-y-2 rounded-lg border border-green-500 bg-green-50 p-4">
+                <h2 className="text-muted-foreground text-sm font-light">
+                  Correct without Assistance
+                </h2>
+                <p className="text-lg font-bold">{correctWithoutAssistance}</p>
+              </div>
+
+              {/* Correct with Assistance */}
+              <div className="flex w-full flex-col items-start justify-center gap-y-2 rounded-lg border border-blue-500 bg-blue-50 p-4">
+                <h2 className="text-muted-foreground text-sm font-light">
+                  Correct with Assistance
+                </h2>
+                <p className="text-lg font-bold">{correctWithAssistance}</p>
+              </div>
+
+              {/* Incorrect without Assistance */}
+              <div className="flex w-full flex-col items-start justify-center gap-y-2 rounded-lg border border-red-500 bg-red-50 p-4">
+                <h2 className="text-muted-foreground text-sm font-light">
+                  Incorrect without Assistance
+                </h2>
+                <p className="text-lg font-bold">
+                  {incorrectWithoutAssistance}
+                </p>
+              </div>
+
+              {/* Incorrect with Assistance */}
+              <div className="flex w-full flex-col items-start justify-center gap-y-2 rounded-lg border border-orange-500 bg-orange-50 p-4">
+                <h2 className="text-muted-foreground text-sm font-light">
+                  Incorrect with Assistance
+                </h2>
+                <p className="text-lg font-bold">{incorrectWithAssistance}</p>
+              </div>
             </div>
           </div>
         </div>

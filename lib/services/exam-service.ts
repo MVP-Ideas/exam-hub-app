@@ -20,6 +20,7 @@ const ExamService = {
         difficulty: params.difficulty,
         category: params.category,
         status: params.status,
+        isFeatured: params.isFeatured,
       },
     });
     return response.data;
@@ -46,6 +47,16 @@ const ExamService = {
   },
   archive: async (id: string) => {
     const response = await api.post<ExamResponse>(`${BASE_URL}/${id}/archive`);
+    return response.data;
+  },
+  feature: async (id: string) => {
+    const response = await api.post<ExamResponse>(`${BASE_URL}/${id}/feature`);
+    return response.data;
+  },
+  unfeature: async (id: string) => {
+    const response = await api.post<ExamResponse>(
+      `${BASE_URL}/${id}/unfeature`,
+    );
     return response.data;
   },
 };

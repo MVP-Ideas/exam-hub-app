@@ -24,9 +24,9 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import ResourceCard from "@/components/admin/resources/resource-card";
+import ResourceCard from "@/components/admin/resources/ResourceCard";
 import { formatUTCDate } from "@/lib/date-utils";
-import AppLoader from "@/components/common/app-loader";
+import AppLoader from "@/components/common/AppLoader";
 import { getDifficultyColor } from "@/lib/utils/exam";
 
 export default function Page() {

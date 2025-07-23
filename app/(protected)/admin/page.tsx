@@ -1,6 +1,6 @@
 "use client";
 
-import PlatformMetrics from "@/components/admin/landing/platform-metrics";
+import PlatformMetrics from "@/components/admin/landing/PlatformMetrics";
 import { Badge } from "@/components/ui/badge";
 import { UserState, useUserStore } from "@/lib/stores/user-store";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import ExamForm from "@/components/admin/exams/create/exam-form";
+import ExamForm from "@/components/admin/exams/create/ExamForm";
 import { useParams } from "next/navigation";
 import useExamById from "@/hooks/exams/useExamById";
 import { Badge } from "@/components/ui/badge";

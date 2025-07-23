@@ -1,8 +1,8 @@
 "use client";
 
-import AdminProvider from "@/components/providers/admin-provider";
-import AuthenticationProvider from "@/components/providers/auth-provider";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import AdminProvider from "@/components/providers/AdminProvider";
+import AuthenticationProvider from "@/components/providers/AuthProvider";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import {
   SidebarProvider,
   SidebarInset,

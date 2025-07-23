@@ -1,6 +1,6 @@
 "use client";
 
-import ExamForm from "@/components/admin/exams/create/exam-form";
+import ExamForm from "@/components/admin/exams/create/ExamForm";
 
 export default function Page() {
   return (

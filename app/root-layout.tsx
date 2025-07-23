@@ -2,7 +2,7 @@
 
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/providers/providers";
+import { Providers } from "@/components/providers/Providers";
 import { Toaster } from "@/components/ui/sonner";
 import { Suspense, useEffect } from "react";
 import { useUserStore } from "@/lib/stores/user-store";

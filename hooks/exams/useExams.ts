@@ -9,6 +9,7 @@ type Props = {
   pageSize: number;
   difficulty: string;
   status: string;
+  isFeatured?: boolean;
 };
 
 const useGetExams = (params: Props) => {

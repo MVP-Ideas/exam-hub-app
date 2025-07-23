@@ -1,6 +1,6 @@
-import { MsalProviderApp } from "./msal-provider-app";
-import QueryProvider from "./query-provider";
-import { ThemeProvider } from "./theme-provider";
+import { MsalProviderApp } from "./MsalProviderApp";
+import QueryProvider from "./QueryProvider";
+import { ThemeProvider } from "./ThemeProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
