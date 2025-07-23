@@ -8,7 +8,7 @@ import { Suspense, useEffect } from "react";
 import { useUserStore } from "@/lib/stores/user-store";
 import { useExamSessionStore } from "@/lib/stores/exam-session-store";
 import Loading from "./loading";
-import Providers from "@/components/providers/Providers";
+import MainProviders from "@/components/providers/MainProviders";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -29,9 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${dmSans.variable} antialiased`}>
-        <Providers>
+        <MainProviders>
           <Suspense fallback={<Loading />}>{children}</Suspense>
-        </Providers>
+        </MainProviders>
         <Toaster />
       </body>
     </html>

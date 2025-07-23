@@ -2,7 +2,11 @@ import { MsalProviderApp } from "./MsalProviderApp";
 import QueryProvider from "./QueryProvider";
 import { ThemeProvider } from "./ThemeProvider";
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function MainProviders({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <MsalProviderApp>
       <ThemeProvider
