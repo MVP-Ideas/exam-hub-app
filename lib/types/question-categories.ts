@@ -1,3 +1,8 @@
+// Query
+export type QuestionCategoryQuery = {
+  search?: string;
+};
+
 export type QuestionCategory = {
   id: string;
   name: string;
@@ -5,6 +10,7 @@ export type QuestionCategory = {
   createdAt: string;
   updatedAt: string;
   isActive: boolean;
+  usageCount: number;
 };
 
 export type QuestionCategoryCreate = {

@@ -1,17 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tag, ChevronsUpDown, X } from "lucide-react";
 
 import useQuestionCategories from "@/hooks/question-categories/useQuestionCategories";
-import useCreateQuestionCategory from "@/hooks/question-categories/useCreateQuestionCategory";
+import QuestionCategoryAddDialog from "../admin/question-categories/QuestionCategoryAddDialog";
+import { QuestionCategory } from "@/lib/types/question-categories";
 
 type Props = {
   value?: string[];
@@ -31,28 +24,16 @@ export default function QuestionCategoryMultiselect({
   onChange,
 }: Props) {
   const { categories, isLoading } = useQuestionCategories();
-  const { createQuestionCategory, isPending } = useCreateQuestionCategory();
 
   const [showOptions, setShowOptions] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
 
-  const handleAddCategory = async () => {
-    if (name.trim().length < 1) return;
-
-    const newCategory = await createQuestionCategory({
-      name: name.trim(),
-      description: description.trim(),
-    });
-
-    setName("");
-    setDescription("");
+  const handleAddCategory = (category: QuestionCategory) => {
     setIsDialogOpen(false);
 
     if (onChange) {
-      onChange([...value, newCategory.id]);
+      onChange([...value, category.id]);
     }
   };
 
@@ -176,55 +157,11 @@ export default function QuestionCategoryMultiselect({
           </div>
 
           <Separator />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                className="text-muted-foreground w-full justify-center"
-                type="button"
-              >
-                + Add Category
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Question Category</DialogTitle>
-                <DialogDescription>
-                  Create a new category for organizing your questions.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category-name">Name</Label>
-                  <Input
-                    id="category-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Azure Services"
-                    maxLength={50}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category-description">Description</Label>
-                  <Textarea
-                    id="category-description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe this category..."
-                    maxLength={500}
-                  />
-                </div>
-                <div className="flex justify-end">
-                  <Button
-                    onClick={handleAddCategory}
-                    disabled={isPending || name.trim().length < 1}
-                  >
-                    {isPending ? "Adding..." : "Add"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <QuestionCategoryAddDialog
+            isDialogOpen={isDialogOpen}
+            setIsDialogOpen={setIsDialogOpen}
+            onAddCategory={handleAddCategory}
+          />
         </div>
       )}
 

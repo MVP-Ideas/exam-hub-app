@@ -117,67 +117,76 @@ export function QuestionReview({
         <div className="flex w-full flex-col items-start gap-y-4 pl-1">
           <div className="flex flex-col items-start">
             <p className="text-muted-foreground text-xs md:text-sm">Answer</p>
-            {(() => {
-              if (
-                examSessionQuestion.question.type ===
-                  QuestionType.MultipleChoiceSingle ||
-                examSessionQuestion.question.type === QuestionType.TrueFalse
-              ) {
-                return (
-                  <div>
-                    {examSessionQuestion.answer?.choices.map(
-                      (choice: AnswerChoice) => (
-                        <div key={choice.questionChoiceId}>
-                          {getQuestionTypeText(
-                            examSessionQuestion.points,
-                            examSessionQuestion.points || 0,
-                            choice.text || "",
-                          )}
-                        </div>
-                      ),
-                    )}
-                  </div>
-                );
-              } else if (
-                examSessionQuestion.question.type ===
-                QuestionType.MultipleChoiceMultiple
-              ) {
-                return (
-                  <ul className="list-disc pl-4">
-                    {examSessionQuestion.answer?.choices.map(
-                      (choice: AnswerChoice) => (
-                        <li key={choice.questionChoiceId}>
-                          {getQuestionTypeText(
-                            examSessionQuestion.points,
-                            examSessionQuestion.points || 0,
-                            choice.text || "",
-                          )}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                );
-              } else if (
-                examSessionQuestion.question.type === QuestionType.DragAndDrop
-              ) {
-                return (
-                  <ol className="list-decimal pl-4">
-                    {examSessionQuestion.answer?.choices
-                      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                      .map((choice: AnswerChoice) => (
-                        <li key={choice.questionChoiceId}>
-                          {getQuestionTypeText(
-                            examSessionQuestion.points,
-                            examSessionQuestion.points || 0,
-                            choice.text || "",
-                          )}
-                        </li>
-                      ))}
-                  </ol>
-                );
-              }
-              return null;
-            })()}
+            {examSessionQuestion.answer?.choices &&
+            examSessionQuestion.answer?.choices.length > 0 ? (
+              (() => {
+                if (
+                  examSessionQuestion.question.type ===
+                    QuestionType.MultipleChoiceSingle ||
+                  examSessionQuestion.question.type === QuestionType.TrueFalse
+                ) {
+                  return (
+                    <div>
+                      {examSessionQuestion.answer?.choices.map(
+                        (choice: AnswerChoice) => (
+                          <div key={choice.questionChoiceId}>
+                            {getQuestionTypeText(
+                              examSessionQuestion.points,
+                              examSessionQuestion.points || 0,
+                              choice.text || "",
+                            )}
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  );
+                } else if (
+                  examSessionQuestion.question.type ===
+                  QuestionType.MultipleChoiceMultiple
+                ) {
+                  return (
+                    <ul className="list-disc pl-4">
+                      {examSessionQuestion.answer?.choices.map(
+                        (choice: AnswerChoice) => (
+                          <li key={choice.questionChoiceId}>
+                            {getQuestionTypeText(
+                              examSessionQuestion.points,
+                              examSessionQuestion.points || 0,
+                              choice.text || "",
+                            )}
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  );
+                } else if (
+                  examSessionQuestion.question.type === QuestionType.DragAndDrop
+                ) {
+                  return (
+                    <ol className="list-decimal pl-4">
+                      {examSessionQuestion.answer?.choices
+                        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                        .map((choice: AnswerChoice) => (
+                          <li key={choice.questionChoiceId}>
+                            {getQuestionTypeText(
+                              examSessionQuestion.points,
+                              examSessionQuestion.points || 0,
+                              choice.text || "",
+                            )}
+                          </li>
+                        ))}
+                    </ol>
+                  );
+                }
+                return null;
+              })()
+            ) : (
+              <div className="flex w-full flex-col items-start">
+                <p className="text-muted-foreground text-xs italic md:text-sm">
+                  - No answer provided
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col items-start">

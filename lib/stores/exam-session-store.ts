@@ -101,6 +101,9 @@ export const useExamSessionStore = create<ExamSessionState>()(
           answers: [],
           calculatorIsOpened: undefined,
           hints: {},
+          correctAnswers: {},
+          showCorrectAnswers: {},
+          questionText: {},
         }),
 
       calculatorIsOpened: false,
@@ -138,7 +141,10 @@ export const useExamSessionStore = create<ExamSessionState>()(
       questionText: {},
       setQuestionText: (questionId, text, overwriteStatus) =>
         set((state) => ({
-          questionText: { ...state.questionText, [questionId]: { text, overwriteStatus } },
+          questionText: {
+            ...state.questionText,
+            [questionId]: { text, overwriteStatus },
+          },
         })),
       resetQuestionText: (questionId) =>
         set((state) => ({

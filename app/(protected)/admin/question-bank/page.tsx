@@ -119,7 +119,7 @@ export default function Page() {
       <div className="flex h-full w-full flex-col gap-6">
         <div className="flex w-full flex-row flex-wrap items-end justify-between gap-y-4">
           <div className="flex flex-col items-start">
-            <h1 className="text-2xl font-bold">Question Bank</h1>
+            <h1 className="text-xl font-bold md:text-2xl">Question Bank</h1>
             <p className="text-sm">
               Manage, organize, and reuse questions across exams
             </p>

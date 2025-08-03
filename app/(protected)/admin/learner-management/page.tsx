@@ -66,11 +66,11 @@ export default function Page() {
   }, [debouncedSearch, router]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col p-4 md:p-6">
+    <div className="flex h-full min-h-screen w-full flex-col items-center p-10">
       <div className="flex h-full w-full flex-col gap-4">
         {/* Header */}
         <div className="flex w-full flex-col items-start">
-          <h1 className="text-xl font-bold md:text-2xl">Learner Management</h1>
+          <h1 className="text-2xl font-bold md:text-2xl">Learner Management</h1>
           <p className="text-muted-foreground text-xs md:text-sm">
             Manage learners, track progress, and organize groups
           </p>

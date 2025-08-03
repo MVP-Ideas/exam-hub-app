@@ -2,6 +2,7 @@ import api from "@/lib/axios";
 import {
   QuestionCategory,
   QuestionCategoryCreate,
+  QuestionCategoryQuery,
 } from "@/lib/types/question-categories";
 import { isProblemDetails } from "@/lib/utils";
 
@@ -13,8 +14,10 @@ const QuestionCategoryService = {
     if (isProblemDetails(response.data)) throw response.data;
     return response.data;
   },
-  list: async () => {
-    const response = await api.get<QuestionCategory[]>(`${BASE_URL}`);
+  list: async (query?: QuestionCategoryQuery) => {
+    const response = await api.get<QuestionCategory[]>(`${BASE_URL}`, {
+      params: query,
+    });
     if (isProblemDetails(response.data)) throw response.data;
     return response.data;
   },

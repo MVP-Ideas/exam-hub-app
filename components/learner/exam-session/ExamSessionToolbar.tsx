@@ -12,7 +12,6 @@ import {
   ArrowRightToLine,
   BookIcon,
   CalculatorIcon,
-  FileQuestion,
   Grid2X2,
   ListOrdered,
   MessageCircle,
@@ -238,14 +237,6 @@ export default function ExamSessionToolbar({
                   Resources
                 </Button>
               )}
-              <Button
-                variant="outline"
-                className="w-full font-semibold"
-                disabled
-              >
-                <FileQuestion className="h-4 w-4" />
-                Help (Ongoing)
-              </Button>
               <Button
                 variant="outline"
                 className="w-full font-semibold"

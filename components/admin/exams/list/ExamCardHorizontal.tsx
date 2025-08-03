@@ -116,6 +116,7 @@ export default function ExamCardHorizontal({
                       disabled={isFeatureLoading || isUnfeatureLoading}
                     >
                       <Button
+                        asChild
                         disabled={isFeatureLoading || isUnfeatureLoading}
                         variant="ghost"
                         size="icon"

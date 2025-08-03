@@ -43,7 +43,7 @@ const useUpdateQuestionPoints = (examSessionId: string) => {
           queryKey: ["examSessionResult", examSessionId],
         });
       });
-      toast.success("Question points updated successfully");
+      toast.success("Question points updated successfully!");
     },
     onError: (error) => {
       toast.error("Failed to update question points");

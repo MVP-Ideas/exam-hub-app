@@ -10,6 +10,7 @@ export type QuestionChoiceResponse = {
   id: string;
   text: string;
   order?: number;
+  explanation?: string;
 };
 
 export type QuestionChoiceResultResponse = {

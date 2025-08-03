@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   Popover,
   PopoverTrigger,
@@ -22,15 +15,13 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 import useQuestionCategories from "@/hooks/question-categories/useQuestionCategories";
-import useCreateQuestionCategory from "@/hooks/question-categories/useCreateQuestionCategory";
 import { cn } from "@/lib/utils";
+import QuestionCategoryAddDialog from "../admin/question-categories/QuestionCategoryAddDialog";
+import { QuestionCategory } from "@/lib/types/question-categories";
 
 type Props = {
   value?: string | null;
@@ -46,13 +37,9 @@ export default function QuestionCategorySelect({
   includeNull,
 }: Props) {
   const { categories } = useQuestionCategories();
-  const { createQuestionCategory, isPending } = useCreateQuestionCategory();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [open, setOpen] = useState(false);
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
 
   const selectedCategory = categories?.find((cat) =>
     onIdChange ? cat.id === value : cat.name === value,
@@ -67,20 +54,11 @@ export default function QuestionCategorySelect({
     }
   }, [value, categories, onIdChange]);
 
-  const handleAddCategory = async () => {
-    if (name.trim().length < 1) return;
-
-    const newCategory = await createQuestionCategory({
-      name: name.trim(),
-      description: description.trim(),
-    });
-
-    setName("");
-    setDescription("");
+  const handleAddCategory = (category: QuestionCategory) => {
     setIsDialogOpen(false);
 
-    if (onChange) onChange(newCategory.name);
-    if (onIdChange) onIdChange(newCategory.id);
+    if (onChange) onChange(category.name);
+    if (onIdChange) onIdChange(category.id);
   };
 
   return (
@@ -154,55 +132,11 @@ export default function QuestionCategorySelect({
             </CommandGroup>
 
             <Separator />
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground w-full justify-center rounded-none"
-                  type="button"
-                >
-                  + Add Category
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Question Category</DialogTitle>
-                  <DialogDescription>
-                    Create a new category for organizing your questions.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="category-name">Name</Label>
-                    <Input
-                      id="category-name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Azure Services"
-                      maxLength={50}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="category-description">Description</Label>
-                    <Textarea
-                      id="category-description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe this category..."
-                      maxLength={500}
-                    />
-                  </div>
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={handleAddCategory}
-                      disabled={isPending || name.trim().length < 1}
-                    >
-                      {isPending ? "Adding..." : "Add"}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <QuestionCategoryAddDialog
+              isDialogOpen={isDialogOpen}
+              setIsDialogOpen={setIsDialogOpen}
+              onAddCategory={handleAddCategory}
+            />
           </Command>
         </PopoverContent>
       </Popover>

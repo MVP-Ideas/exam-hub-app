@@ -84,6 +84,11 @@ export function AdminSidebar({
           label: "Generate Questions",
           href: "/admin/generate-questions",
         },
+        {
+          id: "question-categories",
+          label: "Question Categories",
+          href: "/admin/question-categories",
+        },
       ],
     },
     {

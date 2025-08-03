@@ -28,6 +28,7 @@ import {
   Loader2,
   EyeIcon,
   EyeOffIcon,
+  InfoIcon,
 } from "lucide-react";
 import ResourceCard from "@/components/admin/resources/ResourceCard";
 import { QuestionType } from "@/lib/types/questions";
@@ -99,11 +100,15 @@ export default function QuestionBox({
     useGenerateQuestionHint();
   const enableHints = examSession?.settings.enableHints;
   const enableViewAnswer = examSession?.settings.enableViewAnswer;
+  const enableRewriteQuestion = examSession?.settings.enableAiRewriteQuestions;
+  const displayQuestionExplanations =
+    examSession?.settings.showQuestionExplanations;
   const currentHint = enableHints ? hints[examSessionQuestion.id] : "";
 
   const [currentQuestionText, setCurrentQuestionText] = useState<string>(
     examSessionQuestion.question.text,
   );
+  const [displayExplanation, setDisplayExplanation] = useState<boolean>(false);
 
   const { getCorrectAnswers, isPending: isGettingCorrectAnswers } =
     useGetExamSessionQuestionCorrectAnswer();
@@ -156,6 +161,17 @@ export default function QuestionBox({
       toast.error("Error generating hint. Please try again.");
     }
   };
+
+  useEffect(() => {
+    // Auto-fetch explanations when explanation display is enabled and user has selected choices
+    if (
+      displayExplanation &&
+      selectedChoices.length > 0 &&
+      !correctAnswers[examSessionQuestion.id]
+    ) {
+      handleViewAnswer();
+    }
+  }, [displayExplanation, selectedChoices.length, examSessionQuestion.id]);
 
   const handleViewAnswer = async () => {
     if (correctAnswers[examSessionQuestion.id]) {
@@ -262,6 +278,7 @@ export default function QuestionBox({
         order: c.order,
       })) || [],
     );
+
     if (questionText[examSessionQuestion.id]) {
       setCurrentQuestionText(questionText[examSessionQuestion.id].text);
     } else {
@@ -398,54 +415,84 @@ export default function QuestionBox({
             onValueChange={handleSingleChoiceSelection}
             className="space-y-2"
           >
-            {examSessionQuestion.question.choices.map((choice) => (
-              <div
-                key={choice.id}
-                className={cn(
-                  "flex items-center space-x-2 rounded-md border p-3",
-                  correctChoiceIds?.some(
-                    (c) => c.questionChoiceId === choice.id,
-                  ) &&
-                    showCorrectAnswers[examSessionQuestion.id] &&
-                    "border-green-500 bg-green-50",
-                )}
-              >
-                <RadioGroupItem value={choice.id} id={choice.id} />
-                <Label htmlFor={choice.id} className="w-full cursor-pointer">
-                  {choice.text}
-                </Label>
-              </div>
-            ))}
+            {examSessionQuestion.question.choices.map((choice) => {
+              const isSelected = selectedChoices.includes(choice.id);
+              const explanation = choice.explanation;
+
+              return (
+                <div key={choice.id} className="space-y-2">
+                  <div
+                    className={cn(
+                      "flex items-center space-x-2 rounded-md border p-3",
+                      correctChoiceIds?.some(
+                        (c) => c.questionChoiceId === choice.id,
+                      ) &&
+                        showCorrectAnswers[examSessionQuestion.id] &&
+                        "border-green-500 bg-green-50",
+                    )}
+                  >
+                    <RadioGroupItem value={choice.id} id={choice.id} />
+                    <Label
+                      htmlFor={choice.id}
+                      className="w-full cursor-pointer"
+                    >
+                      {choice.text}
+                    </Label>
+                  </div>
+                  {isSelected && displayExplanation && explanation && (
+                    <div className="ml-6 rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+                      <div className="mb-1 font-medium">Explanation:</div>
+                      <div>{explanation}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </RadioGroup>
         );
 
       case QuestionType.MultipleChoiceMultiple:
         return (
           <div className="space-y-2">
-            {examSessionQuestion.question.choices.map((choice) => (
-              <div
-                key={choice.id}
-                className={cn(
-                  "flex items-center space-x-2 rounded-md border p-3",
-                  correctChoiceIds?.some(
-                    (c) => c.questionChoiceId === choice.id,
-                  ) &&
-                    showCorrectAnswers[examSessionQuestion.id] &&
-                    "border-green-500 bg-green-50",
-                )}
-              >
-                <Checkbox
-                  id={choice.id}
-                  checked={selectedChoices.includes(choice.id)}
-                  onCheckedChange={(checked) =>
-                    handleMultipleChoiceSelection(choice.id, !!checked)
-                  }
-                />
-                <Label htmlFor={choice.id} className="w-full cursor-pointer">
-                  {choice.text}
-                </Label>
-              </div>
-            ))}
+            {examSessionQuestion.question.choices.map((choice) => {
+              const isSelected = selectedChoices.includes(choice.id);
+              const explanation = choice.explanation;
+
+              return (
+                <div key={choice.id} className="space-y-2">
+                  <div
+                    className={cn(
+                      "flex items-center space-x-2 rounded-md border p-3",
+                      correctChoiceIds?.some(
+                        (c) => c.questionChoiceId === choice.id,
+                      ) &&
+                        showCorrectAnswers[examSessionQuestion.id] &&
+                        "border-green-500 bg-green-50",
+                    )}
+                  >
+                    <Checkbox
+                      id={choice.id}
+                      checked={selectedChoices.includes(choice.id)}
+                      onCheckedChange={(checked) =>
+                        handleMultipleChoiceSelection(choice.id, !!checked)
+                      }
+                    />
+                    <Label
+                      htmlFor={choice.id}
+                      className="w-full cursor-pointer"
+                    >
+                      {choice.text}
+                    </Label>
+                  </div>
+                  {isSelected && displayExplanation && explanation && (
+                    <div className="ml-6 rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+                      <div className="mb-1 font-medium">Explanation:</div>
+                      <div>{explanation}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         );
 
@@ -456,24 +503,39 @@ export default function QuestionBox({
             onValueChange={handleSingleChoiceSelection}
             className="space-y-2"
           >
-            {examSessionQuestion.question.choices.map((choice) => (
-              <div
-                key={choice.id}
-                className={cn(
-                  "flex items-center space-x-2 rounded-md border p-3",
-                  correctChoiceIds?.some(
-                    (c) => c.questionChoiceId === choice.id,
-                  ) &&
-                    showCorrectAnswers[examSessionQuestion.id] &&
-                    "border-green-500 bg-green-50",
-                )}
-              >
-                <RadioGroupItem value={choice.id} id={choice.id} />
-                <Label htmlFor={choice.id} className="w-full cursor-pointer">
-                  {choice.text}
-                </Label>
-              </div>
-            ))}
+            {examSessionQuestion.question.choices.map((choice) => {
+              const isSelected = selectedChoices.includes(choice.id);
+              const explanation = choice.explanation;
+
+              return (
+                <div key={choice.id} className="space-y-2">
+                  <div
+                    className={cn(
+                      "flex items-center space-x-2 rounded-md border p-3",
+                      correctChoiceIds?.some(
+                        (c) => c.questionChoiceId === choice.id,
+                      ) &&
+                        showCorrectAnswers[examSessionQuestion.id] &&
+                        "border-green-500 bg-green-50",
+                    )}
+                  >
+                    <RadioGroupItem value={choice.id} id={choice.id} />
+                    <Label
+                      htmlFor={choice.id}
+                      className="w-full cursor-pointer"
+                    >
+                      {choice.text}
+                    </Label>
+                  </div>
+                  {isSelected && displayExplanation && explanation && (
+                    <div className="ml-6 rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+                      <div className="mb-1 font-medium">Explanation:</div>
+                      <div>{explanation}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </RadioGroup>
         );
 
@@ -505,13 +567,22 @@ export default function QuestionBox({
                         )?.order
                       : undefined;
 
+                  const explanation = choice.explanation;
+
                   return (
-                    <SortableItem
-                      key={choiceId}
-                      id={choiceId}
-                      text={choice.text}
-                      order={order}
-                    />
+                    <div key={choiceId} className="space-y-2">
+                      <SortableItem
+                        id={choiceId}
+                        text={choice.text}
+                        order={order}
+                      />
+                      {displayExplanation && explanation && (
+                        <div className="ml-6 rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+                          <div className="mb-1 font-medium">Explanation:</div>
+                          <div>{explanation}</div>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -530,10 +601,10 @@ export default function QuestionBox({
 
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-6 p-6">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 pb-4 md:pb-0">
         <div className="flex flex-col-reverse items-center justify-between gap-y-2 md:flex-row">
-          <div className="flex flex-col items-center md:flex-row">
-            <h2 className="text-base font-bold md:text-lg">
+          <div className="flex flex-row flex-wrap items-center justify-center gap-2 md:justify-start">
+            <h2 className="text-center text-base font-bold md:text-left md:text-lg">
               {currentQuestionText}
             </h2>
             <TooltipProvider>
@@ -567,40 +638,42 @@ export default function QuestionBox({
             </TooltipProvider>
           </div>
         </div>
-        <div className="flex flex-row flex-wrap items-center gap-1.5">
-          <Button
-            variant="outline"
-            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
-            onClick={() => handleRewriteQuestion("easier")}
-            disabled={isRewritingQuestion}
-          >
-            Make this easier
-          </Button>
-          <Button
-            variant="outline"
-            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
-            onClick={() => handleRewriteQuestion("harder")}
-            disabled={isRewritingQuestion}
-          >
-            Make this harder
-          </Button>
-          <Button
-            variant="outline"
-            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
-            onClick={() => handleRewriteQuestion("same")}
-            disabled={isRewritingQuestion}
-          >
-            Rephrase
-          </Button>
-          <Button
-            variant="outline"
-            className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
-            onClick={() => handleRewriteQuestion("none")}
-            disabled={isRewritingQuestion}
-          >
-            Reset
-          </Button>
-        </div>
+        {enableRewriteQuestion && (
+          <div className="flex flex-row flex-wrap items-center justify-center gap-1.5 md:justify-start">
+            <Button
+              variant="outline"
+              className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+              onClick={() => handleRewriteQuestion("easier")}
+              disabled={isRewritingQuestion}
+            >
+              Make this easier
+            </Button>
+            <Button
+              variant="outline"
+              className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+              onClick={() => handleRewriteQuestion("harder")}
+              disabled={isRewritingQuestion}
+            >
+              Make this harder
+            </Button>
+            <Button
+              variant="outline"
+              className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+              onClick={() => handleRewriteQuestion("same")}
+              disabled={isRewritingQuestion}
+            >
+              Rephrase
+            </Button>
+            <Button
+              variant="outline"
+              className="h-fit w-fit rounded-xl px-2 py-1 text-xs"
+              onClick={() => handleRewriteQuestion("none")}
+              disabled={isRewritingQuestion}
+            >
+              Reset
+            </Button>
+          </div>
+        )}
         {examSessionQuestion.question.description && (
           <p className="text-muted-foreground text-xs md:text-sm">
             {examSessionQuestion.question.description}
@@ -655,6 +728,16 @@ export default function QuestionBox({
               >
                 <EyeOffIcon className="mr-2 h-4 w-4" />
                 Hide answers
+              </Button>
+            )}
+            {displayQuestionExplanations && (
+              <Button
+                variant="outline"
+                className="w-fit"
+                onClick={() => setDisplayExplanation(!displayExplanation)}
+              >
+                <InfoIcon className="mr-2 h-4 w-4" />
+                {displayExplanation ? "Hide explanation" : "Show explanation"}
               </Button>
             )}
           </div>

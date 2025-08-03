@@ -1,8 +1,8 @@
 "use client";
 
-import ExamListSelect from "@/components/admin/exams/sessions/exam-list-select";
-import ExamSessionStatusSelect from "@/components/admin/exams/sessions/exam-session-status-select";
-import UserMultiSelect from "@/components/admin/exams/sessions/user-multi-select";
+import ExamListSelect from "@/components/admin/exams/sessions/ExamListSelect";
+import ExamSessionStatusSelect from "@/components/admin/exams/sessions/ExamSessionStatusSelect";
+import UserMultiSelect from "@/components/admin/exams/sessions/UserMultiSelect";
 import useInfiniteExamSessions from "@/hooks/exam-sessions/useInfiniteExamSessions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,22 +15,44 @@ import {
   CloudOff,
   FileQuestion,
   MessageSquareWarning,
-  User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import { formatTime } from "@/lib/date-utils";
 import { useRouter } from "next/navigation";
+
+// Helper function to get user initials
+const getUserInitials = (name: string) => {
+  const nameParts = name.trim().split(" ");
+  if (nameParts.length === 1) {
+    return nameParts[0].charAt(0).toUpperCase();
+  }
+  const firstName = nameParts[0];
+  const lastName = nameParts[nameParts.length - 1];
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+};
+
+// Helper function to get status border color
+const getStatusBorderColor = (status: string) => {
+  switch (status) {
+    case "ToBeReviewed":
+      return "border-l-yellow-500";
+    case "Completed":
+      return "border-l-green-500";
+    case "InProgress":
+      return "border-l-blue-500";
+    default:
+      return "border-l-gray-500";
+  }
+};
 
 export default function Page() {
   const router = useRouter();
   const [selectedExam, setSelectedExam] = useState<string>("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>("");
-  const [page, setPage] = useState(1);
 
   const {
     examSessions,
@@ -44,7 +66,6 @@ export default function Page() {
     examId: selectedExam,
     userIds: selectedUsers.length > 0 ? selectedUsers : undefined,
     pageSize: 10,
-    page: page,
   });
 
   const { ref: loaderRef, inView } = useInView({
@@ -54,13 +75,8 @@ export default function Page() {
   useEffect(() => {
     if (inView && hasNextPage) {
       fetchNextPage();
-      setPage((prev) => prev + 1);
     }
   }, [inView, hasNextPage, fetchNextPage]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [selectedStatus, selectedExam, selectedUsers]);
 
   return (
     <div className="flex h-full min-h-screen w-full flex-col items-center p-10 md:pb-10">
@@ -92,20 +108,21 @@ export default function Page() {
           {isLoading && (
             <div className="flex h-full w-full flex-col items-center justify-center gap-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-48 w-full" />
+                <Skeleton key={i} className="h-32 w-full" />
               ))}
             </div>
           )}
           {!isLoading && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {examSessions?.length > 0 &&
                 examSessions.map((session) => (
                   <Card
                     key={session.id}
                     className={cn(
-                      "px-4 py-6 transition-colors duration-200 ease-in-out hover:bg-gray-50",
+                      "border-l-4 p-3 transition-colors duration-200 ease-in-out hover:bg-gray-50",
                       session.status !== "InProgress" && "cursor-pointer",
                       session.status === "InProgress" && "cursor-not-allowed",
+                      getStatusBorderColor(session.status),
                     )}
                     onClick={() => {
                       if (session.status === "InProgress") {
@@ -125,95 +142,127 @@ export default function Page() {
                     role="button"
                     tabIndex={0}
                   >
-                    <CardHeader className="flex flex-wrap items-center justify-between">
-                      <div className="flex flex-col items-start gap-x-4 gap-y-2 md:flex-row md:items-center">
-                        <div className="bg-primary/20 flex h-full items-center justify-center rounded-full p-4">
-                          <User className="text-primary h-4 w-4 md:h-6 md:w-6" />
+                    <CardHeader className="pb-3">
+                      <div className="flex flex-row flex-wrap items-center justify-between gap-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full">
+                            <span className="text-primary text-sm font-semibold">
+                              {getUserInitials(session.user.name)}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <CardTitle className="text-sm font-semibold">
+                              {session.user.name}
+                            </CardTitle>
+                            <p className="text-muted-foreground text-xs">
+                              {session.user.email}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex flex-col flex-wrap text-wrap">
-                          <CardTitle className="text-xs font-semibold md:text-lg">
-                            {session.user.name}
-                          </CardTitle>
-                          <p className="text-muted-foreground text-xs text-wrap md:text-sm">
-                            {session.user.email}
+                        <Badge
+                          className={cn(
+                            "px-2 py-1 text-xs",
+                            session.status === "ToBeReviewed"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : session.status === "Completed"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800",
+                          )}
+                        >
+                          {session.status === "Completed" && (
+                            <CheckCircle className="mr-1 h-3 w-3" />
+                          )}
+                          {session.status === "InProgress" && (
+                            <Clock1 className="mr-1 h-3 w-3" />
+                          )}
+                          {session.status === "ToBeReviewed" && (
+                            <MessageSquareWarning className="mr-1 h-3 w-3" />
+                          )}
+                          {session.status === "InProgress"
+                            ? "In Progress"
+                            : session.status === "ToBeReviewed"
+                              ? "To Be Reviewed"
+                              : "Completed"}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      {/* Mobile layout - single column */}
+                      <div className="flex flex-col gap-3 md:hidden">
+                        <div className="rounded-md bg-gray-50 p-3">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <BookOpen className="h-3 w-3 text-gray-600" />
+                            <span className="text-xs font-medium text-gray-600">
+                              Exam
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {session.exam.title}
+                          </h4>
+                        </div>
+                        <div className="bg-primary/10 rounded-md p-3">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <CheckCircle2Icon className="text-primary h-3 w-3" />
+                            <span className="text-primary text-xs font-medium">
+                              Started At
+                            </span>
+                          </div>
+                          <p className="text-primary text-sm font-semibold">
+                            {new Date(session.startedAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="rounded-md bg-green-50 p-3">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <Clock className="h-3 w-3 text-green-600" />
+                            <span className="text-xs font-medium text-green-600">
+                              Time Spent
+                            </span>
+                          </div>
+                          <p className="text-sm font-semibold text-green-600">
+                            {session.timeSpentSeconds
+                              ? formatTime(session.timeSpentSeconds)
+                              : "0 min 0 sec"}
                           </p>
                         </div>
                       </div>
-                      <Badge
-                        className={cn(
-                          "px-3 py-1 text-sm",
-                          session.status === "ToBeReviewed"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : session.status === "Completed"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800",
-                        )}
-                      >
-                        {session.status === "Completed" && (
-                          <CheckCircle className="mr-1 h-4 w-4" />
-                        )}
-                        {session.status === "InProgress" && (
-                          <Clock1 className="mr-1 h-4 w-4" />
-                        )}
-                        {session.status === "ToBeReviewed" && (
-                          <MessageSquareWarning className="mr-1 h-4 w-4" />
-                        )}
-                        {session.status === "InProgress"
-                          ? "In Progress"
-                          : session.status === "ToBeReviewed"
-                            ? "To Be Reviewed"
-                            : "Completed"}
-                      </Badge>
-                    </CardHeader>
-                    <CardContent className="flex w-full flex-col gap-2">
-                      <div className="w-full rounded-lg bg-gray-50 p-4">
-                        <div className="mb-2 flex w-full items-center space-x-2">
-                          <BookOpen className="h-4 w-4 text-gray-600" />
-                          <span className="text-sm font-medium text-gray-600">
-                            Exam
-                          </span>
+
+                      {/* Desktop layout - 3 columns */}
+                      <div className="hidden grid-cols-3 gap-4 md:grid">
+                        <div className="rounded-md bg-gray-50 p-3">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <BookOpen className="h-3 w-3 text-gray-600" />
+                            <span className="text-xs font-medium text-gray-600">
+                              Exam
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {session.exam.title}
+                          </h4>
                         </div>
-                        <h4 className="text-lg font-medium text-gray-900">
-                          {session.exam.title}
-                        </h4>
-                      </div>
-                      <div className="bg-primary/20 w-full rounded-lg p-4">
-                        <div className="mb-2 flex w-full items-center space-x-2">
-                          <CheckCircle2Icon className="text-primary h-4 w-4" />
-                          <span className="text-primary text-sm font-medium">
-                            Started At
-                          </span>
+                        <div className="bg-primary/10 rounded-md p-3">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <CheckCircle2Icon className="text-primary h-3 w-3" />
+                            <span className="text-primary text-xs font-medium">
+                              Started At
+                            </span>
+                          </div>
+                          <p className="text-primary text-sm font-semibold">
+                            {new Date(session.startedAt).toLocaleString()}
+                          </p>
                         </div>
-                        <p className="text-primary text-lg font-semibold">
-                          {new Date(session.startedAt).toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="w-full rounded-lg bg-green-100 p-4">
-                        <div className="mb-2 flex w-full items-center space-x-2">
-                          <CheckCircle2Icon className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-medium text-green-600">
-                            Finished At
-                          </span>
+                        <div className="rounded-md bg-green-50 p-3">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <Clock className="h-3 w-3 text-green-600" />
+                            <span className="text-xs font-medium text-green-600">
+                              Time Spent
+                            </span>
+                          </div>
+                          <p className="text-sm font-semibold text-green-600">
+                            {session.timeSpentSeconds
+                              ? formatTime(session.timeSpentSeconds)
+                              : "0 min 0 sec"}
+                          </p>
                         </div>
-                        <p className="text-lg font-semibold text-green-600">
-                          {session.finishedAt
-                            ? new Date(session.finishedAt).toLocaleString()
-                            : "In Progress"}
-                        </p>
-                      </div>
-                      <Separator />
-                      <div className="flex w-full flex-row items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4" />
-                          <span className="text-base font-medium">
-                            Time Spent
-                          </span>
-                        </div>
-                        <span className="text-lg font-semibold">
-                          {session.timeSpentSeconds
-                            ? formatTime(session.timeSpentSeconds)
-                            : "0 min 0 sec"}
-                        </span>
                       </div>
                     </CardContent>
                   </Card>
@@ -234,7 +283,7 @@ export default function Page() {
           {isLoading && (
             <div className="flex h-full w-full flex-col gap-4">
               {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="bg-background h-48 w-full" />
+                <Skeleton key={i} className="bg-background h-32 w-full" />
               ))}
             </div>
           )}

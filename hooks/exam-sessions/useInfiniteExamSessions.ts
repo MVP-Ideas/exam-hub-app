@@ -1,7 +1,7 @@
 import ExamSessionService from "@/lib/services/exam-session-service";
 import { ExamSessionPaginatedResponse } from "@/lib/types/exam-session";
 import { PaginationResponse } from "@/lib/types/pagination";
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 type Props = {
   status?: string;
@@ -37,17 +37,16 @@ const useInfiniteExamSessions = ({
         status,
         userIds: userIdsString,
         examId,
-        page: (pageParam as number) || page,
+        page: (pageParam as number) || page || 1,
         pageSize,
       });
     },
-    placeholderData: keepPreviousData,
-    staleTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 5, // Reduced stale time to 5 minutes
     getNextPageParam: (lastPage) =>
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     getPreviousPageParam: (firstPage) =>
       firstPage.page > 1 ? firstPage.page - 1 : undefined,
-    initialPageParam: page,
+    initialPageParam: 1,
   });
 
   // Flatten all pages into a single array
